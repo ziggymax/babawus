@@ -64,11 +64,20 @@ Babawus runs only when the user starts it. There is no background process and no
 
 The user is told at the start of a run not to remove the medium until the verdict appears. If a run is interrupted anyway (the medium is pulled out, the computer is closed or shut down), the run gets its own verdict ("Backup not finished"). The next run simply continues and catches up. Nothing has to be cleaned up by hand.
 
-### One medium belongs to one computer and one user account
+### The medium is user and computer agnostic
 
-A medium is prepared for one specific computer and one specific user account. If a medium is inserted into another computer, or used from another user account, Babawus refuses to copy anything and says plainly that the medium belongs elsewhere. It never adapts or guesses.
+A medium is prepared in such a way that it can be mounted on any computer and read by any user.
 
-### Preparing a USB medium for use with Babawus
+### Initial preparation of an USB medium for use with Babawus
+
+Babawus only works with media formatted with either an Ext4 or exFAT file system. When a user instructs Babawus to use a medium that has not been used with Babawus before, Babawus offers to format the drive in either Ext4 format or exFAT format.
+
+- Ext4 offers better resilience against file system corruption and guarantees that no problem with file/folder names or path lengt will occur. But it can only be used with Linux.
+- exFAT works across almost all platforms, but may cause with file/folder names and path lengths.
+
+If the new media is already in one of these two formats, the user will of course also have the option to use the medium as it is.
+
+### Finalizing an USB medium for use with Babawus
 
 A USB stick (or other USB storage medium) is prepared for use with Babawus by placing a text file named `babawus_drive.cfg` in its top folder. The file contains:
 
