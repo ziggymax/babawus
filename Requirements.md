@@ -57,16 +57,19 @@ As a poweruser I want Babawus to provide me with the means of easily creating an
 - Add wildcards to specifically exclude certain files or folder
 - Continuously update a sum of files/bytes that are included as I update the configuration.
 - Write (with (re-)calculated checksum) the resulting configuration when I am done.
+- Folders and exclusions for a computer and account can only be changed while running Babawus on that computer, as that user. Entries for other computers and accounts are shown, but read-only.
 
 That way I can easily create or update a configuration for an usb media.
 
 ### Maintain a log
 
-As a poweruser I want Babawus to maintain a log of backup sessions performed on a media. The log is just plain text and should have at least two entries for each backup session:
+As a poweruser I want Babawus to maintain a log of backup sessions performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text. All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each backup session has these entries:
 
-- A date and time stamp (in local time) for the start of the session
-- An entry for each anomaly (error) seen during the session. If more than 20 errors are seen, a single entry with "Multiple errors ...." is written and no more errors are logged (only counted)
-- A date and time stamp (in local time) for the end of the session, with summaries of number of files/bytes successfully copied and number of errors
+- A start entry with the timestamp and the `username@hostname` the backup runs for.
+- An entry for each anomaly (error) seen during the session. The first 20 errors are logged individually. If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
+- An end entry with the timestamp, the verdict, and the number of files/bytes successfully copied and the number of errors.
+
+The log is kept below 1 MB. When it would grow beyond that, the oldest whole sessions are removed from it.
 
 That way I have some good data to help me find the cause of errors.
 
@@ -226,6 +229,26 @@ How it looks after a number of versions have been written. Once a fourth older v
                         └── project_brief[2026-10-20_141002].md <-- Oldest version kept
                         └── project_brief[2026-10-27_080544].md
                         └── project_brief[2026-11-02_191230].md <-- Newest older version
+
+### What is copied
+
+Only regular files and folders are backed up. Symbolic links are neither followed nor copied, and special files (sockets, pipes, device files) are skipped. Neither counts as an error or appears in the verdict. This avoids loops and duplicates, and keeps the behaviour the same on exFAT, which cannot store symbolic links.
+
+### Permissions on Ext4 media
+
+A medium must be readable by any user on any computer. On an Ext4 medium, everything Babawus creates is therefore made readable and writable by everyone: folders get mode `0777` and files get mode `0666`, whatever their permissions in the source. (exFAT does not store owners or permissions, so nothing is needed there.)
+
+### Media that can be formatted
+
+Babawus only offers to format USB devices that the system reports as removable. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself.
+
+### One backup at a time
+
+Only one backup runs at a time. While a backup is running, no other medium in the list can be started. When it has finished, the user can start a backup on another medium.
+
+### Checksum of the configuration file
+
+The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with xxHash64 and written as 16 hexadecimal digits. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is treated as not Babawus-ready until the poweruser has checked and saved the configuration again in Babawus. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
 
 ### Not in the first version
 
