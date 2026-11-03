@@ -86,6 +86,10 @@ As a user I want to be able to view the history of backups made on a medium, in 
 
 As a poweruser I want to add a computer or a user account to a medium, choosing which folders to back up for it, without losing any backups already on the medium. That way several computers and accounts can share a medium, and I can continue backups on a replacement computer after a loss.
 
+### Rename a computer or user account on a medium
+
+As a poweruser I want to rename a computer or user account on a medium, for example after a computer has been renamed or reinstalled with a new hostname. Babawus renames the folder under `backup` and the entry in the configuration, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name.
+
 ### Back up from a computer or account that has not been added
 
 As a user, if I start a backup from a computer or user account that has not been added to the medium, I want Babawus to copy nothing and tell me plainly that the medium is not set up for this computer or user, with "Contact your poweruser" as the next step. That way I am not left wondering why nothing happened.
@@ -131,11 +135,15 @@ This figure illustrates the folder layout:
 
 ### Source to target path conversion
 
-The path of the source files/folders are truncated at the home folder level when they are written to the backup medium. Examples:
+Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (the `HOME` setting), which is usually, but not always, `/home/<username>`.
 
-- File belonging to userA@hostname1 : `/home/userA/myfile -> /backup/hostname1/userA/myfile`
-- File belonging to userB@hostname1 : `/home/userB/Documents/hello.odt -> /backup/hostname1/userB/Documents/hello.odt`
-- Folder belonging to userC@hostnam2: `/home/userC/project/hooray -> /backup/hostname2/userC/project/hooray`
+The path of a source file or folder is truncated at the home folder when it is written to the backup medium, and the rest of the path is placed under `backup/<hostname>/<username>`. In the examples below, `<medium>` is the top folder of the mounted medium:
+
+- File belonging to userA@hostname1: `/home/userA/myfile` -> `<medium>/backup/hostname1/userA/myfile`
+- File belonging to userB@hostname1: `/home/userB/Documents/hello.odt` -> `<medium>/backup/hostname1/userB/Documents/hello.odt`
+- Folder belonging to userC@hostname2: `/home/userC/project/hooray` -> `<medium>/backup/hostname2/userC/project/hooray`
+
+`<hostname>` and `<username>` are the computer's hostname and the account's username at the time of the backup. If either changes, the computer or account is treated as not added to the medium, until the poweruser either adds it or renames the existing entry (see "Rename a computer or user account on a medium").
 
 ### Handling of file versioning
 
