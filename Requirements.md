@@ -77,6 +77,10 @@ That way I have some good data to help me find the cause of errors.
 
 As a user I want every backup run to end with a clear, unmistakable verdict: "All good", "Some files were skipped", "Backup not finished" or "Backup failed". The verdict should also tell me how long it has been since the last successful backup on this medium. If the verdict is not "All good", it should tell me a simple next step I can take without fixing anything myself, typically "Contact your poweruser", with a short text I can read out or forward. That way I am never in doubt about whether my files are safe.
 
+### See which folders a medium covers
+
+As a user I want to be able to see, for a Babawus-ready medium, in plain words which folders on this computer are backed up to it for my account. This is shown on request, not on the start screen, which only shows whether each medium is Babawus-ready. That way I can check that my important files are covered, and see differences between media.
+
 ### See when I last made a backup
 
 As a user I want the start screen to show, for each Babawus-ready medium, how long it has been since the last successful backup (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.

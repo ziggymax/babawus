@@ -1,6 +1,6 @@
 # Babawus (BAsic BAckup With Usb Storage)
 
-*Concept, revision 3 (2026-10-30). Revision 2 added the outcome of a conceptual review: purpose and limits, roles, the life of a medium after setup, and the scope of a first version. Revision 3 added keeping older versions of files. Revision 4 makes media computer and user agnostic and limits them to the exFAT and Ext4 file systems.*
+*Concept, revision 5 (2026-11-03). Revision 2 added the outcome of a conceptual review: purpose and limits, roles, the life of a medium after setup, and the scope of a first version. Revision 3 added keeping older versions of files. Revision 4 makes media computer and user agnostic and limits them to the exFAT and Ext4 file systems. Revision 5 aligns the concept with the requirements: the configuration file is `.babawus/babawus_config`, the roles are called user and poweruser, the user starts a backup by clicking a medium in a list, and Babawus offers to eject the medium after a successful backup.*
 
 Babawus is a (fairly) simple application for backing up folders from a hard disk to a USB storage device, typically a USB stick. It is, at least initially, intended only for a Linux desktop environment.
 
