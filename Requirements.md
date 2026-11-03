@@ -238,6 +238,10 @@ How it looks after a number of versions have been written. Once a fourth older v
 
 Only regular files and folders are backed up. Symbolic links are neither followed nor copied, and special files (sockets, pipes, device files) are skipped. Neither counts as an error or appears in the verdict. This avoids loops and duplicates, and keeps the behaviour the same on exFAT, which cannot store symbolic links.
 
+Exclusion wildcards are case-sensitive, as file names are on Linux: `*.tmp` excludes `file.tmp` but not `file.TMP`.
+
+On an exFAT medium, which does not distinguish upper and lower case in names, two source files or folders in the same folder whose names differ only in case (for example `Report.pdf` and `report.pdf`) cannot both be stored. Babawus then backs up the one whose name comes first when the names are sorted by their bytes (here `Report.pdf`), and lists the others as skipped in the verdict. On an Ext4 medium all of them are backed up.
+
 ### Permissions on Ext4 media
 
 A medium must be readable by any user on any computer. On an Ext4 medium, everything Babawus creates is therefore made readable and writable by everyone: folders get mode `0777` and files get mode `0666`, whatever their permissions in the source. (exFAT does not store owners or permissions, so nothing is needed there.)
