@@ -79,7 +79,7 @@ As a user I want every backup run to end with a clear, unmistakable verdict: "Al
 
 ### See which folders a medium covers
 
-As a user I want to be able to see, for a Babawus-ready medium, in plain words which folders on this computer are backed up to it for my account. This is shown on request, not on the start screen, which only shows whether each medium is Babawus-ready. That way I can check that my important files are covered, and see differences between media.
+As a user I want to be able to see, for a Babawus-ready medium, in plain words which folders on this computer are backed up to it for my account. This is shown on request, not on the start screen, which only shows whether each medium is Babawus-ready and, as the one exception, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
 
 ### See when I last made a backup
 
