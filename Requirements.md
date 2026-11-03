@@ -70,6 +70,46 @@ As a poweruser I want Babawus to maintain a log of backup sessions performed on 
 
 That way I have some good data to help me find the cause of errors.
 
+### Get a clear verdict
+
+As a user I want every backup run to end with a clear, unmistakable verdict: "All good", "Some files were skipped", "Backup not finished" or "Backup failed". The verdict should also tell me how long it has been since the last successful backup on this medium. If the verdict is not "All good", it should tell me a simple next step I can take without fixing anything myself, typically "Contact your poweruser", with a short text I can read out or forward. That way I am never in doubt about whether my files are safe.
+
+### See when I last made a backup
+
+As a user I want the start screen to show, for each Babawus-ready medium, how long it has been since the last successful backup (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
+
+### View the history of a medium
+
+As a user I want to be able to view the history of backups made on a medium, in plain words: when each backup ran and what its verdict was. That way I can see that my backups have been running as expected. (The history is read from the log on the medium, see "Maintain a log".)
+
+### Add a computer or user account to a medium
+
+As a poweruser I want to add a computer or a user account to a medium, choosing which folders to back up for it, without losing any backups already on the medium. That way several computers and accounts can share a medium, and I can continue backups on a replacement computer after a loss.
+
+### Back up from a computer or account that has not been added
+
+As a user, if I start a backup from a computer or user account that has not been added to the medium, I want Babawus to copy nothing and tell me plainly that the medium is not set up for this computer or user, with "Contact your poweruser" as the next step. That way I am not left wondering why nothing happened.
+
+### Recover from an interrupted backup
+
+As a user I want to be told when a backup starts that I should not remove the medium until the verdict appears. If a backup is interrupted anyway (the medium is pulled out, or the computer is closed or shut down), I want the next backup to simply continue and catch up, without anything having to be cleaned up by hand. That way an accident does not leave me with a broken backup.
+
+### Handle a full medium
+
+As a user, if the medium runs out of space during a backup, I want Babawus to stop cleanly and tell me so in plain words in the verdict, with "Contact your poweruser" as the next step. That way I know my backup is incomplete and what to do about it.
+
+### Use an existing medium as it is
+
+As a poweruser, if a medium is already formatted as exFAT or Ext4, I want the option to prepare it for Babawus without formatting it, keeping any files already on it. That way I do not have to erase a medium that is already suitable.
+
+### Set the number of older versions to keep
+
+As a poweruser I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N). That way I can balance history against space on the medium.
+
+### Change the language
+
+As a user I want to change the language of Babawus from inside the application. Initially English and German are available. That way I can use Babawus in the language I understand best.
+
 ## Technical requirements
 
 ### Layout of a Babawus medium
