@@ -142,7 +142,7 @@ This figure illustrates the folder layout:
 
 ### Source to target path conversion
 
-Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (the `HOME` setting), which is usually, but not always, `/home/<username>`.
+Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (the `HOME` setting), which is usually, but not always, `/home/<username>`. The user name used for backups is always the same as $USER, and hostname is always the same as $HOSTNAME.
 
 The path of a source file or folder is truncated at the home folder when it is written to the backup medium, and the rest of the path is placed under `backup/<hostname>/<username>`. In the examples below, `<medium>` is the top folder of the mounted medium:
 
