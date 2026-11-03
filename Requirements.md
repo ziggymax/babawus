@@ -147,7 +147,25 @@ The path of a source file or folder is truncated at the home folder when it is w
 
 ### Handling of file versioning
 
-Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser in the configuration. If a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
+Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser in the configuration.
+
+A source file needs to be backed up again when its size or its last modification time differs from that of its newest copy on the medium. "Differs" is used rather than "is newer", so a file that has been replaced by an older copy is also backed up. To make this work, every copy written to the medium keeps the last modification time of its source file. Modification times are compared with a tolerance of 2 seconds, because exFAT may store them with less precision than the source file system.
+
+The name of a file is split into a base name and an extension at its *last* dot. A name with no dot, or with only a leading dot, has no extension. In the version folder and version names, `[]` and `[<timestamp>]` go where the last dot would be, or at the end of the name if there is no extension:
+
+| Source file | Version folder | Older version |
+|---|---|---|
+| `report.pdf` | `report[]pdf` | `report[<timestamp>].pdf` |
+| `archive.tar.gz` | `archive.tar[]gz` | `archive.tar[<timestamp>].gz` |
+| `Makefile` | `Makefile[]` | `Makefile[<timestamp>]` |
+| `.bashrc` | `.bashrc[]` | `.bashrc[<timestamp>]` |
+
+Two kinds of name clashes are handled like this:
+
+- A source file or folder whose name has the form of a version folder (contains `[]`) is not backed up, and is listed as skipped in the verdict.
+- If an older version with the same timestamp already exists in the version folder, a suffix is added to the timestamp: `report[2026-11-03_175400-2].pdf`, then `-3` and so on.
+
+When a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
 
 1. It is checked if a subfolder called `userfile[]ext` exists in the folder where `userfile.ext` resides - if not it is created.
 1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[<timestamp>].ext`, where `<timestamp>` is the last modification time of that existing version, in the form `YYYY-MM-DD_HHMMSS` (local time). This makes older versions sort by age and recognisable by date in an ordinary file manager.
