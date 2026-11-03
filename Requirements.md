@@ -12,9 +12,9 @@ The requirements are generally separated into two different parts:
 While the primary aim of Babawus is to make it as simple as possible to perform simple periodic backup operations, some amount of configuration and administrative functions are needed to set up an usb media for use with Babawus. Thus the requirements for Babawus operates with two roles:
 
 - A **User** only uses Babawus to do backup with media that has already been prepared for use.
-- A **Superuser** uses Babawus to (possibly) format sub media and configure these for use with Babawus.
+- A **Poweruser** uses Babawus to (possibly) format sub media and configure these for use with Babawus.
 
-There is no login or some sort of identification of Babawus users, so a user's role is simply defined by the features of Babawus the user wants to use. The two roles are mostly used to provide hints to the implementation of the user interface. A user should be able to use Babawus for doing simple plug-and-play backups without seeing any of the fancy technical stuff a superuser may want/need to use.
+There is no login or some sort of identification of Babawus users, so a user's role is simply defined by the features of Babawus the user wants to use. The two roles are mostly used to provide hints to the implementation of the user interface. A user should be able to use Babawus for doing simple plug-and-play backups without seeing any of the fancy technical stuff a poweruser may want/need to use.
 
 ## User stories
 
@@ -47,11 +47,11 @@ As a user I want Babawus to offer to eject a media (unmount it) that has just be
 
 ### Format usb media
 
-As a superuser I want Babawus to provide me with the means to format an usb media in one of the 2 supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the media, provide me opportunity to cancel the operation before anything is changed on the sub media, and only actually format the media after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new media for use with Babawus, based on my requirements for platform interoperability of the media, wishes for file name and path length compatibility, or resilience against file system corruption.
+As a poweruser I want Babawus to provide me with the means to format an usb media in one of the 2 supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the media, provide me opportunity to cancel the operation before anything is changed on the sub media, and only actually format the media after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new media for use with Babawus, based on my requirements for platform interoperability of the media, wishes for file name and path length compatibility, or resilience against file system corruption.
 
 ### Configure usb media
 
-As a superuser I want Babawus to provide me with the means of easily creating and/or editing the Babawus configuration file on an usb media. Specifically:
+As a poweruser I want Babawus to provide me with the means of easily creating and/or editing the Babawus configuration file on an usb media. Specifically:
 
 - Use a "file explorer" of some sort to browse existing files and folders on the PC and select those I want to have backed up.
 - Add wildcards to specifically exclude certain files or folder
@@ -62,7 +62,7 @@ That way I can easily create or update a configuration for an usb media.
 
 ### Maintain a log
 
-As a superuser I want Babawus to maintain a log of backup sessions performed on a media. The log is just plain text and should have at least two entries for each backup session:
+As a poweruser I want Babawus to maintain a log of backup sessions performed on a media. The log is just plain text and should have at least two entries for each backup session:
 
 - A date and time stamp (in local time) for the start of the session
 - An entry for each anomaly (error) seen during the session. If more than 20 errors are seen, a single entry with "Multiple errors ...." is written and no more errors are logged (only counted)
@@ -99,14 +99,14 @@ The path of the source files/folders are truncated at the home folder level when
 
 ### Handling of file versioning
 
- Babawus never deletes or overwrites a users file. If a newer version of a files needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
+Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser in the configuration. If a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
 
- 1. It is checked if a subfolder called `userfile[]ext` exists in the folder where `userfile.ext` resides - if not it is created.
- 1. It is counted how many copies of `userfile.ext` already exists in `userfile[]ext` (call this number version_count). Version_count may be 0 if no previous versions exists.
- 1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[version_count+1].ext`.
- 1. The new version of `userfile.ext` is written
- 
- Here is an example. Before any overwrites:
+1. It is checked if a subfolder called `userfile[]ext` exists in the folder where `userfile.ext` resides - if not it is created.
+1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[<timestamp>].ext`, where `<timestamp>` is the last modification time of that existing version, in the form `YYYY-MM-DD_HHMMSS` (local time). This makes older versions sort by age and recognisable by date in an ordinary file manager.
+1. The new version of `userfile.ext` is written.
+1. If `userfile[]ext` now holds more than N older versions, the oldest ones are removed until N remain.
+
+Here is an example, with N = 3. Before any overwrites:
 
     backup/
     └── hostname1
@@ -115,7 +115,7 @@ The path of the source files/folders are truncated at the home folder level when
                 └── tadah
                     └── project_brief.md  <-- File about to be overwritten
 
-A new version of `project_brief.md` needs to be written. Step 1 : create subfolder for versions:
+A new version of `project_brief.md` needs to be written. Step 1: create subfolder for versions:
 
     backup/
     └── hostname1
@@ -133,7 +133,7 @@ Step 2: the old version is moved:
             └── Projects
                 └── tadah
                     └── project_brief[]md
-                        └── project_brief[1].md <-- File moved here
+                        └── project_brief[2026-10-12_093015].md <-- File moved here
 
 Step 3: the new version is written:
 
@@ -142,32 +142,25 @@ Step 3: the new version is written:
         └── userB
             └── Projects
                 └── tadah
-                    └── project_brief.md  <-- New version of file                
+                    └── project_brief.md  <-- New version of file
                     └── project_brief[]md
-                        └── project_brief[1].md
+                        └── project_brief[2026-10-12_093015].md
 
-How it looks after a number of version have been written:
+Step 4: nothing to remove, since only 1 older version exists (N = 3).
+
+How it looks after a number of versions have been written. Once a fourth older version is moved in, the oldest is removed:
 
     backup/
     └── hostname1
         └── userB
             └── Projects
                 └── tadah
-                    └── project_brief.md  <-- Newest version of file                
+                    └── project_brief.md  <-- Newest version of file
                     └── project_brief[]md
-                        └── project_brief[1].md <-- Oldest version of file
-                        └── project_brief[2].md
-                        └── project_brief[3].md
-                        └── project_brief[4].md
+                        └── project_brief[2026-10-20_141002].md <-- Oldest version kept
+                        └── project_brief[2026-10-27_080544].md
+                        └── project_brief[2026-11-02_191230].md <-- Newest older version
 
-### Automatic detection of moved files
+### Not in the first version
 
-Babawus tries to detect situations where files have just been moved around but otherwise not changed. It works like this:100%
-
-1. Babawus maintains a persistent list of hash value for every file that has been backed up.
-1. Whenever a new file (i.e. a file that does not already exist in the backup tree of files and folders) is written, a hash value for the file is computed, call it newhash.  
-1. If no file with newhash already exists, the file is really new as in never seen before and it simply gets written and newhash is saved in the persistent table.
-1. But if newhash already exists in the list of hash values, it means that an identical file already exists somewhere.
-
-The diagram below shows the general flow.
-![Flow diagram for new files](assets/Renaming%20flow.png "New file flow diagram")
+- **Automatic detection of moved files.** Detecting files that were only moved or renamed, to avoid storing them twice, is deferred to a later version. In the first version, a moved or renamed file is simply backed up again at its new location, and the copy at its old location stays on the medium.
