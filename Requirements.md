@@ -125,7 +125,7 @@ As a user I want to change the language of Babawus from inside the application. 
 
 ### Layout of a Babawus medium
 
-A USB medium prepared for use with Babawus is formatted in either exFAT or Ext4. In the root of the filesystem there is a folder called `.babawus`. This is where all internal Babawus data is stored (log and configuration). Another top-level folder is called `backup` and this is where all backup files are stored. The backup files are stored in a `<hostname>/<username>` hierarchy.
+A USB medium prepared for use with Babawus is formatted in either exFAT or Ext4. In the root of the filesystem there is a folder called `.babawus`. This is where all internal Babawus data is stored (log and configuration). All names that Babawus itself chooses on the medium (`.babawus`, `babawus_config`, `babawus_log.txt`, `backup`, and the host and user folders) are lower case, and no two of them differ only in case. Another top-level folder is called `backup` and this is where all backup files are stored. The backup files are stored in a `<hostname>/<username>` hierarchy.
 
 This figure illustrates the folder layout:
 
@@ -142,7 +142,7 @@ This figure illustrates the folder layout:
 
 ### Source to target path conversion
 
-Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (the `HOME` setting), which is usually, but not always, `/home/<username>`. The user name used for backups is always the same as $USER, and hostname is always the same as $HOSTNAME.
+Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (`$HOME`), which is usually, but not always, `/home/<username>`. The user name is the login name of the account Babawus runs as, and the hostname is the computer's hostname as reported by the system (the same values that `$USER` and `$HOSTNAME` normally show in a terminal).
 
 The path of a source file or folder is truncated at the home folder when it is written to the backup medium, and the rest of the path is placed under `backup/<hostname>/<username>`. In the examples below, `<medium>` is the top folder of the mounted medium:
 
@@ -150,7 +150,7 @@ The path of a source file or folder is truncated at the home folder when it is w
 - File belonging to userB@hostname1: `/home/userB/Documents/hello.odt` -> `<medium>/backup/hostname1/userB/Documents/hello.odt`
 - Folder belonging to userC@hostname2: `/home/userC/project/hooray` -> `<medium>/backup/hostname2/userC/project/hooray`
 
-`<hostname>` and `<username>` are the computer's hostname and the account's username at the time of the backup. If either changes, the computer or account is treated as not added to the medium, until the poweruser either adds it or renames the existing entry (see "Rename a computer or user account on a medium").
+`<hostname>` and `<username>` are the computer's hostname and the account's username at the time of the backup, converted to lower case. exFAT does not distinguish upper and lower case in names, so two computers named `MyPC` and `mypc` would otherwise share a folder on an exFAT medium but not on an Ext4 medium. Converting to lower case makes both file systems behave the same. If either changes, the computer or account is treated as not added to the medium, until the poweruser either adds it or renames the existing entry (see "Rename a computer or user account on a medium").
 
 ### Handling of file versioning
 
@@ -252,7 +252,7 @@ Only one backup runs at a time. While a backup is running, no other medium in th
 
 ### Checksum of the configuration file
 
-The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with xxHash64 and written as 16 hexadecimal digits. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is treated as not Babawus-ready until the poweruser has checked and saved the configuration again in Babawus. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
+The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with xxHash64 and written as 16 lower-case hexadecimal digits. When the checksum is checked, upper and lower case hexadecimal digits are treated as equal. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is treated as not Babawus-ready until the poweruser has checked and saved the configuration again in Babawus. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
 
 ### Not in the first version
 
