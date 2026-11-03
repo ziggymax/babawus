@@ -1,41 +1,41 @@
 # Babawus Requirements
 
-This document contains the requirements for Babawus. The introductory part provides and overview and provides some basic definitions.
+This document contains the requirements for Babawus. The introductory part provides an overview and some basic definitions.
 
 ## Introduction
 
 The requirements are generally separated into two different parts:
 
-- A *user centric* part that defines requirements to parts and behaviors of Babawus that users can directly see and/or engage with.
-- A *technical* part that defines requirements to parts and behaviors of Babawus that can users can not directly see or engage with, but which are important for clearly defining and removing ambiguities for low level file and folder operations.
+- A *user-centric* part that defines requirements for parts and behaviors of Babawus that users can directly see and/or engage with.
+- A *technical* part that defines requirements for parts and behaviors of Babawus that users cannot directly see or engage with, but which are important for clearly defining and removing ambiguities for low-level file and folder operations.
 
-While the primary aim of Babawus is to make it as simple as possible to perform simple periodic backup operations, some amount of configuration and administrative functions are needed to set up an usb media for use with Babawus. Thus the requirements for Babawus operates with two roles:
+While the primary aim of Babawus is to make it as simple as possible to perform simple periodic backup operations, some amount of configuration and administrative functions are needed to set up a USB medium for use with Babawus. Thus the requirements for Babawus operate with two roles:
 
-- A **User** only uses Babawus to do backup with media that has already been prepared for use.
-- A **Poweruser** uses Babawus to (possibly) format sub media and configure these for use with Babawus.
+- A **User** only uses Babawus to do backups with media that have already been prepared for use.
+- A **Poweruser** uses Babawus to (possibly) format USB media and configure them for use with Babawus.
 
-There is no login or some sort of identification of Babawus users, so a user's role is simply defined by the features of Babawus the user wants to use. The two roles are mostly used to provide hints to the implementation of the user interface. A user should be able to use Babawus for doing simple plug-and-play backups without seeing any of the fancy technical stuff a poweruser may want/need to use.
+There is no login or other identification of Babawus users, so a user's role is simply defined by the features of Babawus the user wants to use. The two roles are mostly used to provide hints to the implementation of the user interface. A user should be able to use Babawus for doing simple plug-and-play backups without seeing any of the fancy technical stuff a poweruser may want/need to use.
 
 ## User stories
 
 ### Start Babawus and see status
 
-As a user I want to be able to simply start Babawus by clicking on an icon in a menu or the desktop. Babawus should then start and show me a list with current status of attached media - which are they and are they Babawus-ready (i.e. prepared and ready for use with Babawus), yes or no. That way I can see if Babawus is ready to start a backup.
+As a user I want to be able to simply start Babawus by clicking on an icon in a menu or the desktop. Babawus should then start and show me a list with the current status of attached media: which media they are, and whether they are Babawus-ready (i.e. prepared and ready for use with Babawus), yes or no. That way I can see if Babawus is ready to start a backup.
 
 ### Update Babawus media status
 
-As a user I want Babawus to continuously update the list of attached usb media. That way I can add or detach usb media I want use or not-use and see the change reflected in Babawus.
+As a user I want Babawus to continuously update the list of attached USB media. That way I can attach or detach USB media I want to use or not use and see the change reflected in Babawus.
 
-### Start a backup on a specific media
+### Start a backup on a specific medium
 
-As a user I want to be able to simply click on a Babawus-enabled media in the Babawus list of usb media to start a backup. Babawus should provide me with explicit feedback indicating that the backup has started. That way I cna confidently start a backup.
+As a user I want to be able to simply click on a Babawus-ready medium in the Babawus list of USB media to start a backup. Babawus should provide me with explicit feedback indicating that the backup has started. That way I can confidently start a backup.
 
 ### Provide feedback during a backup operation
 
-As a user I want Babawus to provide me with continuously information showing me what is happening. That way I can be sure that things are progressing as expected. The info I want to see is:
+As a user I want Babawus to continuously provide me with information showing me what is happening. That way I can be sure that things are progressing as expected. The info I want to see is:
 
-- After starting the backup, but before any files are transferred, I want to see an overview of the the number of files that will be copied and the sum total of the size of the files (in bytes) to be backed up.
-- During the backup process I want Babawus to update counters of remaining files and bytes to backup each time a file has been copied.
+- After starting the backup, but before any files are transferred, I want to see an overview of the number of files that will be copied and the sum total of the size of the files (in bytes) to be backed up.
+- During the backup process I want Babawus to update counters of remaining files and bytes to back up each time a file has been copied.
 
 ### Provide feedback after a backup operation
 
@@ -43,23 +43,23 @@ As a user I want Babawus to show me a summary when a backup process completes. N
 
 ### Offer to "eject" media after a successful backup operation
 
-As a user I want Babawus to offer to eject a media (unmount it) that has just been used for a successful backup, so that I can immediately detach it. That way I can quickly conclude my backup and store the usb media away.
+As a user I want Babawus to offer to eject a medium (unmount it) that has just been used for a successful backup, so that I can immediately detach it. That way I can quickly conclude my backup and store the USB medium away.
 
-### Format usb media
+### Format USB media
 
-As a poweruser I want Babawus to provide me with the means to format an usb media in one of the 2 supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the media, provide me opportunity to cancel the operation before anything is changed on the sub media, and only actually format the media after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new media for use with Babawus, based on my requirements for platform interoperability of the media, wishes for file name and path length compatibility, or resilience against file system corruption.
+As a poweruser I want Babawus to provide me with the means to format a USB medium in one of the two supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the medium, give me the opportunity to cancel the operation before anything is changed on the USB medium, and only actually format the medium after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new medium for use with Babawus, based on my requirements for platform interoperability of the medium, wishes for file name and path length compatibility, or resilience against file system corruption.
 
-### Configure usb media
+### Configure USB media
 
-As a poweruser I want Babawus to provide me with the means of easily creating and/or editing the Babawus configuration file on an usb media. Specifically:
+As a poweruser I want Babawus to provide me with the means of easily creating and/or editing the Babawus configuration file on a USB medium. Specifically:
 
 - Use a "file explorer" of some sort to browse existing files and folders on the PC and select those I want to have backed up.
-- Add wildcards to specifically exclude certain files or folder
+- Add wildcards to specifically exclude certain files or folders.
 - Continuously update a sum of files/bytes that are included as I update the configuration.
 - Write (with (re-)calculated checksum) the resulting configuration when I am done.
 - Folders and exclusions for a computer and account can only be changed while running Babawus on that computer, as that user. Entries for other computers and accounts are shown, but read-only.
 
-That way I can easily create or update a configuration for an usb media.
+That way I can easily create or update a configuration for a USB medium.
 
 ### Maintain a log
 
@@ -121,7 +121,7 @@ As a user I want to change the language of Babawus from inside the application. 
 
 ### Layout of a Babawus medium
 
-An usb medium prepared for use with Babawus is formatted in either exFAT or Ext4. In the root of the filesystem there is a folder called `.babawus`. This is where all internal Babawus data is stored (log and configuration). Another top-level folder is called `backup` and this is where all backup files are stored. The backup files are stored in a `<hostname>/<username>` hierarchy.
+A USB medium prepared for use with Babawus is formatted in either exFAT or Ext4. In the root of the filesystem there is a folder called `.babawus`. This is where all internal Babawus data is stored (log and configuration). Another top-level folder is called `backup` and this is where all backup files are stored. The backup files are stored in a `<hostname>/<username>` hierarchy.
 
 This figure illustrates the folder layout:
 
@@ -129,7 +129,7 @@ This figure illustrates the folder layout:
     ├── .babawus
     │   ├── babawus_config          -- The Babawus config file
     │   └── babawus_log.txt         -- Logfile for this media
-    └── backup                      
+    └── backup
         ├── hostname1
         │   ├── userA/*             -- backup files for userA@hostname1
         │   └── userB/*             -- backup files for userB@hostname1
