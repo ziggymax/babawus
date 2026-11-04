@@ -57,7 +57,7 @@ As a poweruser I want Babawus to provide me with the means of easily creating an
 - Add wildcards to specifically exclude certain files or folders.
 - Continuously update a sum of files/bytes that are included as I update the configuration.
 - Write (with (re-)calculated checksum) the resulting configuration when I am done.
-- Folders and exclusions for a computer and account can only be changed while running Babawus on that computer, as that user. Entries for other computers and accounts are shown, but read-only.
+- The entry for a computer and account (adding it, linking it, renaming it, and changing its folders and exclusions) can only be changed while running Babawus on that computer, as that user. Entries for other computers and accounts are shown, but read-only. In practice I visit each computer and log in as each user, or have the user log in.
 
 That way I can easily create or update a configuration for a USB medium.
 
@@ -65,7 +65,7 @@ That way I can easily create or update a configuration for a USB medium.
 
 As a poweruser I want Babawus to maintain a log of backup sessions performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text. All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each backup session has these entries:
 
-- A start entry with the timestamp and the `username@hostname` the backup runs for.
+- A start entry with the timestamp and the `username@computer folder` the backup runs for.
 - An entry for each anomaly (error) seen during the session. The first 20 errors are logged individually. If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
 - An end entry with the timestamp, the verdict, and the number of files/bytes successfully copied and the number of errors.
 
@@ -91,11 +91,13 @@ As a user I want to be able to view the history of backups made on a medium, in 
 
 ### Add a computer or user account to a medium
 
-As a poweruser I want to add a computer or a user account to a medium, choosing which folders to back up for it, without losing any backups already on the medium. That way several computers and accounts can share a medium, and I can continue backups on a replacement computer after a loss.
+As a poweruser I want to add a computer or a user account to a medium, choosing which folders to back up for it, without losing any backups already on the medium. I do this on that computer, logged in as that user. Babawus records the computer's ID (see "Identifying a computer") and suggests a folder name for it that is not yet used on the medium. That way several computers and accounts can share a medium.
 
-### Rename a computer or user account on a medium
+### Link a computer or user account to an existing entry
 
-As a poweruser I want to rename a computer or user account on a medium, for example after a computer has been renamed or reinstalled with a new hostname. Babawus renames the folder under `backup` and the entry in the configuration, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name.
+As a poweruser I want to link a computer to an existing computer entry on a medium, for example a replacement computer after a loss, or a computer that has been reinstalled and therefore has a new computer ID. Likewise, I want to link a user account to an existing account entry after the account's user name has changed. I do this on that computer, logged in as that user. Babawus updates the computer ID, or renames the user folder under `backup` and the entry in the configuration, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name.
+
+A change of hostname alone needs no action, because computers are recognised by their ID, not their hostname.
 
 ### Back up from a computer or account that has not been added
 
@@ -107,7 +109,7 @@ As a user I want to be told when a backup starts that I should not remove the me
 
 ### Handle a full medium
 
-As a user, if the medium runs out of space during a backup, I want Babawus to stop cleanly and tell me so in plain words in the verdict, with "Contact your poweruser" as the next step. That way I know my backup is incomplete and what to do about it.
+As a user, if the medium runs out of space during a backup, or a file to be copied does not fit in the space left (see "Writing a new copy safely"), I want Babawus to stop cleanly, without damaging any copy already on the medium, and tell me so in plain words in the verdict, with "Contact your poweruser" as the next step. That way I know my backup is incomplete and what to do about it.
 
 ### Use an existing medium as it is
 
@@ -125,32 +127,46 @@ As a user I want to change the language of Babawus from inside the application. 
 
 ### Layout of a Babawus medium
 
-A USB medium prepared for use with Babawus is formatted in either exFAT or Ext4. In the root of the filesystem there is a folder called `.babawus`. This is where all internal Babawus data is stored (log and configuration). All names that Babawus itself chooses on the medium (`.babawus`, `babawus_config`, `babawus_log.txt`, `backup`, and the host and user folders) are lower case, and no two of them differ only in case. Another top-level folder is called `backup` and this is where all backup files are stored. The backup files are stored in a `<hostname>/<username>` hierarchy.
+A USB medium prepared for use with Babawus is formatted in either exFAT or Ext4. In the root of the filesystem there is a folder called `.babawus`. This is where all internal Babawus data is stored (log, configuration and temporary files). All names that Babawus itself chooses on the medium (`.babawus`, `babawus_config`, `babawus_log.txt`, `tmp`, `backup`, and the computer and user folders) are lower case, and no two of them differ only in case. Another top-level folder is called `backup` and this is where all backup files are stored. The backup files are stored in a `<computer folder>/<username>` hierarchy. The layout is fixed and is not part of the configuration.
 
 This figure illustrates the folder layout:
 
     /media/root-folder
     ├── .babawus
-    │   ├── babawus_config          -- The Babawus config file
-    │   └── babawus_log.txt         -- Logfile for this media
+    │   ├── babawus_config          -- The Babawus config file
+    │   ├── babawus_log.txt         -- Logfile for this media
+    │   └── tmp/                    -- Temporary files during a backup
     └── backup
-        ├── hostname1
-        │   ├── userA/*             -- backup files for userA@hostname1
-        │   └── userB/*             -- backup files for userB@hostname1
-        └── hostname2
-            └── userC/*             -- backup files for userC@hostname2
+        ├── mint
+        │   ├── usera/*             -- backup files for usera on the computer with folder "mint"
+        │   └── userb/*             -- backup files for userb on the computer with folder "mint"
+        └── mint-2
+            └── userc/*             -- backup files for userc on the computer with folder "mint-2"
 
 ### Source to target path conversion
 
-Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (`$HOME`), which is usually, but not always, `/home/<username>`. The user name is the login name of the account Babawus runs as, and the hostname is the computer's hostname as reported by the system (the same values that `$USER` and `$HOSTNAME` normally show in a terminal).
+Only files and folders inside the user's home folder can be backed up. The home folder is the one the system defines for the user account (`$HOME`), which is usually, but not always, `/home/<username>`. The user name is the login name of the account Babawus runs as (the same value that `$USER` normally shows in a terminal).
 
-The path of a source file or folder is truncated at the home folder when it is written to the backup medium, and the rest of the path is placed under `backup/<hostname>/<username>`. In the examples below, `<medium>` is the top folder of the mounted medium:
+The path of a source file or folder is truncated at the home folder when it is written to the backup medium, and the rest of the path is placed under `backup/<computer folder>/<username>`. In the examples below, `<medium>` is the top folder of the mounted medium, and the computers have the folders `mint` and `mint-2`:
 
-- File belonging to userA@hostname1: `/home/userA/myfile` -> `<medium>/backup/hostname1/userA/myfile`
-- File belonging to userB@hostname1: `/home/userB/Documents/hello.odt` -> `<medium>/backup/hostname1/userB/Documents/hello.odt`
-- Folder belonging to userC@hostname2: `/home/userC/project/hooray` -> `<medium>/backup/hostname2/userC/project/hooray`
+- File belonging to usera on `mint`: `/home/usera/myfile` -> `<medium>/backup/mint/usera/myfile`
+- File belonging to userb on `mint`: `/home/userb/Documents/hello.odt` -> `<medium>/backup/mint/userb/Documents/hello.odt`
+- Folder belonging to userc on `mint-2`: `/home/userc/project/hooray` -> `<medium>/backup/mint-2/userc/project/hooray`
 
-`<hostname>` and `<username>` are the computer's hostname and the account's username at the time of the backup, converted to lower case. exFAT does not distinguish upper and lower case in names, so two computers named `MyPC` and `mypc` would otherwise share a folder on an exFAT medium but not on an Ext4 medium. Converting to lower case makes both file systems behave the same. If either changes, the computer or account is treated as not added to the medium, until the poweruser either adds it or renames the existing entry (see "Rename a computer or user account on a medium").
+`<computer folder>` is the folder name stored in the configuration for the computer's ID (see "Identifying a computer"). `<username>` is the account's user name at the time of the backup, converted to lower case. exFAT does not distinguish upper and lower case in names, so converting to lower case makes both file systems behave the same. If the computer's ID is not in the configuration, or the user name has changed, the computer or account is treated as not added to the medium, until the poweruser either adds it or links it to the existing entry (see "Link a computer or user account to an existing entry").
+
+### Identifying a computer
+
+A computer is identified by a computer ID, not by its hostname, because many computers keep a default hostname (such as `mint`), and two computers with the same hostname must never share a folder on a medium.
+
+The computer ID is computed as HMAC-SHA256, with the contents of `/etc/machine-id` as the key and a fixed application ID defined by Babawus as the message. The first 128 bits are written as 32 lower-case hexadecimal digits. This follows the method systemd recommends for application-specific IDs: the raw machine ID never appears on the medium, and the computer ID cannot be matched with IDs that other applications derive from the same machine ID. A reinstalled computer gets a new machine ID, and therefore a new computer ID.
+
+For each computer added to a medium, the configuration holds:
+
+- The computer ID.
+- The name of the computer's folder under `backup`. When a computer is added, Babawus suggests its hostname converted to lower case, and if that name is already used on the medium, the hostname followed by `-2`, `-3` and so on. Folder names are unique on the medium, compared without regard to case.
+- The hostname last seen, for display only.
+- The user accounts added for that computer, with their folders and exclusions.
 
 ### Handling of file versioning
 
@@ -172,60 +188,65 @@ Two kinds of name clashes are handled like this:
 - A source file or folder whose name has the form of a version folder (contains `[]`) is not backed up, and is listed as skipped in the verdict.
 - If an older version with the same timestamp already exists in the version folder, a suffix is added to the timestamp: `report[2026-11-03_175400-2].pdf`, then `-3` and so on.
 
+The timestamp in an older version's name is the time the version was replaced on the medium (the backup time), in the form `YYYY-MM-DD_HHMMSS` (local time). It is not the file's modification time, so the order of the names always matches the order in which versions were added. The file itself keeps its own modification time, which an ordinary file manager shows as usual. So the name says when a version was replaced, and the file says when it was last edited.
+
 When a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
 
+1. The source file is copied to a temporary file in `.babawus/tmp/` with a unique name, given the source file's modification time, and flushed to the medium (`fsync`). See "Writing a new copy safely".
 1. It is checked if a subfolder called `userfile[]ext` exists in the folder where `userfile.ext` resides - if not it is created.
-1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[<timestamp>].ext`, where `<timestamp>` is the last modification time of that existing version, in the form `YYYY-MM-DD_HHMMSS` (local time). This makes older versions sort by age and recognisable by date in an ordinary file manager.
-1. The new version of `userfile.ext` is written.
-1. If `userfile[]ext` now holds more than N older versions, the oldest ones are removed until N remain.
+1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[<timestamp>].ext`, where `<timestamp>` is the current backup time.
+1. The temporary file is renamed to `userfile.ext`.
+1. If `userfile[]ext` now holds more than N older versions, the oldest ones are removed until N remain. "Oldest" is decided by the timestamp and suffix read from the names (a version without a suffix is older than one with `-2`, which is older than one with `-3`), not by sorting the names as text.
+
+If the name of the version folder or of the older version would be longer than the medium allows for a single name (255 bytes on Ext4, 255 characters on exFAT), the file is not updated: the existing newest copy stays as it is, the temporary file is removed, and the file is listed as skipped in the verdict. Users are expected to keep file and folder names reasonably short.
 
 Here is an example, with N = 3. Before any overwrites:
 
     backup/
-    └── hostname1
-        └── userB
+    └── mint
+        └── userb
             └── Projects
                 └── tadah
                     └── project_brief.md  <-- File about to be overwritten
 
-A new version of `project_brief.md` needs to be written. Step 1: create subfolder for versions:
+A new version of `project_brief.md` needs to be written. Step 1 (copying the new version to `.babawus/tmp/`) is not shown. Step 2: create subfolder for versions:
 
     backup/
-    └── hostname1
-        └── userB
+    └── mint
+        └── userb
             └── Projects
                 └── tadah
                     └── project_brief.md  <-- File to be moved
                     └── project_brief[]md <-- Folder to keep older versions
 
-Step 2: the old version is moved:
+Step 3: the old version is moved, named with the backup time:
 
     backup/
-    └── hostname1
-        └── userB
+    └── mint
+        └── userb
             └── Projects
                 └── tadah
                     └── project_brief[]md
                         └── project_brief[2026-10-12_093015].md <-- File moved here
 
-Step 3: the new version is written:
+Step 4: the temporary file is renamed to the new version:
 
     backup/
-    └── hostname1
-        └── userB
+    └── mint
+        └── userb
             └── Projects
                 └── tadah
                     └── project_brief.md  <-- New version of file
                     └── project_brief[]md
                         └── project_brief[2026-10-12_093015].md
 
-Step 4: nothing to remove, since only 1 older version exists (N = 3).
+Step 5: nothing to remove, since only 1 older version exists (N = 3).
 
 How it looks after a number of versions have been written. Once a fourth older version is moved in, the oldest is removed:
 
     backup/
-    └── hostname1
-        └── userB
+    └── mint
+        └── userb
             └── Projects
                 └── tadah
                     └── project_brief.md  <-- Newest version of file
@@ -233,6 +254,18 @@ How it looks after a number of versions have been written. Once a fourth older v
                         └── project_brief[2026-10-20_141002].md <-- Oldest version kept
                         └── project_brief[2026-10-27_080544].md
                         └── project_brief[2026-11-02_191230].md <-- Newest older version
+
+### Writing a new copy safely
+
+A copy on the medium is never written in place. Every file is first copied to a temporary file in `.babawus/tmp/` and only then renamed to its final name (see the algorithm in "Handling of file versioning"; a file backed up for the first time skips the version steps). This guarantees:
+
+- **A full medium never damages a copy.** Running out of space can only happen while the temporary file is written, before the existing newest copy has been touched.
+- **An interruption leaves no half-written copy.** The only gap is between moving the old copy into the version folder and renaming the temporary file. If a run is interrupted there, the next run finds no newest copy and simply copies the file again.
+- **No clutter in the backup folders.** Temporary files never appear among the user's backups.
+
+Before each file is copied, Babawus checks that it fits in the free space left on the medium. If it does not, Babawus stops cleanly and the verdict reports a full medium (see "Handle a full medium").
+
+At the start of every run, Babawus empties `.babawus/tmp/`. These are Babawus's own files, so this does not conflict with the rule that Babawus never deletes backups.
 
 ### What is copied
 
