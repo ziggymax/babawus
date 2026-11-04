@@ -1,6 +1,6 @@
 # Babawus (BAsic BAckup With Usb Storage)
 
-*Concept, revision 6 (2026-11-04). Revision 2 added the outcome of a conceptual review: purpose and limits, roles, the life of a medium after setup, and the scope of a first version. Revision 3 added keeping older versions of files. Revision 4 makes media computer and user agnostic and limits them to the exFAT and Ext4 file systems. Revision 5 aligns the concept with the requirements: the configuration file is `.babawus/babawus_config`, the roles are called user and poweruser, the user starts a backup by clicking a medium in a list, and Babawus offers to eject the medium after a successful backup. Revision 6 records the decisions on issues 1–6 in `Issues.md`: computers are recognised by a computer ID instead of their hostname, the layout on the medium is fixed, Ext4 also has name length limits, new copies are written safely, older versions are named by the time they were replaced, and entries are changed only on their own computer and account.*
+*Concept, revision 7 (2026-11-04). Revision 2 added the outcome of a conceptual review: purpose and limits, roles, the life of a medium after setup, and the scope of a first version. Revision 3 added keeping older versions of files. Revision 4 makes media computer and user agnostic and limits them to the exFAT and Ext4 file systems. Revision 5 aligns the concept with the requirements: the configuration file is `.babawus/babawus_config`, the roles are called user and poweruser, the user starts a backup by clicking a medium in a list, and Babawus offers to eject the medium after a successful backup. Revision 6 records the decisions on issues 1–6 in `Issues.md`: computers are recognised by a computer ID instead of their hostname, the layout on the medium is fixed, Ext4 also has name length limits, new copies are written safely, older versions are named by the time they were replaced, and entries are changed only on their own computer and account. Revision 7 records the decisions on issues 7–21: Babawus always formats a medium before use, verdicts are defined by the user's next step, a backup can be cancelled, "last backup" is shown per account, files as well as folders can be selected, entries can be removed, the language is stored per user, and only one Babawus runs per computer.*
 
 Babawus is a (fairly) simple application for backing up folders from a hard disk to a USB storage device, typically a USB stick. It is, at least initially, intended only for a Linux desktop environment.
 
@@ -23,7 +23,7 @@ The following are deliberately outside the promise:
 
 - **Ransomware**, beyond the partial cover described above.
 - **Unlimited history.** Only a limited number of older versions is kept (see "Copying with versions").
-- **Anything outside the chosen folders.** Babawus backs up the folders that were chosen for the medium, nothing more. Email, browser bookmarks and application data often live in hidden places or on a server and are only covered if their folders are chosen explicitly.
+- **Anything outside the chosen files and folders.** Babawus backs up the files and folders that were chosen for the medium, nothing more. Email, browser bookmarks and application data often live in hidden places or on a server and are only covered if their folders are chosen explicitly.
 - **Unauthorized access to the medium.** Files on the medium are stored in plain, unencrypted form and are readable by anyone who holds the medium, whatever its file system, so they can be restored by simply copying them. The medium must be looked after like the papers it holds.
 
 ### Keeping the medium safe
@@ -45,21 +45,28 @@ The primary purpose of Babawus is to make it very easy for a non-technical perso
 
 1. The user inserts a USB stick in their computer.
 2. The user clicks on the Babawus icon.
-3. Babawus starts and shows a list of attached USB media, marking which are Babawus-ready.
-4. The user clicks a Babawus-ready medium in the list, and Babawus copies relevant files and folders to it.
+3. Babawus starts and shows a list of attached USB media, each with its name and a status in plain words, marking which are ready for this user.
+4. The user clicks a ready medium in the list, and Babawus copies relevant files and folders to it.
 5. Babawus presents the user with a clear verdict.
 
 That's it.
 
 ### The verdict
 
-Every run ends with a clear, unmistakable verdict that leaves the user in no doubt about the outcome, for example "all good", "some files were skipped", "backup not finished" or "backup failed". The verdict also says how long it has been since the last successful backup.
+Every run ends with a clear, unmistakable verdict that leaves the user in no doubt about the outcome. There are four verdicts, and each one leads to a single, clear next step:
 
-A bad verdict always ends with a simple next step that the user can take without fixing anything themselves, typically "Contact your poweruser", ideally with a short text they can read out or forward.
+- **All good**: nothing to do.
+- **Some files were skipped**: the backup finished, but some files could not be backed up. Contact your poweruser.
+- **Backup not finished**: the backup was interrupted or cancelled. Run the backup again; if it happens again, contact your poweruser.
+- **Backup failed**: the backup cannot succeed without help, for example because the medium is full. Contact your poweruser.
+
+The verdict also gives the reason in plain words, and says how long it has been since the last backup. Next to a bad verdict, Babawus shows a short text for the poweruser, with a button that copies it, so the user can paste it into an email or a chat. The user never has to fix anything themselves.
+
+A running backup can be cancelled. Babawus asks for confirmation, finishes the file it is working on, and stops with "Backup not finished".
 
 ### Backups are manual
 
-Babawus runs only when the user starts it. There is no background process and no reminder while Babawus is closed. Instead, the start screen and the verdict show how long it has been since the last backup ("Last backup: 47 days ago"). Making regular backups a habit is something the poweruser sets up with the user, outside the application.
+Babawus runs only when the user starts it. There is no background process and no reminder while Babawus is closed. Instead, the start screen and the verdict show how long it has been since this user's last backup on this computer ("Last backup: 47 days ago"). Making regular backups a habit is something the poweruser sets up with the user, outside the application.
 
 ### Interrupted runs
 
@@ -76,37 +83,34 @@ This means two things:
 
 A computer is recognised by a computer ID that Babawus derives from the computer's installation, not by its hostname, because many computers keep a default hostname such as `mint`. Each computer added to a medium gets its own folder on the medium, named after its hostname where possible (`mint`, `mint-2`, …), and the configuration maps each computer ID to its folder. User accounts are kept apart by their user name within the computer's folder.
 
-A computer or user account must be added to a medium by the poweruser before it can back up to it. If the user starts a backup on a computer or account that has not been added, Babawus copies nothing and says plainly that the medium is not set up for this computer or user, with "Contact your poweruser" as the next step.
+A computer or user account must be added to a medium by the poweruser before it can back up to it. On a computer or account that has not been added, the medium is shown in the list as not set up for this user, with "Contact your poweruser" as the next step, and a backup cannot be started on it.
 
 ### Initial preparation of a USB medium for use with Babawus
 
-Babawus only works with media formatted with either an exFAT or Ext4 file system. When the poweruser instructs Babawus to use a medium that has not been used with Babawus before, Babawus offers to format the medium in either exFAT or Ext4 format.
+Babawus only works with media formatted with either an exFAT or Ext4 file system, and it always formats a medium itself before using it for the first time. A medium is never prepared "as it is", even if it already has one of these file systems. This way every Babawus medium is set up in exactly the same known way. When preparing a new medium, the poweruser chooses exFAT or Ext4 and gives the medium a short name (for example `BACKUP-A`), which Babawus and the file manager both show.
 
 - **exFAT is the recommended default.** It works across almost all platforms, but cannot store some file/folder names (certain characters, and names that differ only in upper and lower case). Such problems are reported in the verdict.
 - **Ext4** offers better resilience against file system corruption (for example when a medium is pulled out during a run) and stores any name that Linux allows. Like exFAT, it limits the length of a single name (255 bytes), which matters for very long names once Babawus adds a date to an older version (see "Copying with versions"). But it can only be read on Linux. Plugged into a Windows PC or a Mac, an Ext4 medium looks empty or broken, and Windows may even offer to format it, which would wipe the backup. Ext4 is therefore meant for powerusers who know the medium will only ever be used with Linux.
 
-If the new medium is already in one of these two formats, the poweruser also has the option to use the medium as it is.
-
-Formatting is a poweruser-only function, reached through "Advanced". Because formatting erases everything on the medium, Babawus first shows an unmistakable warning that names the medium and says how much data it holds, and it formats only after explicit confirmation. Formatting may require the administrator password; this is acceptable because only the poweruser formats media.
+Formatting is a poweruser-only function, reached through "Advanced". Formatting always covers the whole device. Because it erases everything on the medium, including any other partitions, Babawus first shows an unmistakable warning that names the medium and says how much data it holds, and it formats only after explicit confirmation. Formatting may require the administrator password; this is acceptable because only the poweruser formats media.
 
 ### Finalizing a USB medium for use with Babawus
 
 A USB stick (or other USB storage medium) is prepared for use with Babawus by placing a text file named `babawus_config` in a folder called `.babawus` in its top folder. The file contains:
 
 - A header with a marker that identifies the medium as a Babawus medium.
-- Configuration: which computers and user accounts are added, and which folders to back up for each of them. Where the backups go on the medium is fixed (see "The medium is user and computer agnostic"), so it is not configured.
+- Configuration: which computers and user accounts are added, and which files and folders to back up for each of them. Where the backups go on the medium is fixed (see "The medium is user and computer agnostic"), so it is not configured.
 - A validation marker that shows the file has been checked for syntax and correctness.
 
 The poweruser uses Babawus to prepare the medium. Without going into low-level details, here are some thoughts on the configuration file:
 
-1. The file is always `.babawus/babawus_config` and it is the only file Babawus needs to look for.
-2. The first part of the file (header) holds fixed boilerplate text that explains what the file is and warns against deletion.
+1. The file is always `.babawus/babawus_config` and it is the only file Babawus needs to look for. It is a plain text file in TOML format, so it can be read in any text editor.
+2. The first part of the file (header) holds fixed boilerplate text, in English, that explains what the file is and warns against deletion. It also states the version of the file format, so that an older Babawus never misreads a file written by a newer one.
 3. The second part of the file holds the configuration, such as:
     - For each computer added to the medium: its computer ID and the name of its folder on the medium.
-    - For each user account added to the medium: which source folders to back up/copy.
-    - Exclude patterns/wildcards that specify files and folders NOT to be copied.
-    - How many older versions of each file to keep.
-4. Finally there is a verifiable marker/checksum at the end of the file indicating that the file has been generated by Babawus and is valid.
+    - For each user account added to the medium: which source files and folders to back up/copy, and which files and folders NOT to copy (name patterns such as `*.tmp`, and specific folders).
+    - How many older versions of each file to keep (one number for the whole medium).
+4. Finally there is a checksum at the end of the file indicating that the file has been generated by Babawus and is valid. This checksum is the validation marker.
 
 The validation marker exists to detect damage (for example a corrupted or half-written file) and accidental edits. It is not a lock. Babawus is the supported way to change the file. Editing the file by hand is not forbidden, but it makes the medium invalid until Babawus has checked it again.
 
@@ -114,9 +118,13 @@ The validation marker exists to detect damage (for example a corrupted or half-w
 
 The poweruser can change the configuration of a prepared medium at any time, for example to add a folder or an exclusion, or to fix a mistake. Changing the configuration never deletes anything already on the medium.
 
-Adding, changing or renaming the entry for a computer and user account is done only while running Babawus on that computer, logged in as that user. Babawus needs that computer's ID, and needs to browse that user's home folder. In practice the poweruser visits each computer and logs in as each user, or has the user log in. Entries for other computers and accounts are shown, but cannot be changed.
+Adding, linking or changing the entry for a computer and user account is done only while running Babawus on that computer, logged in as that user. Babawus needs that computer's ID, and needs to browse that user's home folder. In practice the poweruser visits each computer and logs in as each user, or has the user log in. Entries for other computers and accounts are shown, but cannot be changed.
 
-When several media are used for the same computer, each has its own configuration. Keeping them in line is the poweruser's responsibility; Babawus does not synchronize them. To make differences visible, Babawus shows in plain words which folders each medium covers.
+The one exception is removing an entry, for example for a retired or lost computer. This can be done from any computer, because it only removes the entry from the configuration: the backups of that computer or account stay on the medium.
+
+While Babawus changes a medium, whether by a backup or a change of configuration, the medium is locked, so that nothing else can change it at the same time. Only one Babawus runs on a computer at a time.
+
+When several media are used for the same computer, each has its own configuration. Keeping them in line is the poweruser's responsibility; Babawus does not synchronize them. To make differences visible, Babawus shows in plain words which files and folders each medium covers.
 
 ### After a computer is lost
 
@@ -128,9 +136,9 @@ The poweruser can then, on the new computer, either add it to the medium as a ne
 
 Babawus copies and keeps older versions; it does not mirror.
 
-- Files in the source folders are copied to the medium. When a newer version of a file is backed up, the newest copy on the medium is replaced, and the previous version is kept as an older version.
+- The chosen files, and the files in the chosen folders, are copied to the medium. When a newer version of a file is backed up, the newest copy on the medium is replaced, and the previous version is kept as an older version.
 - Files deleted from a source folder are never deleted from the medium.
-- The poweruser sets a limit on how many older versions are kept (for example, the last N versions). Babawus removes older versions beyond that limit, so that the medium does not fill up forever.
+- The poweruser sets a limit on how many older versions are kept (the last N versions, between 1 and 99, 10 by default), one limit for the whole medium. Babawus removes older versions beyond that limit, so that the medium does not fill up forever. When the limit is lowered, the space comes back on the next backup.
 - Babawus never removes the newest copy of any file.
 - The newest copy of a file stays where it would be without versioning. Older versions are recognisable by date when browsing the medium in an ordinary file manager, without Babawus. The date in an older version's name is when it was replaced on the medium; the file itself still shows when it was last edited.
 - A new copy is first written to a temporary place on the medium and only then put in place, so a full medium or an interrupted run never leaves a half-written newest copy.
@@ -138,9 +146,9 @@ Babawus copies and keeps older versions; it does not mirror.
 
 ### Handling of the medium
 
-Using a medium with Babawus is the same as using it without Babawus. The medium is mounted automatically by the system when it is inserted, and Babawus never mounts media. After a successful backup, Babawus offers to eject the medium so the user can remove it right away; the user may also eject it the usual way. The only other time Babawus takes a medium offline is formatting, a poweruser function.
+Using a medium with Babawus is the same as using it without Babawus. The medium is mounted automatically by the system when it is inserted, and Babawus never mounts media. After a successful backup, Babawus offers to eject the medium so the user can remove it right away. Ejecting works like "Safely remove" in the file manager: the medium is unmounted and switched off. The user may also eject it the usual way. The only other time Babawus takes a medium offline is formatting, a poweruser function.
 
-Limits that come from the medium itself (such as file names that exFAT cannot store, or a full medium) are left to the design. Whatever they turn out to be, the verdict reports skipped files and a full medium in plain language.
+Limits that come from the medium itself (such as file names that exFAT cannot store, or a full medium) are reported in the verdict in plain language. Babawus never changes a file's name to make it fit; a file whose name cannot be stored is skipped.
 
 ## General requirements and doctrines
 
@@ -151,7 +159,7 @@ Limits that come from the medium itself (such as file names that exFAT cannot st
 5. Testability and robustness are more important than architectural finesse.
 6. Linux Mint is the supported target platform. Other modern Linux distributions are best effort: Babawus should work there, but it is not guaranteed.
 7. The application must be easy to install, update and uninstall, for example through custom scripts or platform-relevant package formats. These are poweruser tasks.
-8. The user can change the language of the user interface from inside the application. Initially English and German are available. All user-facing text is written so it can be translated into further languages.
+8. The user can change the language of the user interface from inside the application. Initially English and German are available. Babawus starts in the system language if it is available, and remembers each user's choice on the computer. All user-facing text is written so it can be translated into further languages.
 
 ## Specific includes and excludes
 
@@ -161,9 +169,9 @@ The application must allow the user to:
 
 1. Start a backup to a mounted USB medium that contains a valid `.babawus/babawus_config` file, ending with a clear verdict.
 2. View the history of Babawus usage for a medium. Each run logs basic data to a file on the medium (date and time of start and completion, outcome, number of source files scanned and copied, files skipped due to errors, data consumption, etc.). The application must make it easy to view this log.
-3. View the status of mounted USB media with respect to Babawus, i.e. whether each is set up for use with Babawus, which folders it covers, and when it was last used for a backup.
+3. View the status of mounted USB media with respect to Babawus, i.e. whether each is set up for use with Babawus, which files and folders it covers, and when it was last used for a backup.
 4. Format, set up or change a USB medium for use with Babawus. Setting up and changing means creating or changing a properly formatted `.babawus/babawus_config` file.
-5. Add a computer or user account to a medium, or link a new or reinstalled computer to an existing entry, without losing the backups already on it.
+5. Add a computer or user account to a medium, link a new or reinstalled computer to an existing entry, or remove an entry, without losing the backups already on it.
 6. Change the language of the user interface.
 
 Include 1 is the most important use case. The initial UI (the one shown right after start) should only offer starting a backup, viewing the history, seeing the status and changing the language (includes 1, 2, 3 and 6). Includes 4 and 5 are poweruser functions, reached through a separate "Advanced" menu item or button. This conflicts somewhat with the "no context-dependent UI elements" doctrine, but it makes it harder for a non-technical user to wander into functions that may cause problems.
@@ -171,7 +179,7 @@ Include 1 is the most important use case. The initial UI (the one shown right af
 ### Excludes
 
 - **Restore.** Babawus provides no restore function. To restore, the poweruser simply mounts the medium and copies the wanted files, folders or older versions from it by hand, to wherever they are wanted.
-- **Deletion on the medium.** Babawus never deletes files from the medium because they were deleted from a source folder, or because the configuration was changed. The only thing Babawus removes is older versions beyond the limit set by the poweruser.
+- **Deletion on the medium.** Babawus never deletes files from the medium because they were deleted from a source folder, or because the configuration was changed. The only backups Babawus removes are older versions beyond the limit set by the poweruser. (Babawus also tidies up its own temporary files and locks in `.babawus`.)
 - **Mounting.** This is left to the system, except while the poweruser formats a medium. (Ejecting is offered after a successful backup, see "Handling of the medium".)
 - **Other file systems.** Babawus only works with exFAT and Ext4 media.
 - **Scheduling and reminders.** Babawus runs only when the user starts it.
@@ -184,7 +192,7 @@ The first version is done when:
 
 - A user can complete the five steps of the main use case unaided and gets a correct verdict.
 - Older versions of files are kept within the limit set by the poweruser, and can be found by date in an ordinary file manager.
-- A poweruser can format a medium, set it up, change it, and add a computer or user account to it.
+- A poweruser can format a medium, set it up, change it, add a computer or user account to it, link one to an existing entry, and remove an entry.
 - Backups from different computers and user accounts are kept apart on a shared medium.
 
 Everything else waits for later versions.
