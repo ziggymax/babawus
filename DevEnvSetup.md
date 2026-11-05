@@ -16,7 +16,7 @@ The steps are split between **You** (things that need the VirtualBox host, a pas
 | Disk | 25 GB, of which 24 GB is the root partition |
 | Firmware and graphics | EFI, VMSVGA |
 | Network | NAT (guest address `10.0.2.15`) |
-| USB | USB 1.1 (OHCI) and USB 2.0 (EHCI) |
+| USB | USB 3 (xHCI) |
 | Claude access | Over SSH from the Claude desktop app on the host |
 
 ## Overview
@@ -164,7 +164,7 @@ Take a VirtualBox snapshot of the working VM, and take a new one before testing 
 
 ### 10. Set up USB for manual testing (You)
 
-The manual checklist needs a real stick. This has not been tried on this VM yet.
+The manual checklist needs a real stick. A 16 GB Kingston DataTraveler 3.0 passed through this way ran at USB 3 speed (5000M in `lsusb -t`).
 
 1. If you skipped it in step 1, shut the VM down and enable USB 3 (xHCI). Without it, sticks run at USB 2.0 speed at best, and measurements of `fsync` won't reflect real use.
 2. Add a USB filter for a stick that you are happy to wipe.
@@ -182,10 +182,39 @@ The manual checklist needs a real stick. This has not been tried on this VM yet.
 
 ### File systems
 
-- **Ext4 ACLs:** `/etc/mke2fs.conf` sets `default_mntopts = acl,user_xattr`, and a new file system reports `acl` as a default mount option. The `tune2fs -o acl` step and its `pkexec` fallback therefore look unnecessary on Mint 22. This still needs confirming through udisks2 once Babawus formats media.
+- **Ext4 ACLs:** `/etc/mke2fs.conf` sets `default_mntopts = acl,user_xattr`, and a new file system reports `acl` as a default mount option. A format through udisks2 on a real stick confirmed this, so the `tune2fs -o acl` step and its `pkexec` fallback aren't needed on Mint 22.
 - **Ownership comes first:** `setfacl` on the root folder of a new Ext4 file system fails with `Operation not permitted` while root owns it, and works after a change of owner. This matches the order in Requirements.md, where `take-ownership` comes first.
 - **Full media:** tiny images really do fill up, and writes fail with `StorageFull` on both exFAT and Ext4.
-- **Still to check:** whether udisks2 passes `-m 0` and the initialisation options on to `mkfs.ext4`.
+
+### Formatting through udisks2
+
+These results come from the Kingston stick, using the `Format` and `CreatePartition` D-Bus methods.
+
+- **`mkfs` options:** the `mkfs-args` option of `Format` passes arguments on to `mkfs.ext4`. With `-m 0` and the initialisation options, the file system had 0 reserved blocks, and all 116 block groups were marked `ITABLE_ZEROED`. Without them, it had 189,222 reserved blocks and no zeroed groups.
+- **Background initialisation:** no `ext4lazyinit` thread appeared in the controlled check, right after mounting or 20 seconds later. One thread was counted in an earlier, less controlled run, and that wasn't explained.
+- **Ownership:** `take-ownership` leaves the root folder owned by the user with mode `0700`. The user can then set `0777` and the default ACL without root.
+- **Format times:** Ext4 took 50–62 seconds with the options and 29 seconds without, and exFAT took 0.3 seconds.
+- **D-Bus timeout:** GIO's default call timeout is 25 seconds, which is shorter than every Ext4 format here. The test used 900 seconds, so Babawus must set a long timeout on the call. Testing with the default timeout was not tried.
+- **Partition types:** the test used `0x83` for Ext4 and `0x07` for exFAT on the MBR. Requirements.md doesn't name these yet.
+- **Finding block groups:** when counting groups in `dumpe2fs` output, match `^Group [0-9]`. A plain `^Group ` also matches the "Group descriptor size" line.
+
+### Speed on a real stick
+
+Measured once on the Kingston stick, copying through `.babawus/tmp/` and renaming, as Babawus will. Directories weren't synced, so a real run may be a little slower.
+
+| Test | Ext4 | exFAT |
+| --- | --- | --- |
+| 4 KiB files, `fsync` per file | 59 files/s | 67 files/s |
+| 4 KiB files, one sync at the end | 78 files/s | 228 files/s |
+| 64 KiB files, `fsync` per file | 31 files/s | 54 files/s |
+| 64 KiB files, one sync at the end | 38 files/s | 125 files/s |
+| One 512 MiB file | 16.6 MiB/s | 21.8 MiB/s |
+
+### USB sticks
+
+- **Detecting removable devices:** udisks2 reports the stick as `Removable: true` but `MediaRemovable: false`, because the stick and its medium are one unit. To decide what to offer for formatting, Babawus must use `Removable`, together with `ConnectionBus: usb`.
+- **Other udisks2 properties:** the stick also reports `HintSystem: false`, `Ejectable: true` and `CanPowerOff: true`, so eject and power off should be possible.
+- **Automounting:** Cinnamon mounts a passed-through stick under `/media/steen/` as usual.
 
 ### Build and packaging
 
@@ -201,7 +230,7 @@ The manual checklist needs a real stick. This has not been tried on this VM yet.
 - **Held-back updates:** `apt` may hold back a package with `(phased 40%)` in `apt-cache policy`. Ubuntu is rolling it out gradually, and it arrives by itself later.
 - **Guest Additions:** the Guest Additions packages aren't installed. The kernel's own `vboxguest` module is loaded, and nothing so far has needed more.
 - **Graphics warnings:** the app prints `libEGL warning: DRI3 error` on this VM, and its window still works. This is probably because the VM has no accelerated graphics, but that hasn't been confirmed.
-- **Polkit over SSH:** `udisksctl` commands worked from an SSH session without a password, because that session counts as active. Don't assume that the password prompt in Requirements.md appears in the same way: check it on the desktop with a real stick.
+- **Polkit over SSH:** `udisksctl` commands, and partitioning and formatting the real stick, worked from an SSH session without a password, because that session counts as active. Don't assume that the password prompt in Requirements.md appears: check it on the desktop.
 
 ## Security notes
 
