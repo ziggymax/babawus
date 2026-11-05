@@ -80,7 +80,7 @@ sudo apt install -y git gh
 gh auth login
 ```
 
-The token needs read and write access to the repository's contents and pull requests. Add read access to Actions if the project ever gets CI: the current token gets `HTTP 403` from the workflows API.
+Use a fine-grained token limited to this repository, with read and write access to contents, pull requests and workflows, and read access to Actions and commit statuses. Without workflows access, GitHub rejects pushes that change `.github/workflows/`.
 
 ### 5. Install packages and updates (Claude)
 
