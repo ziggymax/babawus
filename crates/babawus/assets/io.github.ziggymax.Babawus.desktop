@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Backup
+Comment=Back up files to USB media
+Exec=babawus
+Icon=io.github.ziggymax.Babawus
+Terminal=false
+Categories=Utility;Archiving;

@@ -1,0 +1,20 @@
+[package]
+name = "babawus"
+description = "Basic backup with USB storage"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+babawus-core.workspace = true
+gtk4.workspace = true
+
+[package.metadata.deb]
+maintainer = "Steen K <steen@kroeyer.net>"
+section = "utils"
+depends = "$auto, udisks2, exfatprogs, e2fsprogs, acl"
+assets = [
+    ["target/release/babawus", "usr/bin/", "755"],
+    ["assets/io.github.ziggymax.Babawus.desktop", "usr/share/applications/", "644"],
+    ["assets/io.github.ziggymax.Babawus.svg", "usr/share/icons/hicolor/scalable/apps/", "644"],
+]
