@@ -185,6 +185,7 @@ The manual checklist needs a real stick. A 16 GB Kingston DataTraveler 3.0 passe
 - **Ext4 ACLs:** `/etc/mke2fs.conf` sets `default_mntopts = acl,user_xattr`, and a new file system reports `acl` as a default mount option. A format through udisks2 on a real stick confirmed this, so the `tune2fs -o acl` step and its `pkexec` fallback aren't needed on Mint 22.
 - **Ownership comes first:** `setfacl` on the root folder of a new Ext4 file system fails with `Operation not permitted` while root owns it, and works after a change of owner. This matches the order in Requirements.md, where `take-ownership` comes first.
 - **Full media:** tiny images really do fill up, and writes fail with `StorageFull` on both exFAT and Ext4.
+- **exFAT dates:** exFAT silently moves times before 1980 to 1980-01-01 00:00:00 UTC (315532800), and times after 2107 to 2107-12-31 23:59:59 UTC (4354819199). Only tests on real exFAT showed this.
 
 ### Formatting through udisks2
 
@@ -215,6 +216,16 @@ Two further results show that writes mostly reach memory first, not the stick:
 
 - **Large files:** on exFAT, all 512 MiB were "written" in 0.6 seconds, and `fsync` then took 20.1 seconds.
 - **After `fsync`:** on Ext4, a final sync still took 8.6 seconds after 1000 files had each had their own `fsync`. On exFAT it took no time.
+
+Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for the smaller sizes:
+
+| Chunk size | Speed | Longest wait for the counter |
+| --- | --- | --- |
+| 1 MiB | 20–22 MiB/s | 0.9 seconds |
+| 4 MiB | 22 MiB/s | 1.4 seconds |
+| 16 MiB | 22 MiB/s | 1.6 seconds |
+| 64 MiB | 21 MiB/s | 3.5 seconds |
+| 256 MiB, so no chunks | 22 MiB/s | 11.9 seconds |
 
 ### USB sticks
 

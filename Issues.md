@@ -119,3 +119,7 @@ Testing on the development VM and a real USB stick turned up these issues. All a
     - **Decided (2026-11-05):** Accepted. udisks2 may or may not ask, and the explicit confirmation is the safeguard. The manual checklist covers formatting from an account without administrator rights.
 39. **Powering off has not been tested.** The stick reports `CanPowerOff: true`, but that is all that is known.
     - **Open:** Test it on a real stick. The `pkexec` fallback stays in Requirements.md until then, and can go if nothing needs it.
+40. **Files dated outside exFAT's range looked changed on every run.** exFAT moves times before 1980 and after 2107 to the nearest it can store, so each run copied such a file again, and pushed out a real older version.
+    - **Decided (2026-11-05):** On exFAT, Babawus compares such a time as the time exFAT would store.
+41. **The chunk size was not measured.**
+    - **Decided (2026-11-05):** 4 MiB. Flushing in chunks made no measurable difference to the speed, and the byte counter never waited more than about 1.4 seconds.
