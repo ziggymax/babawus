@@ -175,8 +175,8 @@ The manual checklist needs a real stick. A 16 GB Kingston DataTraveler 3.0 passe
 ### Cinnamon and loop devices
 
 - **Automounting:** an image that already held a file system was mounted under `/media/steen/` as soon as `udisksctl loop-setup` attached it. Scripts that mount it themselves then fail with `AlreadyMounted`.
-- **What works:** attaching a blank image with `sudo losetup`, then formatting and mounting it. This had no clash with Cinnamon in five parallel test runs, and it is what the test helper does. Re-attaching an image that already has a file system this way hasn't been tested.
-- **Open windows:** the setting `org.cinnamon.desktop.media-handling automount-open` is on, so a mounted test volume may open a file manager window on the desktop.
+- **What works:** attaching a blank image with `sudo losetup`, then formatting and mounting it. This doesn't trigger the automount, and it is what the test helper does. Re-attaching an image that already has a file system this way hasn't been tested.
+- **Open windows:** the desktop treats anything mounted below the home folder as a user's volume. With `org.cinnamon.desktop.media-handling automount-open` on, a mount below `target/` opened a file manager window, which sometimes kept the mount busy so that `umount` failed and the loop device stayed behind. This happened at random, also in passing runs. So the test helper mounts in the system's temporary folder, and unmounts with `--lazy`. After that change, 26 runs opened no windows and left nothing behind.
 - **Detaching:** after `udisksctl unmount`, a loop device set up through udisks2 can detach by itself. A following `udisksctl loop-delete` then fails with `No such device or address`, which is harmless.
 - **Leaks:** if a script stops before detaching, the loop device stays attached even after its image is deleted. `losetup -a` shows these with `(deleted)`.
 
@@ -229,7 +229,7 @@ Two further results show that writes mostly reach memory first, not the stick:
 - **Build times:** about 45 seconds for a first debug build and about a minute for a release build.
 - **Disk use:** `target/` reaches 1.1 GB even for the skeleton.
 - **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace. The package has been inspected, but not installed yet.
-- **Test images:** these go in `target/tmp`, so `cargo clean` removes any left behind.
+- **Test images:** these go in the system's temporary folder, as `babawus-medium-*`, so that the desktop ignores them (see "Cinnamon and loop devices").
 
 ### System quirks
 

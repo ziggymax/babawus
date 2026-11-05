@@ -9,12 +9,12 @@ use std::fs::{self, File};
 use std::io::{ErrorKind, Write};
 use std::path::Path;
 
-use support::{FileSystem, LoopMedium, check_device};
+use support::{LoopMedium, MediumFormat, check_device};
 
 const MIB: u64 = 1024 * 1024;
 
-fn writes_and_reads_back(file_system: FileSystem) {
-    let medium = LoopMedium::new(file_system, 32 * MIB);
+fn writes_and_reads_back(format: MediumFormat) {
+    let medium = LoopMedium::new(format, 32 * MIB);
     let file = medium.path().join("file.txt");
 
     fs::write(&file, "content").unwrap();
@@ -22,8 +22,8 @@ fn writes_and_reads_back(file_system: FileSystem) {
     assert_eq!(fs::read_to_string(&file).unwrap(), "content");
 }
 
-fn reports_a_full_medium(file_system: FileSystem) {
-    let medium = LoopMedium::new(file_system, 32 * MIB);
+fn reports_a_full_medium(format: MediumFormat) {
+    let medium = LoopMedium::new(format, 32 * MIB);
     let mut file = File::create(medium.path().join("large.bin")).unwrap();
     let chunk = vec![0; MIB as usize];
 
@@ -37,25 +37,25 @@ fn reports_a_full_medium(file_system: FileSystem) {
 #[test]
 #[ignore = "needs sudo and loop devices"]
 fn exfat_writes_and_reads_back() {
-    writes_and_reads_back(FileSystem::ExFat);
+    writes_and_reads_back(MediumFormat::ExFat);
 }
 
 #[test]
 #[ignore = "needs sudo and loop devices"]
 fn ext4_writes_and_reads_back() {
-    writes_and_reads_back(FileSystem::Ext4);
+    writes_and_reads_back(MediumFormat::Ext4);
 }
 
 #[test]
 #[ignore = "needs sudo and loop devices"]
 fn exfat_reports_a_full_medium() {
-    reports_a_full_medium(FileSystem::ExFat);
+    reports_a_full_medium(MediumFormat::ExFat);
 }
 
 #[test]
 #[ignore = "needs sudo and loop devices"]
 fn ext4_reports_a_full_medium() {
-    reports_a_full_medium(FileSystem::Ext4);
+    reports_a_full_medium(MediumFormat::Ext4);
 }
 
 #[test]
