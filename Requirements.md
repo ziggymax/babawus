@@ -68,7 +68,7 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 
 As a user I want to be able to simply start Babawus by clicking on an icon in a menu or the desktop. Babawus should then start and show me a list with the current status of attached media: which media they are, and whether they are ready for me to back up to. That way I can see if Babawus is ready to start a backup.
 
-The list has one row for each mounted file system on a removable device. Media that are not mounted are not shown, because Babawus never mounts media. Each row shows the medium's label in large type (for example **BACKUP-A**), its maker, model and size in small type below it (for example "SanDisk Ultra · 64 GB"), an icon, and a status in plain words:
+The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row shows the medium's label in large type (for example **BACKUP-A**), its maker, model and size in small type below it (for example "SanDisk Ultra · 64 GB"), an icon, and a status in plain words:
 
 | Status | When | Can be clicked |
 |---|---|---|
@@ -93,9 +93,9 @@ As a user I want to be able to simply click on a Ready medium in the Babawus lis
 As a user I want Babawus to continuously provide me with information showing me what is happening. That way I can be sure that things are progressing as expected. The info I want to see is:
 
 - After starting the backup, but before any files are transferred, I want to see an overview of the number of files that will be copied and the sum total of the size of the files (in bytes) to be backed up.
-- During the backup process I want Babawus to update counters of remaining files and bytes to back up each time a file has been copied. The byte counter also moves while a large file is being copied, so that a large file on a slow medium does not look as if Babawus has hung.
+- During the backup process I want Babawus to update counters of remaining files and bytes to back up each time a file has been copied. The byte counter also moves while a large file is being copied, so that a large file on a slow medium does not look as if Babawus has hung. It counts bytes that have reached the medium, not bytes that are still waiting in the computer's memory (see "Writing a new copy safely").
 
-I also want a Cancel button, in case I regret starting a long backup. Babawus asks me to confirm. It then finishes the steps for the file it is working on (so it never stops between moving the old copy and renaming the new one, see "Handling of file versioning"), stops, and ends with the verdict "Backup not finished".
+I also want a Cancel button, in case I regret starting a long backup. Babawus asks me to confirm. If it is still copying a file to the temporary folder, it stops right away and discards the temporary file, so that a very large file does not delay the cancel. Otherwise it first finishes the steps for the file it is working on (so it never stops between moving the old copy and renaming the new one, see "Handling of file versioning"). It then ends with the verdict "Backup not finished".
 
 ### Provide feedback after a backup operation
 
@@ -109,7 +109,7 @@ As a user I want Babawus to offer to eject a medium that has just been used for 
 
 As a poweruser I want Babawus to provide me with the means to format a USB medium in one of the two supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the medium, give me the opportunity to cancel the operation before anything is changed on the USB medium, and only actually format the medium after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new medium for use with Babawus, based on my requirements for platform interoperability of the medium, wishes for file name and path length compatibility, or resilience against file system corruption.
 
-Babawus always formats a medium before using it for the first time; a medium is never prepared "as it is". Formatting covers the whole device, and the warning says that any other partitions on it are erased too. While formatting, I give the medium a label (see "Formatting a medium").
+Babawus always formats a medium before using it for the first time; a medium is never prepared "as it is". Formatting covers the whole device, and the warning says that any other partitions on it are erased too, and that formatting cannot be cancelled once it has started. While formatting, I give the medium a label (see "Formatting a medium").
 
 ### Configure USB media
 
@@ -277,7 +277,7 @@ The timestamp in an older version's name is the time the version was replaced on
 
 When a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
 
-1. The source file is copied to a temporary file in `.babawus/tmp/` with a unique name, given the source file's modification time, and flushed to the medium (`fsync`). See "Writing a new copy safely".
+1. The source file is copied to a temporary file in `.babawus/tmp/` with a unique name, given the source file's modification time, and flushed to the medium (`fsync`) as it is copied. See "Writing a new copy safely".
 1. It is checked if a subfolder called `userfile[]ext` exists in the folder where `userfile.ext` resides - if not it is created.
 1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[<timestamp>].ext`, where `<timestamp>` is the current backup time.
 1. The temporary file is renamed to `userfile.ext`.
@@ -350,9 +350,13 @@ A copy on the medium is never written in place. Every file is first copied to a 
 - **An interruption leaves no half-written copy.** The only gap is between moving the old copy into the version folder and renaming the temporary file. If a run is interrupted there, the next run finds no newest copy and simply copies the file again.
 - **No clutter in the backup folders.** Temporary files never appear among the user's backups.
 
+A file is copied in chunks of a few MiB, and each chunk is flushed to the medium (`fsync`) before the next one is written. Without this, writes only reach the computer's memory: a 512 MiB file was "written" in under a second, and then took 20 seconds to reach a real stick. Only flushed bytes count towards the byte counter.
+
 Before each file is copied, Babawus checks that it fits in the free space left on the medium. If it does not, Babawus stops cleanly and the verdict reports a full medium (see "Handle a full medium").
 
 At the start of every run, Babawus empties `.babawus/tmp/`. These are Babawus's own files, so this does not conflict with the rule that Babawus never deletes backups.
+
+**Finishing a run.** Flushing each file does not cover everything: renames and folder changes can still be waiting in the computer's memory. So at the end of a run, Babawus first flushes the whole medium (`syncfs`), then writes the end entry to the log and flushes it, and only then shows the verdict. This can take several seconds, during which the screen shows "Finishing…". Once the verdict appears, everything is on the medium, and pulling it out cannot lose anything. If the medium cannot be flushed, the verdict is "Backup not finished".
 
 ### What is copied
 
@@ -401,20 +405,32 @@ The root folder of a new Ext4 file system belongs to `root`. This is handled onc
 
 ### Formatting a medium
 
-Babawus only offers to format USB devices that the system reports as removable. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself. The format view lists devices whether they are mounted or not.
+A **USB medium** is a drive that udisks2 reports with `Removable` set and `ConnectionBus` set to `usb`. `MediaRemovable` is not used, because it is false for a USB stick, whose medium cannot be taken out of the drive.
+
+Babawus only offers to format USB media. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself. The format view lists devices whether they are mounted or not.
+
+Babawus always identifies a drive by its udisks2 drive ID, never by a device name such as `/dev/sda`: those names can change between boots, and the system disk can then get the name a USB stick had before. Right after the poweruser has confirmed, and before anything is changed, Babawus checks that the drive with that ID is still present and still meets the rules above. If not, it stops and changes nothing.
 
 Babawus always formats a medium before using it for the first time; there is no way to prepare a medium "as it is". Formatting goes through the udisks2 service (see "Technology"), and works like this:
 
-1. A new partition table is written to the whole device: MBR, or GPT if the device is larger than 2 TiB. It holds one partition that spans the whole device.
-2. The file system is created on that partition, with the label the poweruser has entered. The label has at most 11 characters (the exFAT limit), using letters, digits and `-`. Babawus suggests one, for example `BACKUP-A`.
+1. Every mounted file system on the device is unmounted.
+2. A new partition table is written to the whole device: MBR, or GPT if the device is larger than 2 TiB. It holds one partition that spans the whole device, with the type that matches the file system:
+
+    | File system | MBR | GPT |
+    |---|---|---|
+    | exFAT | `0x07` | Microsoft basic data |
+    | Ext4 | `0x83` | Linux file system |
+
+3. The file system is created on that partition, with the label the poweruser has entered. The label has at most 11 characters (the exFAT limit), using letters, digits and `-`. Babawus suggests one, for example `BACKUP-A`.
     - **exFAT:** the defaults of `mkfs.exfat`.
-    - **Ext4:** no reserved blocks (`-m 0`), and full initialisation during formatting (`-E lazy_itable_init=0,lazy_journal_init=0`), so that the medium is finished when formatting is, and Ext4 does not keep initialising in the background after the first mount.
-3. On Ext4 only:
-    - The formatting user is made the owner of the root folder (the `take-ownership` option of udisks2). As the owner, Babawus can do the next steps as an ordinary user.
+    - **Ext4:** no reserved blocks (`-m 0`), and full initialisation during formatting (`-E lazy_itable_init=0,lazy_journal_init=0`), so that the medium is finished when formatting is, and Ext4 does not keep initialising in the background after the first mount. These options are passed on through the `mkfs-args` option of udisks2. The formatting user is made the owner of the root folder (the `take-ownership` option of udisks2), so that Babawus can do step 5 as an ordinary user.
+4. The medium is mounted through udisks2.
+5. On Ext4 only:
     - The root folder gets mode `0777`.
-    - A default ACL is set on the root folder (the equivalent of `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`), so that files that other programs create on the medium are also readable and writable by everyone. Babawus still sets modes explicitly on everything it creates, because a computer may mount the medium without ACL support.
-    - ACL support must be a default mount option of the file system. If `mkfs.ext4` does not already set this, it is set with `tune2fs -o acl`, which needs administrator rights (see "Technology").
-4. The medium is mounted, and Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes the configuration.
+    - A default ACL is set on the root folder (the equivalent of `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`), so that files that other programs create on the medium are also readable and writable by everyone. Babawus still sets modes explicitly on everything it creates, because a computer may mount the medium without ACL support. This relies on ACL support being a default mount option, which `mkfs.ext4` sets on Mint 22.
+6. Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes the configuration.
+
+Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minute on a 16 GB stick, and longer on larger media, while exFAT is almost instant.
 
 ### One Babawus at a time
 
@@ -468,16 +484,17 @@ At the start of each run, after taking the medium's lock, Babawus writes the mis
 
 ### Technology
 
-- **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. If this does not work out, the fallback is Python with GTK 3.
+- **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. It builds against GTK 4.14, the version in Mint 22, and uses nothing newer. If this does not work out, the fallback is Python with GTK 3.
 - **Structure.** All logic (versioning, configuration, log, name rules, verdicts) lives in a library with no UI code, and a thin UI sits on top.
 - **Dependencies.** Rust crates count as dependencies: each must be well maintained and replace more than a handful of lines, and the list stays short.
-- **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate), which asks for the administrator password itself when needed. If a step turns out not to be possible through udisks2, it is done with a single `pkexec` call.
+- **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, mounting while formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate). udisks2 may ask for the administrator password itself, depending on the rules of the system, but it may also ask for nothing. Babawus must work either way, so the safeguard against formatting by mistake is the explicit confirmation (see "Format USB media"), not a password. If a step turns out not to be possible through udisks2, it is done with a single `pkexec` call.
 
 ### Responsiveness
 
 The user interface must never freeze.
 
-- A backup, and a count of files and bytes in the configuration editor, run on a worker thread, and send progress messages to the UI. Cancel is a flag that the worker checks between files.
+- A backup, and a count of files and bytes in the configuration editor, run on a worker thread, and send progress messages to the UI. Cancel is a flag that the worker checks between files and between the chunks of a file.
+- Formatting runs in the background and shows "Formatting…". The D-Bus call has no short timeout, because formatting can take much longer than the 25-second default.
 - A backup scans the source once. That single pass finds what needs copying and gives the totals for the overview, and the copying works from that list.
 - Live totals in the configuration editor show "Counting…" until they are done. A change to the selection cancels the running count and starts a new one.
 - The screen is updated at most about 10 times per second. The counters themselves stay exact.
@@ -487,16 +504,18 @@ The user interface must never freeze.
 All non-GUI logic is covered by tests, in three layers:
 
 1. **Unit tests** run with `cargo test`. All logic runs against a small file system interface, using an in-memory fake that can also inject faults (for example "fail at step 3" or "disk full after N bytes"), so that interruptions at every step of the write algorithm are tested. Name rules, verdicts, the configuration, log parsing and pruning are plain functions.
-2. **Integration tests** run real backups on real exFAT and Ext4 file systems, created in small image files and mounted through loop devices. The same tests run on both file systems. A tiny image gives a truly full medium.
-3. **A manual checklist** on real USB sticks before each release covers what cannot be automated: formatting, pulling out a stick, eject and the GUI.
+2. **Integration tests** run real backups on real exFAT and Ext4 file systems, created in small image files and mounted through loop devices. The same tests run on both file systems. A tiny image gives a truly full medium. These tests need `sudo`, so a plain `cargo test` skips them, and `cargo test -- --include-ignored` runs them.
+3. **A manual checklist** on real USB sticks before each release covers what cannot be automated: formatting (also from an account without administrator rights, noting whether a password is asked for), pulling out a stick, eject (including powering off) and the GUI.
 
 Automated tests must never be able to format anything except a loop device created by the test itself.
+
+CI runs the formatting and lint checks and all automated tests, including the integration tests, on every pull request and on `main`.
 
 ### Packaging
 
 Babawus is delivered as a `.deb` package, built with `cargo-deb`. The poweruser installs it by double-clicking it, updates by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
 
-- The package adds a desktop entry titled "Backup", with a Babawus icon, to the application menu.
+- The package adds a desktop entry titled "Backup", with a Babawus icon, to the application menu. The application ID is `io.github.ziggymax.Babawus`.
 - It declares its dependencies: the GTK 4 libraries, `udisks2`, `exfatprogs`, `e2fsprogs` and `acl`.
 - Uninstalling never touches any medium. The small settings file in each user's home folder stays behind, and the uninstall notes mention it.
 

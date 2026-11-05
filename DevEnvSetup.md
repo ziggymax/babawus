@@ -195,7 +195,8 @@ These results come from the Kingston stick, using the `Format` and `CreatePartit
 - **Ownership:** `take-ownership` leaves the root folder owned by the user with mode `0700`. The user can then set `0777` and the default ACL without root.
 - **Format times:** Ext4 took 50–62 seconds with the options and 29 seconds without, and exFAT took 0.3 seconds.
 - **D-Bus timeout:** GIO's default call timeout is 25 seconds, which is shorter than every Ext4 format here. The test used 900 seconds, so Babawus must set a long timeout on the call. Testing with the default timeout was not tried.
-- **Partition types:** the test used `0x83` for Ext4 and `0x07` for exFAT on the MBR. Requirements.md doesn't name these yet.
+- **Partition types:** the test used `0x83` for Ext4 and `0x07` for exFAT on the MBR. The GPT types in Requirements.md haven't been tested.
+- **No automount after formatting:** Cinnamon didn't mount the stick after a format, so Babawus has to mount it itself.
 - **Finding block groups:** when counting groups in `dumpe2fs` output, match `^Group [0-9]`. A plain `^Group ` also matches the "Group descriptor size" line.
 
 ### Speed on a real stick
@@ -210,11 +211,17 @@ Measured once on the Kingston stick, copying through `.babawus/tmp/` and renamin
 | 64 KiB files, one sync at the end | 38 files/s | 125 files/s |
 | One 512 MiB file | 16.6 MiB/s | 21.8 MiB/s |
 
+Two further results show that writes mostly reach memory first, not the stick:
+
+- **Large files:** on exFAT, all 512 MiB were "written" in 0.6 seconds, and `fsync` then took 20.1 seconds.
+- **After `fsync`:** on Ext4, a final sync still took 8.6 seconds after 1000 files had each had their own `fsync`. On exFAT it took no time.
+
 ### USB sticks
 
 - **Detecting removable devices:** udisks2 reports the stick as `Removable: true` but `MediaRemovable: false`, because the stick and its medium are one unit. To decide what to offer for formatting, Babawus must use `Removable`, together with `ConnectionBus: usb`.
 - **Other udisks2 properties:** the stick also reports `HintSystem: false`, `Ejectable: true` and `CanPowerOff: true`, so eject and power off should be possible.
-- **Automounting:** Cinnamon mounts a passed-through stick under `/media/steen/` as usual.
+- **Automounting:** Cinnamon mounts a passed-through stick under `/media/steen/` as usual, also when the VM boots with the stick attached.
+- **Device names change:** after a reboot with the stick attached, the stick was `/dev/sda` and the system disk `/dev/sdb`, the reverse of before. Never use a device name from an earlier session: look the stick up by model first, for example with `lsblk -o NAME,TRAN,MODEL`. A model check is what stopped a test script here from using the wrong device.
 
 ### Build and packaging
 
@@ -230,7 +237,7 @@ Measured once on the Kingston stick, copying through `.babawus/tmp/` and renamin
 - **Held-back updates:** `apt` may hold back a package with `(phased 40%)` in `apt-cache policy`. Ubuntu is rolling it out gradually, and it arrives by itself later.
 - **Guest Additions:** the Guest Additions packages aren't installed. The kernel's own `vboxguest` module is loaded, and nothing so far has needed more.
 - **Graphics warnings:** the app prints `libEGL warning: DRI3 error` on this VM, and its window still works. This is probably because the VM has no accelerated graphics, but that hasn't been confirmed.
-- **Polkit over SSH:** `udisksctl` commands, and partitioning and formatting the real stick, worked from an SSH session without a password, because that session counts as active. Don't assume that the password prompt in Requirements.md appears: check it on the desktop.
+- **Polkit over SSH:** `udisksctl` commands, and partitioning and formatting the real stick, worked from an SSH session without a password, because that session counts as active. Requirements.md allows for udisks2 asking for nothing. The behaviour on the desktop, and from an account without administrator rights, is on the manual checklist.
 
 ## Security notes
 
