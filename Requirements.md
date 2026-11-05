@@ -2,6 +2,8 @@
 
 This document contains the requirements for Babawus. The introductory part provides an overview and some basic definitions.
 
+This document is the authoritative description of how Babawus behaves. `Concept.md` explains what Babawus is and why. If the two ever disagree, this document wins.
+
 ## Introduction
 
 The requirements are generally separated into two different parts:
@@ -15,6 +17,50 @@ While the primary aim of Babawus is to make it as simple as possible to perform 
 - A **Poweruser** uses Babawus to format USB media and configure them for use with Babawus.
 
 There is no login or other identification of Babawus users, so a user's role is simply defined by the features of Babawus the user wants to use. The two roles are mostly used to provide hints to the implementation of the user interface. A user should be able to use Babawus for doing simple plug-and-play backups without seeing any of the fancy technical stuff a poweruser may want/need to use.
+
+## Glossary
+
+These terms have a fixed meaning in this document and in `Concept.md`.
+
+| Term | Meaning |
+|---|---|
+| Account | A user account on a computer, identified by its user name. Also called a user account. |
+| Advanced | The menu item or button that leads to the poweruser's functions. |
+| Backup | A file or folder copied to a medium, or the act of making those copies (see *run*). |
+| Babawus medium | A medium that Babawus has formatted and set up, recognised by its configuration file. |
+| Checksum | The last line of the configuration file, used to detect damage and accidental edits. It is also the file's validation marker. |
+| Computer | One installation of Linux, identified by its computer ID. |
+| Computer folder | A computer's folder under `backup` on a medium, for example `mint-2`. |
+| Computer ID | The hashed ID that identifies a computer (see "Identifying a computer"). |
+| Configuration | The contents of `.babawus/babawus_config`. |
+| Details for your poweruser | The text shown with a verdict, which the user can copy and send to the poweruser. |
+| Eject | Unmounting a medium and powering off the device. |
+| Entry | A computer or account in the configuration. |
+| Exclusion | A name pattern or a specific folder that is left out of a backup. |
+| Format version | The value of the `format` field, which states the version of the configuration file format. |
+| History | The list of past runs on a medium, read from the log. |
+| Home folder | The folder the system defines for an account (`$HOME`). |
+| Label | The short name a medium gets when it is formatted, for example `BACKUP-A`. |
+| Link | Connecting a computer or account to an existing entry, so that backups continue in the same folder. |
+| Lock | Either the medium's lock (`.babawus/lock`), held by any action that writes to the medium, or the lock that allows only one Babawus per computer. |
+| Log | The file `.babawus/babawus_log.txt`, which records every run on a medium. |
+| Medium (plural media) | A USB storage device, typically a USB stick, whether it has been prepared by Babawus or not. |
+| N | The limit on how many older versions of each file are kept on a medium. |
+| Newest copy | The copy of a file at its normal place on the medium. |
+| Older version | A replaced copy of a file, kept in a version folder. |
+| Poweruser | The more technical person, who formats and configures media (see "Introduction"). |
+| Pruning | Removing older versions beyond the limit N. |
+| Ready | The status of a medium this user can back up to on this computer. |
+| Reason | The plain-words explanation that comes with a verdict or a skipped file. In the log it is written as a fixed reason code, for example `MEDIUM_FULL`. |
+| Run | One backup from start to verdict. Each run has a run ID. |
+| Selected files and folders | The files and folders chosen for an account in the configuration. |
+| Skipped file | A file that should have been backed up but could not be, and is listed in the verdict. Excluded files, symbolic links and special files are not skipped files. |
+| Source file | A file on the computer that is to be backed up. |
+| Status | The plain-words state of a medium in the media list. |
+| Temporary file | A file in `.babawus/tmp/`, used while writing a new copy or trimming the log. |
+| User | The non-technical person who runs backups (see "Introduction"). |
+| Verdict | One of the four outcomes of a run: All good, Some files were skipped, Backup not finished, Backup failed. |
+| Version folder | The folder that holds a file's older versions, for example `report[]pdf`. |
 
 ## User stories
 
@@ -33,7 +79,6 @@ The list has one row for each mounted file system on a removable device. Media t
 | Write-protected | A Babawus medium that is mounted read-only | No |
 | Not a backup medium | Anything else | No |
 
-"Babawus-ready" in these requirements means the status "Ready".
 
 ### Update Babawus media status
 
@@ -41,14 +86,14 @@ As a user I want Babawus to continuously update the list of attached USB media. 
 
 ### Start a backup on a specific medium
 
-As a user I want to be able to simply click on a Babawus-ready medium in the Babawus list of USB media to start a backup. Babawus should provide me with explicit feedback indicating that the backup has started. That way I can confidently start a backup.
+As a user I want to be able to simply click on a Ready medium in the Babawus list of USB media to start a backup. Babawus should provide me with explicit feedback indicating that the backup has started. That way I can confidently start a backup.
 
 ### Provide feedback during a backup operation
 
 As a user I want Babawus to continuously provide me with information showing me what is happening. That way I can be sure that things are progressing as expected. The info I want to see is:
 
 - After starting the backup, but before any files are transferred, I want to see an overview of the number of files that will be copied and the sum total of the size of the files (in bytes) to be backed up.
-- During the backup process I want Babawus to update counters of remaining files and bytes to back up each time a file has been copied.
+- During the backup process I want Babawus to update counters of remaining files and bytes to back up each time a file has been copied. The byte counter also moves while a large file is being copied, so that a large file on a slow medium does not look as if Babawus has hung.
 
 I also want a Cancel button, in case I regret starting a long backup. Babawus asks me to confirm. It then finishes the steps for the file it is working on (so it never stops between moving the old copy and renaming the new one, see "Handling of file versioning"), stops, and ends with the verdict "Backup not finished".
 
@@ -82,13 +127,13 @@ That way I can easily create or update a configuration for a USB medium.
 
 ### Maintain a log
 
-As a poweruser I want Babawus to maintain a log of backup sessions performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text (see "Format of the log"). All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each backup session has these entries:
+As a poweruser I want Babawus to maintain a log of the runs performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text (see "Format of the log"). All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each run has these entries:
 
 - A start entry with the timestamp and the `username@computer folder` the backup runs for.
-- An entry for each anomaly (error) seen during the session, with an error code and the path of the file relative to the home folder. The first 20 errors are logged individually. If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
+- An entry for each anomaly (error) seen during the run, with an error code and the path of the file relative to the home folder. The first 20 errors are logged individually. If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
 - An end entry with the timestamp, the verdict, the reason, the number of files scanned, the number of files and bytes successfully copied, the number of files skipped, the number of errors, the number of older versions removed, and the free space left on the medium.
 
-The log is kept below 1 MB. When it would grow beyond that, the oldest whole sessions are removed from it, except that the most recent session of each account that counts as a backup (see "See when I last made a backup") is always kept.
+The log is kept below 1 MB. When it would grow beyond that, the oldest whole runs are removed from it, except that the most recent run of each account that counts as a backup (see "See when I last made a backup") is always kept.
 
 That way I have some good data to help me find the cause of errors.
 
@@ -111,11 +156,11 @@ Next to the verdict, Babawus shows "Details for your poweruser": the verdict, th
 
 ### See which files and folders a medium covers
 
-As a user I want to be able to see, for a Babawus-ready medium, in plain words which files and folders on this computer are backed up to it for my account. This is shown on request, not on the start screen, which only shows whether each medium is Babawus-ready and, as the one exception, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
+As a user I want to be able to see, for a Ready medium, in plain words which files and folders on this computer are backed up to it for my account. This is shown on request, not on the start screen, which only shows the status of each medium and, as the one exception, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
 
 ### See when I last made a backup
 
-As a user I want the start screen to show, for each Babawus-ready medium, how long it has been since my last backup on this computer to that medium (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
+As a user I want the start screen to show, for each Ready medium, how long it has been since my last backup on this computer to that medium (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
 
 - Only my own account on this computer counts (`username@computer folder`), not backups by other computers or accounts on a shared medium.
 - Both "All good" and "Some files were skipped" count as a backup, because the run finished. If the last backup skipped files, a small warning mark is shown next to the date.
@@ -148,7 +193,7 @@ As a user, if the computer or user account I am using has not been added to a me
 
 As a user I want to be told when a backup starts that I should not remove the medium until the verdict appears. If a backup is interrupted anyway (the medium is pulled out, or the computer is closed or shut down), I want the next backup to simply continue and catch up, without anything having to be cleaned up by hand. That way an accident does not leave me with a broken backup.
 
-The history shows an interrupted run as "Backup not finished" (see "Interrupted sessions in the log").
+The history shows an interrupted run as "Backup not finished" (see "Interrupted runs in the log").
 
 ### Handle a full medium
 
@@ -352,22 +397,23 @@ Any other error that the file system reports while writing is also caught, and t
 
 A medium must be readable by any user on any computer. On an Ext4 medium, everything Babawus creates is therefore made readable and writable by everyone: folders get mode `0777` and files get mode `0666`, whatever their permissions in the source. (exFAT does not store owners or permissions, so nothing is needed there.)
 
-The root folder of a new Ext4 file system belongs to `root`. This is handled once, while formatting (see "Formatting a medium"), when Babawus has administrator rights anyway. `lost+found` is left alone, and is never part of a backup.
+The root folder of a new Ext4 file system belongs to `root`. This is handled once, while formatting (see "Formatting a medium"). `lost+found` is left alone, and is never part of a backup.
 
 ### Formatting a medium
 
 Babawus only offers to format USB devices that the system reports as removable. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself. The format view lists devices whether they are mounted or not.
 
-Babawus always formats a medium before using it for the first time; there is no way to prepare a medium "as it is". Formatting works like this:
+Babawus always formats a medium before using it for the first time; there is no way to prepare a medium "as it is". Formatting goes through the udisks2 service (see "Technology"), and works like this:
 
 1. A new partition table is written to the whole device: MBR, or GPT if the device is larger than 2 TiB. It holds one partition that spans the whole device.
 2. The file system is created on that partition, with the label the poweruser has entered. The label has at most 11 characters (the exFAT limit), using letters, digits and `-`. Babawus suggests one, for example `BACKUP-A`.
     - **exFAT:** the defaults of `mkfs.exfat`.
     - **Ext4:** no reserved blocks (`-m 0`), and full initialisation during formatting (`-E lazy_itable_init=0,lazy_journal_init=0`), so that the medium is finished when formatting is, and Ext4 does not keep initialising in the background after the first mount.
-3. On Ext4 only, with the administrator rights that formatting needs anyway:
-    - ACL support is set as a default mount option (`tune2fs -o acl`).
-    - The formatting user is made the owner of the root folder, which gets mode `0777`.
-    - A default ACL is set on the root folder (`setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`), so that files that other programs create on the medium are also readable and writable by everyone. Babawus still sets modes explicitly on everything it creates, because a computer may mount the medium without ACL support.
+3. On Ext4 only:
+    - The formatting user is made the owner of the root folder (the `take-ownership` option of udisks2). As the owner, Babawus can do the next steps as an ordinary user.
+    - The root folder gets mode `0777`.
+    - A default ACL is set on the root folder (the equivalent of `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`), so that files that other programs create on the medium are also readable and writable by everyone. Babawus still sets modes explicitly on everything it creates, because a computer may mount the medium without ACL support.
+    - ACL support must be a default mount option of the file system. If `mkfs.ext4` does not already set this, it is set with `tune2fs -o acl`, which needs administrator rights (see "Technology").
 4. The medium is mounted, and Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes the configuration.
 
 ### One Babawus at a time
@@ -378,7 +424,7 @@ Babawus always formats a medium before using it for the first time; there is no 
 
 **One lock per medium.** Every action that writes to a medium (a backup, changing the configuration, adding, linking or removing an entry) first takes the medium's lock, `.babawus/lock`, and releases it when done. While the lock is held, no other Babawus can do anything that writes to that medium.
 
-- The lock file is created in a single operation that fails if it already exists. It records the session ID, `username@computer folder`, the computer ID, the system's boot ID and the process ID.
+- The lock file is created in a single operation that fails if it already exists. It records the run ID, `username@computer folder`, the computer ID, the system's boot ID and the process ID.
 - A medium can only be in one computer at a time. So a lock is only *live* if it has this computer's ID, the current boot ID, and a process that is still running. Any other lock is left over from an interrupted run, and Babawus removes it. An interruption therefore never leaves a medium locked.
 - In the media list, a medium with a live lock shows "Backup in progress (by `<user>`)" and cannot be clicked.
 - After a backup, the lock is removed after the end entry has been written to the log.
@@ -394,14 +440,14 @@ Babawus always formats a medium before using it for the first time; there is no 
 
 ### Checksum of the configuration file
 
-The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with xxHash64 and written as 16 lower-case hexadecimal digits in a comment line. When the checksum is checked, upper and lower case hexadecimal digits are treated as equal. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is treated as not Babawus-ready until the poweruser has checked and saved the configuration again in Babawus. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
+The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with SHA-256 (the same hash the computer ID uses, so no extra code is needed) and written as the first 16 lower-case hexadecimal digits, in a comment line. When the checksum is checked, upper and lower case hexadecimal digits are treated as equal. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is shown as "Needs attention" until the poweruser has checked and saved the configuration again in Babawus. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
 
 ### Format of the log
 
 `.babawus/babawus_log.txt` is plain text, encoded in UTF-8, with one entry per line. The fields of an entry are separated by tabs:
 
 1. The timestamp (local time with the UTC offset).
-2. The session ID, which is the same for all entries of one run.
+2. The run ID, which is the same for all entries of one run.
 3. The entry type: `START`, `ERROR` or `END`.
 4. Any number of `key=value` pairs, for example `verdict=FAILED`, `reason=MEDIUM_FULL`, `copied_files=1234`.
 5. Optionally, a short English text for anyone reading the file directly.
@@ -414,11 +460,49 @@ Writing and trimming the log:
 - The log is trimmed at the start of a run, before the start entry, never in place: the trimmed log is written to `.babawus/tmp/`, flushed, and renamed over the old log (the same mechanism as in "Writing a new copy safely").
 - When the log is read, incomplete or garbled lines (for example a half-written last line after the medium was pulled out) are ignored, instead of rejecting the whole log.
 
-### Interrupted sessions in the log
+### Interrupted runs in the log
 
-A session with a start entry but no end entry was interrupted. When the log is read, such a session counts as "Backup not finished", and it does not count as a backup for "See when I last made a backup".
+A run with a start entry but no end entry was interrupted. When the log is read, such a run counts as "Backup not finished", and it does not count as a backup for "See when I last made a backup".
 
-At the start of each run, after taking the medium's lock, Babawus writes the missing end entry for every such session: verdict `NOT_FINISHED`, with the reason that the run was interrupted and the time it was detected. The log then only ever holds complete sessions. A session whose lock is still live (see "One Babawus at a time") is never closed this way.
+At the start of each run, after taking the medium's lock, Babawus writes the missing end entry for every such run: verdict `NOT_FINISHED`, with the reason that the run was interrupted and the time it was detected. The log then only ever holds complete runs. A run whose lock is still live (see "One Babawus at a time") is never closed this way.
+
+### Technology
+
+- **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. If this does not work out, the fallback is Python with GTK 3.
+- **Structure.** All logic (versioning, configuration, log, name rules, verdicts) lives in a library with no UI code, and a thin UI sits on top.
+- **Dependencies.** Rust crates count as dependencies: each must be well maintained and replace more than a handful of lines, and the list stays short.
+- **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate), which asks for the administrator password itself when needed. If a step turns out not to be possible through udisks2, it is done with a single `pkexec` call.
+
+### Responsiveness
+
+The user interface must never freeze.
+
+- A backup, and a count of files and bytes in the configuration editor, run on a worker thread, and send progress messages to the UI. Cancel is a flag that the worker checks between files.
+- A backup scans the source once. That single pass finds what needs copying and gives the totals for the overview, and the copying works from that list.
+- Live totals in the configuration editor show "Counting…" until they are done. A change to the selection cancels the running count and starts a new one.
+- The screen is updated at most about 10 times per second. The counters themselves stay exact.
+
+### Testing
+
+All non-GUI logic is covered by tests, in three layers:
+
+1. **Unit tests** run with `cargo test`. All logic runs against a small file system interface, using an in-memory fake that can also inject faults (for example "fail at step 3" or "disk full after N bytes"), so that interruptions at every step of the write algorithm are tested. Name rules, verdicts, the configuration, log parsing and pruning are plain functions.
+2. **Integration tests** run real backups on real exFAT and Ext4 file systems, created in small image files and mounted through loop devices. The same tests run on both file systems. A tiny image gives a truly full medium.
+3. **A manual checklist** on real USB sticks before each release covers what cannot be automated: formatting, pulling out a stick, eject and the GUI.
+
+Automated tests must never be able to format anything except a loop device created by the test itself.
+
+### Packaging
+
+Babawus is delivered as a `.deb` package, built with `cargo-deb`. The poweruser installs it by double-clicking it, updates by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
+
+- The package adds a desktop entry titled "Backup", with a Babawus icon, to the application menu.
+- It declares its dependencies: the GTK 4 libraries, `udisks2`, `exfatprogs`, `e2fsprogs` and `acl`.
+- Uninstalling never touches any medium. The small settings file in each user's home folder stays behind, and the uninstall notes mention it.
+
+### Supported platform
+
+The supported platform is Linux Mint 22.x with the Cinnamon desktop on X11. Everything else (the MATE and Xfce editions of Mint, Wayland, other Linux distributions) is best effort: Babawus should work there, but this is not tested or guaranteed. The target is reviewed when a new major version of Mint comes out.
 
 ### Not in the first version
 
