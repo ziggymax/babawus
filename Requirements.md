@@ -257,7 +257,7 @@ For each computer added to a medium, the configuration holds:
 
 Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser in the configuration.
 
-A source file needs to be backed up again when its size or its last modification time differs from that of its newest copy on the medium. "Differs" is used rather than "is newer", so a file that has been replaced by an older copy is also backed up. To make this work, every copy written to the medium keeps the last modification time of its source file. Modification times are compared with a tolerance of 2 seconds, because exFAT may store them with less precision than the source file system.
+A source file needs to be backed up again when its size or its last modification time differs from that of its newest copy on the medium. "Differs" is used rather than "is newer", so a file that has been replaced by an older copy is also backed up. To make this work, every copy written to the medium keeps the last modification time of its source file. Modification times are compared with a tolerance of 2 seconds, because exFAT may store them with less precision than the source file system. exFAT also can't store times before 1980 or after 2107, and moves them to the nearest time it can store. On exFAT, Babawus therefore compares such a time as that nearest time. Otherwise the file would look changed on every run, and each new copy would push out a real older version.
 
 The name of a file is split into a base name and an extension at its *last* dot. A name with no dot, or with only a leading dot, has no extension. In the version folder and version names, `[]` and `[<timestamp>]` go where the last dot would be, or at the end of the name if there is no extension:
 
@@ -350,7 +350,7 @@ A copy on the medium is never written in place. Every file is first copied to a 
 - **An interruption leaves no half-written copy.** The only gap is between moving the old copy into the version folder and renaming the temporary file. If a run is interrupted there, the next run finds no newest copy and simply copies the file again.
 - **No clutter in the backup folders.** Temporary files never appear among the user's backups.
 
-A file is copied in chunks of a few MiB, and each chunk is flushed to the medium (`fsync`) before the next one is written. Without this, writes only reach the computer's memory: a 512 MiB file was "written" in under a second, and then took 20 seconds to reach a real stick. Only flushed bytes count towards the byte counter.
+A file is copied in chunks of 4 MiB, and each chunk is flushed to the medium (`fsync`) before the next one is written. Without this, writes only reach the computer's memory: a 512 MiB file was "written" in under a second, and then took 20 seconds to reach a real stick. Only flushed bytes count towards the byte counter. Flushing in chunks made no measurable difference to the speed.
 
 Before each file is copied, Babawus checks that it fits in the free space left on the medium. If it does not, Babawus stops cleanly and the verdict reports a full medium (see "Handle a full medium").
 

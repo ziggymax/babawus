@@ -2,7 +2,9 @@
 //!
 //! This crate must stay free of UI code.
 
+pub mod copy;
 pub mod fs;
+pub mod versions;
 
 /// The version of Babawus.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
