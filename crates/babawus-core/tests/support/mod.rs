@@ -6,6 +6,10 @@
 //!
 //! The image is blank when it is attached, and is attached with `losetup` rather than udisks2.
 //! Cinnamon automounts a loop device set up through udisks2, which would interfere with the test.
+//!
+//! Everything lives in the system's temporary folder, not below `target`. The desktop treats a
+//! mount below the home folder as a user's volume and opens a file manager window on it, which
+//! can also keep the mount busy.
 
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
@@ -17,7 +21,7 @@ const LABEL: &str = "BACKUP-A";
 static NEXT_ID: AtomicU32 = AtomicU32::new(0);
 
 #[derive(Clone, Copy, Debug)]
-pub enum FileSystem {
+pub enum MediumFormat {
     ExFat,
     Ext4,
 }
@@ -31,12 +35,12 @@ pub struct LoopMedium {
 }
 
 impl LoopMedium {
-    /// Creates an image of `size` bytes, formats it as `file_system` and mounts it so that the
+    /// Creates an image of `size` bytes, formats it as `format` and mounts it so that the
     /// current user can write to it.
-    pub fn new(file_system: FileSystem, size: u64) -> Self {
+    pub fn new(format: MediumFormat, size: u64) -> Self {
         let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-        let name = format!("medium-{}-{id}", std::process::id());
-        let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join(name);
+        let name = format!("babawus-medium-{}-{id}", std::process::id());
+        let dir = std::env::temp_dir().join(name);
         let mount_point = dir.join("mnt");
         fs::create_dir_all(&mount_point).expect("create the medium folder");
 
@@ -64,7 +68,7 @@ impl LoopMedium {
         ]);
         check_device(&medium.device, &backing_file, &image).expect("refusing to format");
 
-        medium.format_and_mount(file_system);
+        medium.format_and_mount(format);
         medium
     }
 
@@ -73,7 +77,7 @@ impl LoopMedium {
         &self.mount_point
     }
 
-    fn format_and_mount(&mut self, file_system: FileSystem) {
+    fn format_and_mount(&mut self, format: MediumFormat) {
         let device = self.device.clone();
         let mount_point = path_str(&self.mount_point).to_owned();
         let owner = format!(
@@ -82,15 +86,15 @@ impl LoopMedium {
             command_output("id", &["-g"])
         );
 
-        match file_system {
-            FileSystem::ExFat => {
+        match format {
+            MediumFormat::ExFat => {
                 sudo(&["mkfs.exfat", "-L", LABEL, &device]);
                 let (uid, gid) = owner.split_once(':').expect("owner is uid:gid");
                 let options = format!("uid={uid},gid={gid}");
                 sudo(&["mount", "-o", &options, &device, &mount_point]);
                 self.mounted = true;
             }
-            FileSystem::Ext4 => {
+            MediumFormat::Ext4 => {
                 sudo(&[
                     "mkfs.ext4",
                     "-q",
@@ -117,7 +121,7 @@ impl Drop for LoopMedium {
         if self.mounted {
             report_failure(
                 "umount",
-                Command::new("sudo").args(["-n", "umount", &mount_point]),
+                Command::new("sudo").args(["-n", "umount", "--lazy", &mount_point]),
             );
         }
         let device = self.device.clone();
