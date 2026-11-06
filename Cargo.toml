@@ -12,3 +12,6 @@ babawus-core = { path = "crates/babawus-core" }
 # v4_14 is the GTK version in Linux Mint 22. Do not raise it above the supported platform.
 gtk4 = { version = "0.11", features = ["v4_14"] }
 libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.11"
+toml = "1"

@@ -281,6 +281,18 @@ impl FakeFs {
         self.state().failures.insert(path.as_ref().to_owned(), kind);
     }
 
+    /// Whether the content of the file `path` has reached the medium, whether or not its name
+    /// has.
+    pub fn content_is_flushed(&self, path: impl AsRef<Path>) -> bool {
+        let state = self.state();
+        let data = |tree: &Tree, id| tree.nodes.get(id).map(|node: &Node| node.data.clone());
+        state
+            .live
+            .names
+            .get(path.as_ref())
+            .is_some_and(|id| data(&state.live, id) == data(&state.flushed, id))
+    }
+
     /// The number of steps so far. Run an algorithm once to learn how many steps there are to
     /// try pulling the medium out at.
     pub fn steps(&self) -> u64 {
