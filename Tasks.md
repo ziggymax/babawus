@@ -20,13 +20,12 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Nothing is in progress. T-005 is next.
+Nothing is in progress. T-006 is next.
 
 ## First version: logic
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-005 | Medium lock: create, check whether it is live, remove stale locks | Todo | Requirements: "One Babawus at a time" |
 | T-006 | Run orchestration: from taking the lock to the verdict, on a worker thread, with progress messages and Cancel. This connects the configuration, scan, copy and log, and gives `FileCopier` its clock through `version_timestamp` | Todo | Requirements: "Responsiveness" |
 | T-007 | Keep "hostname last seen" up to date in the configuration | Todo | Requirements: "Identifying a computer" |
 | T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | Todo | Requirements: "One Babawus at a time" |
@@ -83,3 +82,4 @@ Nothing is waiting for a decision.
 | T-003 | Verdicts and reason codes | [#20](https://github.com/ziggymax/babawus/pull/20) |
 | T-004 | Log: writing, trimming, closing interrupted runs, reading, history and last backup, and renaming an account in it when linking | [#20](https://github.com/ziggymax/babawus/pull/20) |
 | T-026 | Name older versions by UTC, so that the clock going back can't make pruning remove the wrong one | [#21](https://github.com/ziggymax/babawus/pull/21) |
+| T-005 | Medium lock: create, check whether it is live, remove stale locks | [#22](https://github.com/ziggymax/babawus/pull/22) |

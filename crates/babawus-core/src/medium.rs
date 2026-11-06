@@ -10,6 +10,7 @@ use crate::versions::Format;
 
 pub const CONFIG_FILE: &str = ".babawus/babawus_config";
 pub const LOG_FILE: &str = ".babawus/babawus_log.txt";
+pub const LOCK_FILE: &str = ".babawus/lock";
 pub const TEMP_FOLDER: &str = ".babawus/tmp";
 pub const BACKUP_FOLDER: &str = "backup";
 
