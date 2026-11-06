@@ -27,7 +27,7 @@ Nothing is in progress. T-005 is next.
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
 | T-005 | Medium lock: create, check whether it is live, remove stale locks | Todo | Requirements: "One Babawus at a time" |
-| T-006 | Run orchestration: from taking the lock to the verdict, on a worker thread, with progress messages and Cancel. This connects the configuration, scan, copy and log | Todo | Requirements: "Responsiveness" |
+| T-006 | Run orchestration: from taking the lock to the verdict, on a worker thread, with progress messages and Cancel. This connects the configuration, scan, copy and log, and gives `FileCopier` its clock through `version_timestamp` | Todo | Requirements: "Responsiveness" |
 | T-007 | Keep "hostname last seen" up to date in the configuration | Todo | Requirements: "Identifying a computer" |
 | T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | Todo | Requirements: "One Babawus at a time" |
 | T-009 | Settings file and the choice of language | Todo | Requirements: "Change the language" |
@@ -65,9 +65,7 @@ Nothing is in progress. T-005 is next.
 
 ## Needs a decision
 
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-026 | Older versions are named by local time, so the clock going back an hour in autumn, or travelling west, can make a newer version look older, and pruning could remove the wrong one. Requirements says the order of names always matches the order versions were added. Decide whether to live with this or fix it | Todo | Found while reading the code, 2026-11-06 |
+Nothing is waiting for a decision.
 
 ## Later versions
 
@@ -84,3 +82,4 @@ Nothing is in progress. T-005 is next.
 | T-002 | Computer ID from `/etc/machine-id` | [#19](https://github.com/ziggymax/babawus/pull/19) |
 | T-003 | Verdicts and reason codes | [#20](https://github.com/ziggymax/babawus/pull/20) |
 | T-004 | Log: writing, trimming, closing interrupted runs, reading, history and last backup, and renaming an account in it when linking | [#20](https://github.com/ziggymax/babawus/pull/20) |
+| T-026 | Name older versions by UTC, so that the clock going back can't make pruning remove the wrong one | [#21](https://github.com/ziggymax/babawus/pull/21) |

@@ -133,7 +133,8 @@ pub struct FileCopier<'a> {
     pub format: Format,
     /// The number of older versions to keep of each file.
     pub keep: usize,
-    /// The current time as `YYYY-MM-DD_HHMMSS`, in local time.
+    /// The current time for the names of older versions. See
+    /// [`version_timestamp`](crate::time::version_timestamp).
     pub now: &'a dyn Fn() -> String,
     pub cancel: &'a AtomicBool,
     next_temp: u64,

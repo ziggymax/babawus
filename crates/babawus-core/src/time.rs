@@ -1,5 +1,6 @@
-//! Timestamps in the log: local time with the UTC offset, for example
-//! `2026-11-03 17:54:00 +0100`.
+//! Timestamps in the log, in local time with the UTC offset, for example
+//! `2026-11-03 17:54:00 +0100`, and in the names of older versions, in UTC, for example
+//! `2026-11-03_165400`.
 
 use std::mem::MaybeUninit;
 use std::time::{Duration, SystemTime};
@@ -9,18 +10,43 @@ const SECONDS_PER_DAY: u64 = 24 * 60 * 60;
 /// `YYYY-MM-DD HH:MM:SS +HHMM`
 const TIMESTAMP_FORM: &[u8] = b"dddd-dd-dd dd:dd:dd sdddd";
 
-/// A time in local time with the UTC offset, for the log.
-pub fn log_timestamp(time: SystemTime) -> String {
+/// Splits `time` into its fields, using `localtime_r` or `gmtime_r`.
+fn broken_down(
+    time: SystemTime,
+    convert: unsafe extern "C" fn(*const libc::time_t, *mut libc::tm) -> *mut libc::tm,
+) -> libc::tm {
     let seconds = time
         .duration_since(SystemTime::UNIX_EPOCH)
         .map_or(0, |since| since.as_secs());
     let seconds = libc::time_t::try_from(seconds).expect("the time fits in a time_t");
     let mut fields = MaybeUninit::<libc::tm>::uninit();
     // SAFETY: `seconds` is valid for reads, and `fields` is valid for writes.
-    let result = unsafe { libc::localtime_r(&seconds, fields.as_mut_ptr()) };
-    assert!(!result.is_null(), "a time since 1970 has a local time");
-    // SAFETY: `localtime_r` succeeded, so it has filled in `fields`.
-    let fields = unsafe { fields.assume_init() };
+    let result = unsafe { convert(&seconds, fields.as_mut_ptr()) };
+    assert!(!result.is_null(), "a time since 1970 can be split up");
+    // SAFETY: the conversion succeeded, so it has filled in `fields`.
+    unsafe { fields.assume_init() }
+}
+
+/// A time in UTC, for the name of an older version: `YYYY-MM-DD_HHMMSS`.
+///
+/// This must not be local time, which can go backwards, because pruning relies on the order of
+/// these names.
+pub fn version_timestamp(time: SystemTime) -> String {
+    let fields = broken_down(time, libc::gmtime_r);
+    format!(
+        "{:04}-{:02}-{:02}_{:02}{:02}{:02}",
+        fields.tm_year + 1900,
+        fields.tm_mon + 1,
+        fields.tm_mday,
+        fields.tm_hour,
+        fields.tm_min,
+        fields.tm_sec
+    )
+}
+
+/// A time in local time with the UTC offset, for the log.
+pub fn log_timestamp(time: SystemTime) -> String {
+    let fields = broken_down(time, libc::localtime_r);
     let date = (fields.tm_year + 1900, fields.tm_mon + 1, fields.tm_mday);
     let clock = (fields.tm_hour, fields.tm_min, fields.tm_sec);
     format_timestamp(date, clock, fields.tm_gmtoff)
@@ -100,6 +126,71 @@ mod tests {
 
     fn at(seconds: u64) -> SystemTime {
         SystemTime::UNIX_EPOCH + Duration::from_secs(seconds)
+    }
+
+    /// Runs the test `name` again in a process in another time zone, which is the only safe way
+    /// to change it. Returns whether this already is that process. The zone is written out in
+    /// full, so that it doesn't depend on the system's time zone files.
+    fn in_time_zone_of_india(name: &str) -> bool {
+        const ZONE: &str = "IST-5:30";
+        if std::env::var("TZ").is_ok_and(|zone| zone == ZONE) {
+            return true;
+        }
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([&format!("time::tests::{name}"), "--exact"])
+            .env("TZ", ZONE)
+            .status()
+            .unwrap();
+        assert!(status.success());
+        false
+    }
+
+    #[test]
+    fn version_timestamps_are_in_utc_whatever_the_time_zone() {
+        if in_time_zone_of_india("version_timestamps_are_in_utc_whatever_the_time_zone") {
+            assert_eq!(version_timestamp(at(1_793_724_840)), "2026-11-03_165400");
+        }
+    }
+
+    #[test]
+    fn log_timestamps_are_in_local_time_with_its_offset() {
+        if in_time_zone_of_india("log_timestamps_are_in_local_time_with_its_offset") {
+            let text = log_timestamp(at(1_793_724_840));
+
+            assert_eq!(text, "2026-11-03 22:24:00 +0530");
+        }
+    }
+
+    #[test]
+    fn version_timestamps_have_the_form_in_the_requirements() {
+        assert_eq!(version_timestamp(at(0)), "1970-01-01_000000");
+        // Worked out separately, with Python's `datetime`.
+        assert_eq!(version_timestamp(at(1_709_199_304)), "2024-02-29_093504");
+    }
+
+    #[test]
+    fn version_names_sort_in_order_across_the_autumn_clock_change() {
+        // In Central Europe, these are both 02:30 on 2026-10-25: the clocks went back in between.
+        let before = version_timestamp(at(1_792_888_200));
+        let after = version_timestamp(at(1_792_891_800));
+
+        assert_eq!(before, "2026-10-25_003000");
+        assert_eq!(after, "2026-10-25_013000");
+        assert!(before < after);
+    }
+
+    #[test]
+    fn pruning_understands_version_timestamps() {
+        use std::ffi::{OsStr, OsString};
+
+        use crate::versions::{Format, older_version, versions_to_remove};
+
+        let name = OsStr::new("report.pdf");
+        let older = older_version(name, &version_timestamp(at(1_792_888_200)), 1);
+        let newer = older_version(name, &version_timestamp(at(1_792_891_800)), 1);
+        let entries: Vec<OsString> = vec![newer, older.clone()];
+
+        assert_eq!(versions_to_remove(&entries, name, 1, Format::Ext4), [older]);
     }
 
     #[test]
