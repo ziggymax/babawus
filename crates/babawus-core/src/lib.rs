@@ -7,7 +7,6 @@ pub mod copy;
 pub mod exclude;
 pub mod fs;
 pub mod identity;
-pub mod log;
 pub mod medium;
 pub mod names;
 pub mod scan;
