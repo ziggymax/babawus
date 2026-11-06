@@ -812,6 +812,120 @@ fn a_medium_that_cannot_be_flushed_means_the_backup_is_not_finished() {
     assert_eq!(setup.last_run().end.unwrap().reason, Reason::FlushFailed);
 }
 
+fn saved_hostname(setup: &Setup) -> String {
+    let Loaded::Ready(config) = load(&*setup.medium, &root()).unwrap() else {
+        panic!("the configuration is not in order");
+    };
+    config.computer(ID).unwrap().hostname.clone()
+}
+
+fn renamed(setup: &Setup) -> Backup {
+    let mut backup = setup.backup();
+    backup.hostname = "new-name".to_owned();
+    backup
+}
+
+#[test]
+fn a_new_hostname_is_saved_and_the_backup_stays_in_its_folder() {
+    let setup = Setup::new();
+
+    let outcome = setup.outcome_of(&renamed(&setup));
+
+    assert_eq!(outcome.reason, Reason::None);
+    assert_eq!(saved_hostname(&setup), "new-name");
+    assert_eq!(setup.copy("Documents/a.txt").unwrap(), b"first");
+    assert_eq!(setup.last_run().account, "usera@pc");
+}
+
+#[test]
+fn the_configuration_is_only_saved_when_the_hostname_has_changed() {
+    let steps_of = |backup: &dyn Fn(&Setup) -> Backup| {
+        let setup = Setup::new();
+        setup.run();
+        let before = setup.medium.steps();
+        setup.outcome_of(&backup(&setup));
+        setup.medium.steps() - before
+    };
+
+    let same = steps_of(&Setup::backup);
+    let changed = steps_of(&renamed);
+
+    assert!(same < changed);
+}
+
+#[test]
+fn a_new_hostname_is_saved_even_if_the_account_has_not_been_added() {
+    let setup = Setup::new();
+    let mut backup = renamed(&setup);
+    backup.username = "userb".to_owned();
+
+    let outcome = setup.outcome_of(&backup);
+
+    assert_eq!(outcome.reason, Reason::NotAdded);
+    assert_eq!(saved_hostname(&setup), "new-name");
+}
+
+#[test]
+fn a_computer_that_has_not_been_added_stays_out_of_the_configuration() {
+    let setup = Setup::new();
+    let mut backup = renamed(&setup);
+    backup.this.computer_id = OTHER_ID.to_owned();
+    let before = read_file(&*setup.medium, &root().join(CONFIG_FILE)).unwrap();
+
+    setup.outcome_of(&backup);
+
+    let after = read_file(&*setup.medium, &root().join(CONFIG_FILE)).unwrap();
+    assert_eq!(before, after);
+}
+
+#[test]
+fn a_hostname_that_cannot_be_saved_does_not_change_the_verdict() {
+    let setup = Setup::new();
+    let temp = root().join(TEMP_FOLDER).join("replacement");
+    setup.medium.fail_path(temp, ErrorKind::PermissionDenied);
+
+    let outcome = setup.outcome_of(&renamed(&setup));
+
+    assert_eq!(outcome.reason, Reason::None);
+    assert_eq!(outcome.stats.errors, 0);
+    assert_eq!(saved_hostname(&setup), "mint");
+}
+
+#[test]
+fn a_medium_pulled_while_the_hostname_is_saved_keeps_a_good_configuration() {
+    let steps = {
+        let setup = Setup::new();
+        let before = setup.medium.steps();
+        setup.outcome_of(&renamed(&setup));
+        setup.medium.steps() - before
+    };
+
+    for step in 1..=steps {
+        for lose_unflushed in [false, true] {
+            let setup = Setup::new();
+            setup.medium.pull_at_step(setup.medium.steps() + step);
+
+            setup.outcome_of(&renamed(&setup));
+
+            if lose_unflushed {
+                setup.medium.reinsert_losing_unflushed();
+            } else {
+                setup.medium.reinsert();
+            }
+            let hostname = saved_hostname(&setup);
+            assert!(
+                ["mint", "new-name"].contains(&hostname.as_str()),
+                "step {step}"
+            );
+
+            let next = setup.outcome_of(&renamed(&setup));
+
+            assert_eq!(next.reason, Reason::None, "step {step}");
+            assert_eq!(saved_hostname(&setup), "new-name", "step {step}");
+        }
+    }
+}
+
 fn collect(running: &RunningBackup) -> (Vec<Progress>, Ended) {
     let mut progress = Vec::new();
     for message in &running.messages {

@@ -13,7 +13,7 @@ use std::sync::mpsc::{self, Receiver};
 use std::thread;
 use std::time::SystemTime;
 
-use crate::config::{Config, Loaded, load};
+use crate::config::{Config, Loaded, load, save};
 use crate::copy::{FileCopier, Pruned, Skip, Visit, stop_for};
 use crate::fs::FileSystem;
 use crate::lock::{Holder, LockError, MediumLock, ThisProcess};
@@ -128,7 +128,7 @@ impl Backup {
         let medium = &*self.medium;
         let early = |reason| Ended::Finished(Outcome::early(reason));
         let stopped = |error: &_| early(stop_for(medium, &self.root, error).into());
-        let config = match load(medium, &self.root) {
+        let mut config = match load(medium, &self.root) {
             Ok(Loaded::Ready(config)) => config,
             // Where the medium was mounted may have gone with it, which also looks like no file.
             Ok(Loaded::Missing) if medium.metadata(&self.root).is_err() => {
@@ -182,6 +182,12 @@ impl Backup {
             Ok(log) => log,
             Err(error) => return stopped(&error),
         };
+
+        // The hostname is for display only, so this must not change the verdict. If the medium
+        // has a problem, the next step finds out, and the next run tries again.
+        if config.note_hostname(&self.this.computer_id, &self.hostname) {
+            let _ = save(medium, &self.root, self.format, &config);
+        }
 
         let mut pass = Pass {
             cancel,

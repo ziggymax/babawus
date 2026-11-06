@@ -181,6 +181,20 @@ impl Config {
         Some((computer, account))
     }
 
+    /// Records that the computer `id` now has the name `hostname`, and returns whether that
+    /// changed anything. A computer that isn't in the configuration stays out of it, and an
+    /// empty name tells nothing.
+    pub fn note_hostname(&mut self, id: &str, hostname: &str) -> bool {
+        let computer = self.computers.iter_mut().find(|computer| computer.id == id);
+        match computer {
+            Some(computer) if !hostname.is_empty() && computer.hostname != hostname => {
+                computer.hostname = hostname.to_owned();
+                true
+            }
+            _ => false,
+        }
+    }
+
     /// The folder name to suggest for a computer with the name `hostname`. `on_medium` is what
     /// [`folders_on_medium`] returned: a name is used if it is in the configuration or on the
     /// medium, so that a new computer never ends up in an old one's folder.
