@@ -66,8 +66,9 @@ impl Outcome {
 /// What came of asking for a run.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Ended {
-    /// Another Babawus holds the medium's lock. Nothing was done, so there is no verdict.
-    Busy(Holder),
+    /// Another Babawus holds the medium's lock, or is just taking it, which is when there is no
+    /// holder yet. Nothing was done, so there is no verdict.
+    Busy(Option<Holder>),
     Finished(Outcome),
 }
 

@@ -564,7 +564,7 @@ fn a_live_lock_means_busy_and_nothing_changes() {
 
     let ended = setup.run_with(&setup.backup(), &mut |_| {});
 
-    assert_eq!(ended, Ended::Busy(holder));
+    assert_eq!(ended, Ended::Busy(Some(holder)));
     assert_eq!(setup.medium.steps(), steps);
     assert!(setup.has(LOCK_FILE));
 }

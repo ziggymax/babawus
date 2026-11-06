@@ -453,7 +453,7 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 
 **One lock per medium.** Every action that writes to a medium (a backup, changing the configuration, adding, linking or removing an entry) first takes the medium's lock, `.babawus/lock`, and releases it when done. While the lock is held, no other Babawus can do anything that writes to that medium.
 
-- The lock file is created in a single operation that fails if it already exists. It records the run ID, `username@computer folder`, the computer ID, the system's boot ID and the process ID, in TOML with the keys `run_id`, `account`, `computer_id`, `boot_id` and `process_id`.
+- The lock file is created in a single operation that fails if it already exists. After writing it, Babawus reads it back, and only goes on if it still holds its own run ID. Otherwise another Babawus got in between, and the medium counts as busy. It records the run ID, `username@computer folder`, the computer ID, the system's boot ID and the process ID, in TOML with the keys `run_id`, `account`, `computer_id`, `boot_id` and `process_id`.
 - A medium can only be in one computer at a time. So a lock is only *live* if it has this computer's ID, the current boot ID, and a process that is still running. Any other lock is left over from an interrupted run, and Babawus removes it. An interruption therefore never leaves a medium locked.
 - A running process only counts if it is Babawus, because the system can give a process ID to another program after a crash. A lock with Babawus's own process ID only counts while that action is still going, because a medium can be pulled and put back while Babawus stays open.
 - A lock file that can't be understood isn't live.
