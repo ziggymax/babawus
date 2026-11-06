@@ -20,13 +20,12 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Nothing is in progress. T-008 is next.
+Nothing is in progress. T-009 is next.
 
 ## First version: logic
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | Todo | Requirements: "One Babawus at a time" |
 | T-009 | Settings file and the choice of language | Todo | Requirements: "Change the language" |
 
 ## First version: udisks2
@@ -83,3 +82,4 @@ Nothing is waiting for a decision.
 | T-005 | Medium lock: create, check whether it is live, remove stale locks | [#22](https://github.com/ziggymax/babawus/pull/22) |
 | T-006 | Run orchestration: from taking the lock to the verdict, on a worker thread, with progress messages and Cancel | [#23](https://github.com/ziggymax/babawus/pull/23) |
 | T-007 | Keep "hostname last seen" up to date in the configuration | [#24](https://github.com/ziggymax/babawus/pull/24) |
+| T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | [#25](https://github.com/ziggymax/babawus/pull/25) |

@@ -2,6 +2,7 @@
 //!
 //! This crate must stay free of UI code.
 
+pub mod computer_lock;
 pub mod config;
 pub mod copy;
 pub mod exclude;

@@ -447,7 +447,7 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 
 ### One Babawus at a time
 
-**One Babawus per computer.** Only one Babawus window runs on a computer at a time, whichever user started it. Babawus holds a lock on a file in `/run/lock/`, which the system releases automatically when the process ends, even after a crash. If the same user starts Babawus again, the existing window is brought to the front. If another user starts it (for example with fast user switching), Babawus shows "Babawus is already open for `<user>` on this computer" and does not open a second window.
+**One Babawus per computer.** Only one Babawus window runs on a computer at a time, whichever user started it. Babawus holds a lock on the file `/run/lock/babawus.lock`, which the system releases automatically when the process ends, even after a crash. All users share this file, which holds the user name of the Babawus that has the lock. If the same user starts Babawus again, the existing window is brought to the front. If another user starts it (for example with fast user switching), Babawus shows "Babawus is already open for `<user>` on this computer" and does not open a second window. If the lock can't be used at all, Babawus opens anyway, because each medium has a lock of its own.
 
 **One backup at a time.** While a backup is running, no other medium in the list can be started. When it has finished, the user can start a backup on another medium.
 
