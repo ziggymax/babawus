@@ -276,7 +276,7 @@ Two kinds of name clashes are handled like this:
 - A source file or folder whose name has the form of a version folder (contains `[]`) is not backed up, and is listed as skipped in the verdict.
 - If an older version with the same timestamp already exists in the version folder, a suffix is added to the timestamp: `report[2026-11-03_175400-2].pdf`, then `-3` and so on.
 
-The timestamp in an older version's name is the time the version was replaced on the medium (the backup time), in the form `YYYY-MM-DD_HHMMSS` (local time). It is not the file's modification time, so the order of the names always matches the order in which versions were added. The file itself keeps its own modification time, which an ordinary file manager shows as usual. So the name says when a version was replaced, and the file says when it was last edited.
+The timestamp in an older version's name is the time the version was replaced on the medium (the backup time), in the form `YYYY-MM-DD_HHMMSS`, in UTC. It is not the file's modification time, so the order of the names matches the order in which versions were added, as long as the computer's clock is right. UTC is used because local time can go backwards, when the clocks change in autumn or when a computer moves west, and pruning would then remove the wrong version. This means that a name can differ from the local time by some hours. The file itself keeps its own modification time, which an ordinary file manager shows as usual, in local time. So the name says when a version was replaced, and the file says when it was last edited.
 
 When a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
 
