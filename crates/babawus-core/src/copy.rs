@@ -50,6 +50,29 @@ pub enum Skip {
     OutsideHome,
 }
 
+impl Skip {
+    /// The fixed code in the log.
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::Unreadable => "UNREADABLE",
+            Self::Disappeared => "DISAPPEARED",
+            Self::NotWritable => "NOT_WRITABLE",
+            Self::TypeConflict => "TYPE_CONFLICT",
+            Self::ChangedDuringCopy => "CHANGED_DURING_COPY",
+            Self::VersionNameTooLong => "VERSION_NAME_TOO_LONG",
+            Self::WriteError => "WRITE_ERROR",
+            Self::NameInvalidChars => "NAME_INVALID_CHARS",
+            Self::NameTrailingDot => "NAME_TRAILING_DOT",
+            Self::NameNotUtf8 => "NAME_NOT_UTF8",
+            Self::PathTooLong => "PATH_TOO_LONG",
+            Self::VersionFolderForm => "VERSION_FOLDER_FORM",
+            Self::CaseClash => "CASE_CLASH",
+            Self::SelectionMissing => "SELECTION_MISSING",
+            Self::OutsideHome => "OUTSIDE_HOME",
+        }
+    }
+}
+
 /// Why the whole run has to stop.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Stop {
