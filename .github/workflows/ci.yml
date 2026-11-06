@@ -20,8 +20,29 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The week in the key refreshes the cache as packages get updates. Downloads are only a
+      # shortcut: apt checks each file, and fetches anything that is missing or out of date.
+      - name: Work out the cache week
+        id: cache-week
+        run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore downloaded packages
+        uses: actions/cache@v6
+        with:
+          path: ~/apt-archives/*.deb
+          key: apt-${{ runner.os }}-${{ steps.cache-week.outputs.week }}
+          restore-keys: apt-${{ runner.os }}-
+
+      # The mirror has been slow enough to take a run from one minute to thirteen. A short timeout
+      # makes a stalled download retry soon.
       - name: Install system packages
         run: |
+          mkdir -p ~/apt-archives/partial
+          sudo tee /etc/apt/apt.conf.d/99ci > /dev/null <<EOF
+          Dir::Cache::archives "$HOME/apt-archives/";
+          Acquire::http::Timeout "20";
+          Acquire::Retries "3";
+          EOF
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgtk-4-dev pkg-config exfatprogs
 

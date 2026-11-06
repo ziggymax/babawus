@@ -249,6 +249,7 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 - **Package flags:** after the original setup, `build-essential`, `g++` and `g++-x86-64-linux-gnu` were installed but marked for removal (`ri` in `dpkg -l`). The cause wasn't found. If it happens again, run `printf 'build-essential install\ng++ install\ng++-x86-64-linux-gnu install\n' | sudo dpkg --set-selections`.
 - **Held-back updates:** `apt` may hold back a package with `(phased 40%)` in `apt-cache policy`. Ubuntu is rolling it out gradually, and it arrives by itself later.
 - **Guest Additions:** the Guest Additions packages aren't installed. The kernel's own `vboxguest` module is loaded, and nothing so far has needed more.
+- **Slow package mirror in CI:** Ubuntu's mirror once delivered at 24 kB/s, which took a run from one minute to nearly thirteen. CI now caches the downloaded packages and uses a short `apt` timeout. `apt-get update` still needs the mirror.
 - **Graphics warnings:** the app prints `libEGL warning: DRI3 error` on this VM, and its window still works. This is probably because the VM has no accelerated graphics, but that hasn't been confirmed.
 - **Polkit over SSH:** `udisksctl` commands, and partitioning and formatting the real stick, worked from an SSH session without a password, because that session counts as active. Requirements.md allows for udisks2 asking for nothing. The behaviour on the desktop, and from an account without administrator rights, is on the manual checklist.
 
