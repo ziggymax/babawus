@@ -190,7 +190,7 @@ As a poweruser I want to remove a computer or user account from a medium, for ex
 
 ### Back up from a computer or account that has not been added
 
-As a user, if the computer or user account I am using has not been added to a medium, I want the media list to show this plainly ("Not set up for you: contact your poweruser"), and not let me start a backup on that medium. That way I see why before I try, and know what to do. (If the configuration changes between showing the list and starting the backup, the run copies nothing and ends with "Backup failed", with the reason that the medium is not set up for this computer or user.)
+As a user, if the computer or user account I am using has not been added to a medium, I want the media list to show this plainly ("Not set up for you: contact your poweruser"), and not let me start a backup on that medium. That way I see why before I try, and know what to do. (If the configuration changes between showing the list and starting the backup, the run copies nothing and ends with "Backup failed", with the reason that the medium is not set up for this computer or user. The same goes for a configuration that has gone missing or needs attention by then, and because such a medium may need a newer Babawus, the run then leaves it untouched: no lock and no log entry.)
 
 ### Recover from an interrupted backup
 
@@ -361,7 +361,7 @@ Before each file is copied, Babawus checks that it fits in the free space left o
 
 At the start of every run, Babawus empties `.babawus/tmp/`. These are Babawus's own files, so this does not conflict with the rule that Babawus never deletes backups.
 
-**Finishing a run.** Flushing each file does not cover everything: renames and folder changes can still be waiting in the computer's memory. So at the end of a run, Babawus first flushes the whole medium (`syncfs`), then writes the end entry to the log and flushes it, and only then shows the verdict. This can take several seconds, during which the screen shows "Finishing…". Once the verdict appears, everything is on the medium, and pulling it out cannot lose anything. If the medium cannot be flushed, the verdict is "Backup not finished".
+**Finishing a run.** Flushing each file does not cover everything: renames and folder changes can still be waiting in the computer's memory. So at the end of a run, Babawus first flushes the whole medium (`syncfs`), then writes the end entry to the log and flushes it, and only then shows the verdict. This can take several seconds, during which the screen shows "Finishing…". Once the verdict appears, everything is on the medium, and pulling it out cannot lose anything. If the medium cannot be flushed, or the end entry cannot be written, the verdict is "Backup not finished", with the reason `FLUSH_FAILED`. Without an end entry, a later run reports this run the same way.
 
 ### What is copied
 
@@ -458,7 +458,7 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 - A running process only counts if it is Babawus, because the system can give a process ID to another program after a crash. A lock with Babawus's own process ID only counts while that action is still going, because a medium can be pulled and put back while Babawus stays open.
 - A lock file that can't be understood isn't live.
 - The lock is not flushed to the medium, when taken or when removed, because a lock that isn't live stops nobody.
-- In the media list, a medium with a live lock shows "Backup in progress (by `<user>`)" and cannot be clicked.
+- In the media list, a medium with a live lock shows "Backup in progress (by `<user>`)" and cannot be clicked. If the lock has become live since the list was shown, a backup that is started does nothing, gives no verdict, and the list shows the same.
 - After a backup, the lock is removed after the end entry has been written to the log.
 
 ### Format of the configuration file
@@ -555,7 +555,7 @@ File names on Linux are bytes, and can hold anything except `/`, including tabs 
 Writing and trimming the log:
 
 - The start entry is written and flushed to the medium (`fsync`) before any file is copied.
-- Every entry is flushed to the medium as it is written.
+- Every entry is flushed to the medium as it is written. If an error entry can't be written, the run goes on, because a problem with the medium shows up at the next step, and a problem with the log shows up at the end entry.
 - The log is trimmed at the start of a run, before the start entry, never in place: the trimmed log is written to `.babawus/tmp/`, flushed, and renamed over the old log (the same mechanism as in "Writing a new copy safely"). Garbled lines are dropped when this happens.
 - When the log is read, incomplete or garbled lines (for example a half-written last line after the medium was pulled out) are ignored, instead of rejecting the whole log. A last line with no line ending is always incomplete, even if it looks whole.
 - Before anything is added to a log whose last line has no line ending, a line ending is written, so that the new entry does not become part of the garbled line.

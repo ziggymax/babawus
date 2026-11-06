@@ -465,29 +465,14 @@ impl<'a> FileCopier<'a> {
         let _ = self.medium.remove_file(temp);
     }
 
-    fn is_gone(&self, error: &io::Error) -> bool {
-        matches!(
-            error.raw_os_error(),
-            Some(libc::EIO | libc::ENODEV | libc::ENXIO)
-        ) || self.medium.metadata(&self.root).is_err()
-    }
-
     /// Decides what an error on the medium means for this file.
     fn skip_or_stop(&self, error: &io::Error) -> Result<Skip, Stop> {
-        if self.is_gone(error) {
-            return Err(Stop::MediumGone);
-        }
-        match error.kind() {
-            ErrorKind::StorageFull => Err(Stop::MediumFull),
-            ErrorKind::ReadOnlyFilesystem => Err(Stop::CannotWrite),
-            ErrorKind::PermissionDenied => Ok(Skip::NotWritable),
-            _ => Ok(Skip::WriteError),
-        }
+        skip_or_stop(self.medium, &self.root, error)
     }
 
     /// An error that always ends the run.
     fn stop(&self, error: &io::Error) -> Stop {
-        self.skip_or_stop(error).err().unwrap_or(Stop::CannotWrite)
+        stop_for(self.medium, &self.root, error)
     }
 
     /// An error while writing to `.babawus/tmp/`. If that folder can't be written, nothing can
@@ -498,6 +483,32 @@ impl<'a> FileCopier<'a> {
             skip => Ok(Copy::Failed(skip)),
         }
     }
+}
+
+fn is_gone(medium: &dyn FileSystem, root: &Path, error: &io::Error) -> bool {
+    matches!(
+        error.raw_os_error(),
+        Some(libc::EIO | libc::ENODEV | libc::ENXIO)
+    ) || medium.metadata(root).is_err()
+}
+
+fn skip_or_stop(medium: &dyn FileSystem, root: &Path, error: &io::Error) -> Result<Skip, Stop> {
+    if is_gone(medium, root, error) {
+        return Err(Stop::MediumGone);
+    }
+    match error.kind() {
+        ErrorKind::StorageFull => Err(Stop::MediumFull),
+        ErrorKind::ReadOnlyFilesystem => Err(Stop::CannotWrite),
+        ErrorKind::PermissionDenied => Ok(Skip::NotWritable),
+        _ => Ok(Skip::WriteError),
+    }
+}
+
+/// What an error on the medium means when it has to end the run.
+pub(crate) fn stop_for(medium: &dyn FileSystem, root: &Path, error: &io::Error) -> Stop {
+    skip_or_stop(medium, root, error)
+        .err()
+        .unwrap_or(Stop::CannotWrite)
 }
 
 /// Why a source file that was found earlier can't be used.
