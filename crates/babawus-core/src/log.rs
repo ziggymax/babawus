@@ -519,6 +519,11 @@ impl<'a> RunLog<'a> {
         append(self.medium, self.root, self.format, &line)
     }
 
+    /// The number of anomalies so far.
+    pub fn errors(&self) -> u64 {
+        self.errors
+    }
+
     /// Records an anomaly. `path` is relative to the home folder, and `files` is the number of
     /// files it stands for. The first errors are logged one by one, and the rest only counted.
     pub fn error(&mut self, code: &str, path: &Path, files: u64) -> io::Result<()> {

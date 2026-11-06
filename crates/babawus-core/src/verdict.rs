@@ -46,11 +46,14 @@ pub enum Reason {
     FlushFailed,
     MediumFull,
     NotAdded,
+    /// There is a configuration file, but it can't be used: it is damaged, or needs a newer
+    /// Babawus. Only in a verdict, never in the log, because a run doesn't touch such a medium.
+    ConfigDamaged,
     CannotWrite,
 }
 
 impl Reason {
-    const ALL: [Self; 9] = [
+    const ALL: [Self; 10] = [
         Self::None,
         Self::FilesSkipped,
         Self::Cancelled,
@@ -59,6 +62,7 @@ impl Reason {
         Self::FlushFailed,
         Self::MediumFull,
         Self::NotAdded,
+        Self::ConfigDamaged,
         Self::CannotWrite,
     ];
 
@@ -73,6 +77,7 @@ impl Reason {
             Self::FlushFailed => "FLUSH_FAILED",
             Self::MediumFull => "MEDIUM_FULL",
             Self::NotAdded => "NOT_ADDED",
+            Self::ConfigDamaged => "CONFIG_DAMAGED",
             Self::CannotWrite => "CANNOT_WRITE",
         }
     }
@@ -89,7 +94,9 @@ impl Reason {
             Self::Cancelled | Self::MediumRemoved | Self::Interrupted | Self::FlushFailed => {
                 Verdict::NotFinished
             }
-            Self::MediumFull | Self::NotAdded | Self::CannotWrite => Verdict::Failed,
+            Self::MediumFull | Self::NotAdded | Self::ConfigDamaged | Self::CannotWrite => {
+                Verdict::Failed
+            }
         }
     }
 }
@@ -137,6 +144,7 @@ mod tests {
                 "FLUSH_FAILED",
                 "MEDIUM_FULL",
                 "NOT_ADDED",
+                "CONFIG_DAMAGED",
                 "CANNOT_WRITE",
             ]
         );
@@ -165,6 +173,7 @@ mod tests {
             (Reason::FlushFailed, Verdict::NotFinished),
             (Reason::MediumFull, Verdict::Failed),
             (Reason::NotAdded, Verdict::Failed),
+            (Reason::ConfigDamaged, Verdict::Failed),
             (Reason::CannotWrite, Verdict::Failed),
         ];
         for (reason, verdict) in cases {

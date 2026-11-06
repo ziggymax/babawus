@@ -11,6 +11,7 @@ pub mod lock;
 pub mod log;
 pub mod medium;
 pub mod names;
+pub mod run;
 pub mod scan;
 pub mod time;
 pub mod verdict;
