@@ -30,12 +30,26 @@ const DIR_MODE: u32 = 0o777;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Skip {
     Unreadable,
+    /// The source file or folder was there when the run found it, and then disappeared.
+    Disappeared,
     NotWritable,
     TypeConflict,
     ChangedDuringCopy,
     VersionNameTooLong,
     /// Any other error the file system reported while writing.
     WriteError,
+    NameInvalidChars,
+    NameTrailingDot,
+    NameNotUtf8,
+    PathTooLong,
+    /// The name has the form of a version folder.
+    VersionFolderForm,
+    /// On exFAT, the name differs only in case from one that comes first.
+    CaseClash,
+    /// A selected file or folder does not exist any more.
+    SelectionMissing,
+    /// A selected path points outside the home folder.
+    OutsideHome,
 }
 
 /// Why the whole run has to stop.
@@ -73,7 +87,7 @@ fn stored_time(time: SystemTime, format: Format) -> SystemTime {
 }
 
 /// Whether the source file differs from its newest copy on the medium.
-fn differs(source: &Metadata, copy: &Metadata, format: Format) -> bool {
+pub(crate) fn differs(source: &Metadata, copy: &Metadata, format: Format) -> bool {
     let source_time = stored_time(source.modified, format);
     let difference = source_time
         .duration_since(copy.modified)
@@ -170,8 +184,9 @@ impl<'a> FileCopier<'a> {
         progress: &mut dyn FnMut(u64),
     ) -> Result<Visit, Stop> {
         let target = self.root.join(target);
-        let Ok(source_metadata) = self.source.metadata(source) else {
-            return Ok(Visit::Skipped(Skip::Unreadable));
+        let source_metadata = match self.source.metadata(source) {
+            Ok(metadata) => metadata,
+            Err(error) => return Ok(Visit::Skipped(source_skip(&error))),
         };
         let existing = match self.medium.metadata(&target) {
             Ok(metadata) if metadata.kind != FileKind::File => {
@@ -205,8 +220,9 @@ impl<'a> FileCopier<'a> {
             Copy::Done(temp) => temp,
             Copy::Changed => {
                 progress(0);
-                let Ok(metadata) = self.source.metadata(source) else {
-                    return Ok(Visit::Skipped(Skip::Unreadable));
+                let metadata = match self.source.metadata(source) {
+                    Ok(metadata) => metadata,
+                    Err(error) => return Ok(Visit::Skipped(source_skip(&error))),
                 };
                 match self.copy_to_temp(source, &metadata, progress)? {
                     Copy::Done(temp) => temp,
@@ -232,6 +248,12 @@ impl<'a> FileCopier<'a> {
         self.prune(&target).map(Visit::Copied)
     }
 
+    /// Creates the folder `target`, which is relative to the root of the medium, so that empty
+    /// folders are backed up too. Returns the reason if it had to be skipped.
+    pub fn visit_folder(&self, target: &Path) -> Result<Option<Skip>, Stop> {
+        self.ensure_folder(&self.root.join(target))
+    }
+
     /// Copies the source to a new temporary file, in flushed chunks.
     fn copy_to_temp(
         &mut self,
@@ -239,8 +261,9 @@ impl<'a> FileCopier<'a> {
         metadata: &Metadata,
         progress: &mut dyn FnMut(u64),
     ) -> Result<Copy, Stop> {
-        let Ok(mut reader) = self.source.open(source) else {
-            return Ok(Copy::Failed(Skip::Unreadable));
+        let mut reader = match self.source.open(source) {
+            Ok(reader) => reader,
+            Err(error) => return Ok(Copy::Failed(source_skip(&error))),
         };
         self.next_temp += 1;
         let temp = self.temp_folder().join(format!("copy-{}", self.next_temp));
@@ -256,7 +279,7 @@ impl<'a> FileCopier<'a> {
                     return Ok(Copy::Done(temp));
                 }
                 Ok(_) => Ok(Copy::Changed),
-                Err(_) => Ok(Copy::Failed(Skip::Unreadable)),
+                Err(error) => Ok(Copy::Failed(source_skip(&error))),
             },
             Ok(copy) => Ok(copy),
             Err(error) => self.temp_failure(&error),
@@ -305,10 +328,14 @@ impl<'a> FileCopier<'a> {
     /// Creates the folders above `target`. If the source has turned a file into a folder, the
     /// old file on the medium becomes an ordinary older version.
     fn ensure_parent_folders(&self, target: &Path) -> Result<Option<Skip>, Stop> {
-        let Some(parent) = target.parent() else {
-            return Ok(None);
-        };
-        let relative = parent.strip_prefix(&self.root).unwrap_or(parent);
+        match target.parent() {
+            Some(parent) => self.ensure_folder(parent),
+            None => Ok(None),
+        }
+    }
+
+    fn ensure_folder(&self, path: &Path) -> Result<Option<Skip>, Stop> {
+        let relative = path.strip_prefix(&self.root).unwrap_or(path);
         let mut folder = self.root.clone();
         for part in relative {
             folder.push(part);
@@ -390,7 +417,7 @@ impl<'a> FileCopier<'a> {
             Err(error) => return self.prune_failed(&error, Pruned::default()),
         };
         let mut pruned = Pruned::default();
-        for version in versions_to_remove(&entries, name, self.keep) {
+        for version in versions_to_remove(&entries, name, self.keep, self.format) {
             if let Err(error) = self.medium.remove_file(&folder.join(version)) {
                 return self.prune_failed(&error, pruned);
             }
@@ -451,6 +478,14 @@ impl<'a> FileCopier<'a> {
             Skip::NotWritable => Err(Stop::CannotWrite),
             skip => Ok(Copy::Failed(skip)),
         }
+    }
+}
+
+/// Why a source file that was found earlier can't be used.
+pub(crate) fn source_skip(error: &io::Error) -> Skip {
+    match error.kind() {
+        ErrorKind::NotFound => Skip::Disappeared,
+        _ => Skip::Unreadable,
     }
 }
 

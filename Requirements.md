@@ -360,11 +360,16 @@ At the start of every run, Babawus empties `.babawus/tmp/`. These are Babawus's 
 
 ### What is copied
 
-Only regular files and folders are backed up. Symbolic links are neither followed nor copied, and special files (sockets, pipes, device files) are skipped. Neither counts as an error or appears in the verdict. This avoids loops and duplicates, and keeps the behaviour the same on exFAT, which cannot store symbolic links.
+Only regular files and folders are backed up, including empty folders. Symbolic links are neither followed nor copied, and special files (sockets, pipes, device files) are skipped. Neither counts as an error or appears in the verdict. This avoids loops and duplicates, and keeps the behaviour the same on exFAT, which cannot store symbolic links.
 
 Below a selected folder, Babawus does not enter folders that belong to another file system (for example cloud folders, network shares or other disks mounted inside the home folder). A selected file or folder may itself be on any file system.
 
-On an exFAT medium, which does not distinguish upper and lower case in names, two source files or folders in the same folder whose names differ only in case (for example `Report.pdf` and `report.pdf`) cannot both be stored. Babawus then backs up the one whose name comes first when the names are sorted by their bytes (here `Report.pdf`), and lists the others as skipped in the verdict. On an Ext4 medium all of them are backed up.
+- **A selection that does not exist any more** is skipped with the code `SELECTION_MISSING`, so that the poweruser learns that something is no longer being backed up.
+- **A selection inside something excluded** stays excluded, because an excluded folder is skipped with everything in it.
+- **Overlapping selections** (a folder, and a file in it) are backed up once.
+- **A selection with `..` in its path** is skipped with the code `OUTSIDE_HOME`, so that a damaged configuration can never write outside the account's folder on the medium.
+
+On an exFAT medium, which does not distinguish upper and lower case in names, two source files or folders in the same folder whose names differ only in case (for example `Report.pdf` and `report.pdf`) cannot both be stored. Babawus then backs up the one whose name comes first when the names are sorted by their bytes (here `Report.pdf`), and lists the others as skipped in the verdict, with the code `CASE_CLASH`. On an Ext4 medium all of them are backed up. exFAT compares names with its own table of upper-case letters, which is not the same as Unicode's. Babawus uses a rule that covers every pair in that table and a few more, so it may very rarely report a clash between names that exFAT could have stored (`ı.txt` and `I.txt`), but never misses one.
 
 ### Exclusions
 
@@ -381,10 +386,12 @@ Before a file or folder is copied, Babawus checks whether its name can be stored
 
 | Code | Rule | File system |
 |---|---|---|
-| `NAME_INVALID_CHARS` | The name contains one of `"` `*` `:` `<` `>` `?` `\` `\|` or a control character | exFAT |
+| `NAME_INVALID_CHARS` | The name contains one of `"` `*` `:` `<` `>` `?` `\` `\|` or a control character below `0x20` | exFAT |
 | `NAME_TRAILING_DOT` | The name ends with a dot (the Linux exFAT driver silently drops it, so two different names could end up the same) | exFAT |
 | `NAME_NOT_UTF8` | The name is not valid UTF-8 and cannot be converted to the UTF-16 names exFAT uses | exFAT |
 | `PATH_TOO_LONG` | The full path on the medium would exceed the system's path limit (4096 bytes) | Both |
+| `CASE_CLASH` | The name differs only in case from one that comes first (see "What is copied") | exFAT |
+| `VERSION_FOLDER_FORM` | The name has the form of a version folder (see "Handling of file versioning") | Both |
 
 Any other error that the file system reports while writing is also caught, and the file is skipped with a general code. If a *folder* is skipped, everything in it is skipped too, and it is reported as one entry with the number of files in it. In the verdict, skipped files are grouped by reason in plain words.
 
@@ -395,6 +402,7 @@ Any other error that the file system reports while writing is also caught, and t
 - **A file renamed only in case** (for example `report.pdf` → `Report.pdf`): on exFAT, Babawus looks up names on the medium without regard to case, and treats the renamed file as the same file. The next time the file changes, the new copy takes the source's current case; until then the old case stays on the medium. On Ext4, a case change is an ordinary rename: the file is backed up under its new name, and the old copy stays on the medium.
 - **A file that changes during copying:** Babawus compares the file's size and modification time before and after copying. If they differ, it discards the temporary file and tries once more. If the file changes again, it is skipped with the code `CHANGED_DURING_COPY` ("the file was in use").
 - **A file that cannot be read** (no permission, or a read error): it is skipped with the code `UNREADABLE`.
+- **A file or folder that disappears during a run** (it was found, and is gone when Babawus gets to it): it is skipped with the code `DISAPPEARED`. Any copy on the medium stays as it is.
 - **A folder on the medium that cannot be written:** the affected files are skipped with the code `NOT_WRITABLE`. If `.babawus` itself cannot be written, the run ends with "Backup failed", with the reason that the medium cannot be written to.
 
 ### Permissions on Ext4 media

@@ -512,6 +512,9 @@ struct TrickySource {
     broken_reads: bool,
     changes: Option<u32>,
     looks: AtomicU32,
+    /// Looking at the file works this many times, and then it is gone.
+    disappears_after: Option<u32>,
+    disappears_on_open: bool,
 }
 
 impl TrickySource {
@@ -521,6 +524,8 @@ impl TrickySource {
             broken_reads: false,
             changes: None,
             looks: AtomicU32::new(0),
+            disappears_after: None,
+            disappears_on_open: false,
         }
     }
 }
@@ -535,6 +540,11 @@ impl Read for BrokenReader {
 
 impl FileSystem for TrickySource {
     fn metadata(&self, path: &Path) -> io::Result<Metadata> {
+        if let Some(looks) = self.disappears_after
+            && self.looks.fetch_add(1, Ordering::Relaxed) >= looks
+        {
+            return Err(ErrorKind::NotFound.into());
+        }
         let metadata = self.fake.metadata(path)?;
         let Some(limit) = self.changes else {
             return Ok(metadata);
@@ -549,6 +559,9 @@ impl FileSystem for TrickySource {
     fn open(&self, path: &Path) -> io::Result<Box<dyn Read + Send>> {
         if self.broken_reads {
             return Ok(Box::new(BrokenReader));
+        }
+        if self.disappears_on_open {
+            return Err(ErrorKind::NotFound.into());
         }
         self.fake.open(path)
     }
@@ -602,6 +615,46 @@ fn a_read_error_during_the_copy_skips_the_file_and_removes_the_temporary_file() 
 
     assert_eq!(visit, Ok(Visit::Skipped(Skip::Unreadable)));
     assert_eq!(setup.newest(), b"old");
+    assert!(setup.temp_files().is_empty());
+}
+
+#[test]
+fn a_file_gone_before_its_turn_has_disappeared() {
+    let setup = Setup::new();
+    setup.medium.add_file(NEWEST, b"old", time(0));
+
+    assert_eq!(setup.visit(), Ok(Visit::Skipped(Skip::Disappeared)));
+
+    assert_eq!(setup.newest(), b"old");
+}
+
+#[test]
+fn a_file_gone_when_opened_has_disappeared() {
+    let setup = Setup::changed();
+    let source = TrickySource {
+        disappears_on_open: true,
+        ..TrickySource::new(&setup.source)
+    };
+
+    let visit = setup.visit_with(&source, &mut |_| {});
+
+    assert_eq!(visit, Ok(Visit::Skipped(Skip::Disappeared)));
+    assert_eq!(setup.newest(), b"old");
+}
+
+#[test]
+fn a_file_gone_after_the_copy_has_disappeared_and_changes_nothing() {
+    let setup = Setup::changed();
+    let source = TrickySource {
+        disappears_after: Some(1),
+        ..TrickySource::new(&setup.source)
+    };
+
+    let visit = setup.visit_with(&source, &mut |_| {});
+
+    assert_eq!(visit, Ok(Visit::Skipped(Skip::Disappeared)));
+    assert_eq!(setup.newest(), b"old");
+    assert!(setup.versions().is_empty());
     assert!(setup.temp_files().is_empty());
 }
 

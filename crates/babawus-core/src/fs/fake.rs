@@ -11,7 +11,7 @@
 //!
 //! Real media lie between these two. The fake does not model them losing only some changes.
 //!
-//! Names behave as on Ext4. The fake does not yet ignore case in names, as exFAT does.
+//! Names behave as on Ext4, or with [`FakeFs::exfat`], as on exFAT, which ignores case.
 
 use std::collections::{BTreeMap, HashMap};
 use std::ffi::OsString;
@@ -21,6 +21,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::SystemTime;
 
 use super::{FileKind, FileSystem, Metadata, WriteFile};
+use crate::names::fold;
 
 const DEFAULT_DEVICE: u64 = 1;
 const DEFAULT_FILE_MODE: u32 = 0o644;
@@ -82,6 +83,7 @@ struct State {
     pulled: bool,
     capacity: Option<u64>,
     failures: HashMap<PathBuf, ErrorKind>,
+    ignore_case: bool,
 }
 
 fn medium_gone() -> io::Error {
@@ -89,6 +91,30 @@ fn medium_gone() -> io::Error {
 }
 
 impl State {
+    /// `path` with each part in the case it has on the file system, if that ignores case.
+    fn resolve(&self, path: &Path) -> PathBuf {
+        if !self.ignore_case {
+            return path.to_owned();
+        }
+        let mut resolved = PathBuf::new();
+        for part in path {
+            resolved.push(part);
+            if self.live.names.contains_key(&resolved) {
+                continue;
+            }
+            let wanted = fold(&part.to_string_lossy());
+            let parent = resolved.parent().map(Path::to_owned);
+            let same = self.live.names.keys().find(|name| {
+                let name_part = name.file_name().map(|part| fold(&part.to_string_lossy()));
+                name.parent() == parent.as_deref() && name_part.as_deref() == Some(&wanted)
+            });
+            if let Some(same) = same {
+                resolved = same.clone();
+            }
+        }
+        resolved
+    }
+
     /// Checks that `path` can be used, without counting a step.
     fn check(&self, path: &Path) -> io::Result<()> {
         if self.pulled {
@@ -200,6 +226,13 @@ impl FakeFs {
             .expect("no test panics while holding the lock")
     }
 
+    /// An empty file system that ignores case in names, as exFAT does.
+    pub fn exfat() -> Self {
+        let fake = Self::new();
+        fake.state().ignore_case = true;
+        fake
+    }
+
     /// Adds a file that is already safely there, with any missing parent folders. This sets up
     /// a test, so it doesn't count as a step.
     pub fn add_file(&self, path: impl AsRef<Path>, data: &[u8], modified: SystemTime) {
@@ -279,6 +312,7 @@ impl FakeFs {
 impl FileSystem for FakeFs {
     fn metadata(&self, path: &Path) -> io::Result<Metadata> {
         let state = self.state();
+        let path = &state.resolve(path);
         state.check(path)?;
         let node = state.node(path)?;
         Ok(Metadata {
@@ -292,6 +326,7 @@ impl FileSystem for FakeFs {
 
     fn read_dir(&self, path: &Path) -> io::Result<Vec<OsString>> {
         let state = self.state();
+        let path = &state.resolve(path);
         state.check(path)?;
         if state.node(path)?.kind != FileKind::Dir {
             return Err(ErrorKind::NotADirectory.into());
@@ -303,6 +338,7 @@ impl FileSystem for FakeFs {
 
     fn open(&self, path: &Path) -> io::Result<Box<dyn Read + Send>> {
         let state = self.state();
+        let path = &state.resolve(path);
         state.check(path)?;
         let node = state.node(path)?;
         if node.kind == FileKind::Dir {
@@ -313,6 +349,7 @@ impl FileSystem for FakeFs {
 
     fn create_new(&self, path: &Path) -> io::Result<Box<dyn WriteFile>> {
         let mut state = self.state();
+        let path = &state.resolve(path);
         state.change(path)?;
         if state.live.get(path).is_some() {
             return Err(ErrorKind::AlreadyExists.into());
@@ -324,6 +361,7 @@ impl FileSystem for FakeFs {
 
     fn open_append(&self, path: &Path) -> io::Result<Box<dyn WriteFile>> {
         let mut state = self.state();
+        let path = &state.resolve(path);
         state.change(path)?;
         if let Some(&id) = state.live.names.get(path) {
             if state.live.nodes[&id].kind == FileKind::Dir {
@@ -338,6 +376,7 @@ impl FileSystem for FakeFs {
 
     fn create_dir(&self, path: &Path) -> io::Result<()> {
         let mut state = self.state();
+        let path = &state.resolve(path);
         state.change(path)?;
         if state.live.get(path).is_some() {
             return Err(ErrorKind::AlreadyExists.into());
@@ -349,10 +388,18 @@ impl FileSystem for FakeFs {
 
     fn rename(&self, from: &Path, to: &Path) -> io::Result<()> {
         let mut state = self.state();
+        let from = &state.resolve(from);
+        let existing = state.resolve(to);
         state.change(from)?;
-        state.check(to)?;
+        state.check(&existing)?;
         state.node(from)?;
-        state.check_rename_target(from, to)?;
+        if existing != *from {
+            state.check_rename_target(from, &existing)?;
+            state.live.names.remove(&existing);
+        }
+        // The name takes the case it is given, in a folder that keeps its own case.
+        let parent = existing.parent().unwrap_or(Path::new("/"));
+        let to = &parent.join(to.file_name().ok_or(ErrorKind::InvalidInput)?);
         let moved: Vec<PathBuf> = state
             .live
             .names
@@ -363,7 +410,7 @@ impl FileSystem for FakeFs {
         for old in moved {
             let suffix = old.strip_prefix(from).expect("filtered on this prefix");
             let new = if suffix.as_os_str().is_empty() {
-                to.to_owned()
+                to.clone()
             } else {
                 to.join(suffix)
             };
@@ -375,6 +422,7 @@ impl FileSystem for FakeFs {
 
     fn remove_file(&self, path: &Path) -> io::Result<()> {
         let mut state = self.state();
+        let path = &state.resolve(path);
         state.change(path)?;
         if state.node(path)?.kind == FileKind::Dir {
             return Err(ErrorKind::IsADirectory.into());
@@ -385,6 +433,7 @@ impl FileSystem for FakeFs {
 
     fn set_mode(&self, path: &Path, mode: u32) -> io::Result<()> {
         let mut state = self.state();
+        let path = &state.resolve(path);
         state.change(path)?;
         state.node(path)?;
         let id = state.live.names[path];
@@ -399,6 +448,7 @@ impl FileSystem for FakeFs {
 
     fn free_space(&self, path: &Path) -> io::Result<u64> {
         let state = self.state();
+        let path = &state.resolve(path);
         state.check(path)?;
         state.node(path)?;
         Ok(state.free())
@@ -406,6 +456,7 @@ impl FileSystem for FakeFs {
 
     fn sync_medium(&self, path: &Path) -> io::Result<()> {
         let mut state = self.state();
+        let path = &state.resolve(path);
         state.change(path)?;
         state.node(path)?;
         state.flushed = state.live.clone();

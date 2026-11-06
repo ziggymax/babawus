@@ -5,6 +5,8 @@
 use std::ffi::{OsStr, OsString};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
 
+use crate::names::fold;
+
 /// The file system on a medium.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Format {
@@ -86,7 +88,7 @@ fn is_timestamp(bytes: &[u8]) -> bool {
 ///
 /// The match is exact, because `archive` and `archive.` share the version folder `archive[]`, and
 /// each must only count its own versions.
-fn parse_version<'a>(version: &'a OsStr, name: &OsStr) -> Option<(&'a [u8], u32)> {
+fn parse_version(version: &OsStr, name: &OsStr) -> Option<(Vec<u8>, u32)> {
     let (base, extension) = split(name);
     let rest = version.as_bytes().strip_prefix(base)?.strip_prefix(b"[")?;
     let rest = match extension {
@@ -99,24 +101,42 @@ fn parse_version<'a>(version: &'a OsStr, name: &OsStr) -> Option<(&'a [u8], u32)
         return None;
     }
     if suffix.is_empty() {
-        return Some((timestamp, 1));
+        return Some((timestamp.to_vec(), 1));
     }
     let digits = std::str::from_utf8(suffix.strip_prefix(b"-")?).ok()?;
     let suffix = digits.parse().ok().filter(|&suffix| suffix > 1)?;
     digits
         .bytes()
         .all(|byte| byte.is_ascii_digit())
-        .then_some((timestamp, suffix))
+        .then_some((timestamp.to_vec(), suffix))
+}
+
+/// The form of `name` to compare with. On exFAT, a file renamed only in case still shares its
+/// version folder with the older versions in the old case.
+fn comparable(name: &OsStr, format: Format) -> OsString {
+    match format {
+        Format::ExFat => OsString::from(fold(&name.to_string_lossy())),
+        Format::Ext4 => name.to_owned(),
+    }
 }
 
 /// The older versions of the file `name` to remove from a version folder that holds `entries`,
 /// so that `keep` remain. Anything that isn't an older version of this file is left alone.
 ///
 /// The oldest are decided by the timestamp and suffix, not by sorting the names as text.
-pub fn versions_to_remove(entries: &[OsString], name: &OsStr, keep: usize) -> Vec<OsString> {
+pub fn versions_to_remove(
+    entries: &[OsString],
+    name: &OsStr,
+    keep: usize,
+    format: Format,
+) -> Vec<OsString> {
+    let name = comparable(name, format);
     let mut versions: Vec<_> = entries
         .iter()
-        .filter_map(|entry| parse_version(entry, name).map(|order| (order, entry)))
+        .filter_map(|entry| {
+            let order = parse_version(&comparable(entry, format), &name)?;
+            Some((order, entry))
+        })
         .collect();
     versions.sort();
     let excess = versions.len().saturating_sub(keep);
@@ -227,7 +247,7 @@ mod tests {
             "report[2026-10-27_080544].pdf",
         ]);
 
-        let remove = versions_to_remove(&entries, os("report.pdf"), 2);
+        let remove = versions_to_remove(&entries, os("report.pdf"), 2, Format::Ext4);
 
         assert_eq!(remove, ["report[2026-10-20_141002].pdf"]);
     }
@@ -236,14 +256,17 @@ mod tests {
     fn removes_nothing_when_within_the_limit() {
         let entries = names(&["report[2026-10-20_141002].pdf"]);
 
-        assert!(versions_to_remove(&entries, os("report.pdf"), 1).is_empty());
+        assert!(versions_to_remove(&entries, os("report.pdf"), 1, Format::Ext4).is_empty());
     }
 
     #[test]
     fn keeping_none_removes_all() {
         let entries = names(&["report[2026-10-20_141002].pdf"]);
 
-        assert_eq!(versions_to_remove(&entries, os("report.pdf"), 0).len(), 1);
+        assert_eq!(
+            versions_to_remove(&entries, os("report.pdf"), 0, Format::Ext4).len(),
+            1
+        );
     }
 
     #[test]
@@ -255,7 +278,7 @@ mod tests {
             "report[2026-11-03_175400-3].pdf",
         ]);
 
-        let remove = versions_to_remove(&entries, os("report.pdf"), 1);
+        let remove = versions_to_remove(&entries, os("report.pdf"), 1, Format::Ext4);
 
         assert_eq!(
             remove,
@@ -280,7 +303,7 @@ mod tests {
             "other[2026-11-03_175400].pdf",
         ]);
 
-        assert!(versions_to_remove(&entries, os("report.pdf"), 0).is_empty());
+        assert!(versions_to_remove(&entries, os("report.pdf"), 0, Format::Ext4).is_empty());
     }
 
     #[test]
@@ -288,19 +311,43 @@ mod tests {
         let entries = names(&["archive[2026-11-03_175400]", "archive[2026-11-03_175400]."]);
 
         assert_eq!(
-            versions_to_remove(&entries, os("archive"), 0),
+            versions_to_remove(&entries, os("archive"), 0, Format::Ext4),
             ["archive[2026-11-03_175400]"]
         );
         assert_eq!(
-            versions_to_remove(&entries, os("archive."), 0),
+            versions_to_remove(&entries, os("archive."), 0, Format::Ext4),
             ["archive[2026-11-03_175400]."]
         );
+    }
+
+    #[test]
+    fn on_exfat_versions_in_another_case_are_counted() {
+        let entries = names(&[
+            "report[2026-11-03_175400].pdf",
+            "REPORT[2026-11-04_175400].PDF",
+        ]);
+
+        let remove = versions_to_remove(&entries, os("Report.pdf"), 1, Format::ExFat);
+
+        assert_eq!(remove, ["report[2026-11-03_175400].pdf"]);
+    }
+
+    #[test]
+    fn on_ext4_versions_in_another_case_are_left_alone() {
+        let entries = names(&["report[2026-11-03_175400].pdf"]);
+
+        let remove = versions_to_remove(&entries, os("Report.pdf"), 0, Format::Ext4);
+
+        assert!(remove.is_empty());
     }
 
     #[test]
     fn a_name_with_brackets_works() {
         let entries = names(&["a[b][2026-11-03_175400].txt"]);
 
-        assert_eq!(versions_to_remove(&entries, os("a[b].txt"), 0).len(), 1);
+        assert_eq!(
+            versions_to_remove(&entries, os("a[b].txt"), 0, Format::Ext4).len(),
+            1
+        );
     }
 }

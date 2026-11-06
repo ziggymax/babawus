@@ -3,7 +3,10 @@
 //! This crate must stay free of UI code.
 
 pub mod copy;
+pub mod exclude;
 pub mod fs;
+pub mod names;
+pub mod scan;
 pub mod versions;
 
 /// The version of Babawus.
