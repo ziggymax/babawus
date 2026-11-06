@@ -20,10 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-003 | Verdicts and reason codes | In progress | Requirements: "Get a clear verdict" |
-| T-004 | Log: writing, trimming, closing interrupted runs, reading, history and last backup, and renaming an account in it when linking | In progress | Requirements: "Format of the log" |
+Nothing is in progress. T-005 is next.
 
 ## First version: logic
 
@@ -85,3 +82,5 @@ Sections run from what comes next to what may never happen. Within a section, ta
 | --- | --- | --- |
 | T-001 | Configuration: file format, checksum, reading, safe writing, adding, linking and removing entries | [#19](https://github.com/ziggymax/babawus/pull/19) |
 | T-002 | Computer ID from `/etc/machine-id` | [#19](https://github.com/ziggymax/babawus/pull/19) |
+| T-003 | Verdicts and reason codes | [#20](https://github.com/ziggymax/babawus/pull/20) |
+| T-004 | Log: writing, trimming, closing interrupted runs, reading, history and last backup, and renaming an account in it when linking | [#20](https://github.com/ziggymax/babawus/pull/20) |

@@ -9,6 +9,7 @@ use crate::fs::FileSystem;
 use crate::versions::Format;
 
 pub const CONFIG_FILE: &str = ".babawus/babawus_config";
+pub const LOG_FILE: &str = ".babawus/babawus_log.txt";
 pub const TEMP_FOLDER: &str = ".babawus/tmp";
 pub const BACKUP_FOLDER: &str = "backup";
 
