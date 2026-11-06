@@ -208,7 +208,7 @@ As a poweruser I want to set, in the configuration of a medium, how many older v
 
 ### Change the language
 
-As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. That way I can use Babawus in the language I understand best.
+As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. That way I can use Babawus in the language I understand best.
 
 ## Technical requirements
 
