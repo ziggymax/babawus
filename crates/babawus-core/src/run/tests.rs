@@ -533,6 +533,18 @@ fn a_medium_without_a_babawus_folder_is_not_touched() {
 }
 
 #[test]
+fn a_medium_whose_mount_folder_has_gone_is_reported_as_removed() {
+    let setup = Setup::new();
+    let mut backup = setup.backup();
+    backup.medium = Arc::new(FakeFs::new());
+
+    let outcome = setup.outcome_of(&backup);
+
+    assert_eq!(outcome.reason, Reason::MediumRemoved);
+    assert_eq!(outcome.verdict(), Verdict::NotFinished);
+}
+
+#[test]
 fn a_medium_without_a_configuration_is_not_touched() {
     let setup = Setup::new();
     setup.medium.remove_file(&root().join(CONFIG_FILE)).unwrap();

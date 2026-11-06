@@ -130,6 +130,10 @@ impl Backup {
         let stopped = |error: &_| early(stop_for(medium, &self.root, error).into());
         let config = match load(medium, &self.root) {
             Ok(Loaded::Ready(config)) => config,
+            // Where the medium was mounted may have gone with it, which also looks like no file.
+            Ok(Loaded::Missing) if medium.metadata(&self.root).is_err() => {
+                return early(Reason::MediumRemoved);
+            }
             Ok(Loaded::Missing) => return early(Reason::NotAdded),
             Ok(Loaded::Damaged(_) | Loaded::NewerFormat) => return early(Reason::ConfigDamaged),
             Err(error) => return stopped(&error),
