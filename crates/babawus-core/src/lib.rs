@@ -14,6 +14,7 @@ pub mod medium;
 pub mod names;
 pub mod run;
 pub mod scan;
+pub mod settings;
 pub mod time;
 pub mod verdict;
 pub mod versions;

@@ -20,13 +20,11 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Nothing is in progress. T-009 is next.
+Nothing is in progress. T-010 is next.
 
 ## First version: logic
 
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-009 | Settings file and the choice of language | Todo | Requirements: "Change the language" |
+Everything here is done.
 
 ## First version: udisks2
 
@@ -40,13 +38,13 @@ Nothing is in progress. T-009 is next.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-013 | Start screen with the media list | Todo | Requirements: "Start Babawus and see status" |
+| T-013 | Start screen with the media list, and the language menu, which is in the placeholder window for now | Todo | Requirements: "Start Babawus and see status" |
 | T-014 | Backup screens: overview, progress, Cancel, "Finishing…" | Todo | Requirements: "Provide feedback during a backup operation" |
 | T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject | Todo | Requirements: "Get a clear verdict" |
 | T-016 | History and "what does this medium cover" views | Todo | Requirements: "View the history of a medium" |
 | T-017 | Advanced: the format view | Todo | Requirements: "Format USB media" |
 | T-018 | Advanced: the configuration editor, with the file explorer, live totals, read-only entries for others, and adding, linking and removing entries. It also offers checking a damaged configuration, and starting a new one | Todo | Requirements: "Configure USB media" |
-| T-020 | Translations: English and German, including codes from the log | Todo | Requirements: "Change the language" |
+| T-020 | Translations: English and German, including codes from the log, and changing the language at once when the menu changes | Todo | Requirements: "Change the language" |
 
 ## First version: release
 
@@ -83,3 +81,4 @@ Nothing is waiting for a decision.
 | T-006 | Run orchestration: from taking the lock to the verdict, on a worker thread, with progress messages and Cancel | [#23](https://github.com/ziggymax/babawus/pull/23) |
 | T-007 | Keep "hostname last seen" up to date in the configuration | [#24](https://github.com/ziggymax/babawus/pull/24) |
 | T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | [#25](https://github.com/ziggymax/babawus/pull/25) |
+| T-009 | Settings file and the choice of language | [#26](https://github.com/ziggymax/babawus/pull/26) |
