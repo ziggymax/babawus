@@ -75,7 +75,7 @@ The list has one row for each mounted file system on a USB medium (as defined in
 | Ready, with "Last backup: …" | A Babawus medium, and this computer and account have been added to it | Yes |
 | Not set up for you: contact your poweruser | A Babawus medium, but this computer or account has not been added | No |
 | Backup in progress (by `<user>`) | Another Babawus holds the lock on the medium (see "One Babawus at a time") | No |
-| Needs attention: contact your poweruser | The configuration is damaged (checksum mismatch) or has a newer format than this Babawus understands | No |
+| Needs attention: contact your poweruser | The configuration is damaged (see "Reading the configuration file") or has a newer format than this Babawus understands | No |
 | Write-protected | A Babawus medium that is mounted read-only | No |
 | Not a backup medium | Anything else | No |
 
@@ -117,7 +117,8 @@ As a poweruser I want Babawus to provide me with the means of easily creating an
 
 - Use a "file explorer" of some sort to browse existing files and folders on the PC and select those I want to have backed up. Both files and folders can be selected: a selected folder is backed up with everything in it, a selected file on its own.
 - Exclude files and folders in two ways: name patterns (see "Exclusions"), and specific folders that I pick in the same file explorer.
-- When an account is added, the exclusions start with a visible, editable list of suggestions: `.cache`, `.local/share/Trash`, `*.tmp` and `*~`. There are no hidden built-in exclusions.
+- When an account is added, the exclusions start with a visible, editable list of suggestions: the name patterns `.cache`, `*.tmp` and `*~`, and the excluded folder `.local/share/Trash`. There are no hidden built-in exclusions.
+- A file or folder whose path is not valid UTF-8 cannot be selected or excluded by folder, because the configuration file is UTF-8. The file explorer shows it, but refuses it and says why. It can still be backed up as part of a selected folder above it, on Ext4.
 - Continuously update a sum of files/bytes that are included as I update the configuration.
 - Set the number of older versions to keep (see "Set the number of older versions to keep").
 - Write (with (re-)calculated checksum) the resulting configuration when I am done.
@@ -133,7 +134,7 @@ As a poweruser I want Babawus to maintain a log of the runs performed on a mediu
 - An entry for each anomaly (error) seen during the run, with an error code and the path of the file relative to the home folder. The first 20 errors are logged individually. If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
 - An end entry with the timestamp, the verdict, the reason, the number of files scanned, the number of files and bytes successfully copied, the number of files skipped, the number of errors, the number of older versions removed, and the free space left on the medium.
 
-The log is kept below 1 MB. When it would grow beyond that, the oldest whole runs are removed from it, except that the most recent run of each account that counts as a backup (see "See when I last made a backup") is always kept.
+The log is kept below 1 MB (1,000,000 bytes). When it has grown beyond 900,000 bytes at the start of a run, the oldest whole runs are removed from it until it is back within 900,000 bytes, which leaves room for the run that follows. The most recent run of each account that counts as a backup (see "See when I last made a backup") is always kept.
 
 That way I have some good data to help me find the cause of errors.
 
@@ -177,7 +178,9 @@ As a poweruser I want to add a computer or a user account to a medium, choosing 
 
 ### Link a computer or user account to an existing entry
 
-As a poweruser I want to link a computer to an existing computer entry on a medium, for example a replacement computer after a loss, or a computer that has been reinstalled and therefore has a new computer ID. Likewise, I want to link a user account to an existing account entry after the account's user name has changed. I do this on that computer, logged in as that user. Babawus updates the computer ID, or renames the user folder under `backup` and the entry in the configuration, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name.
+As a poweruser I want to link a computer to an existing computer entry on a medium, for example a replacement computer after a loss, or a computer that has been reinstalled and therefore has a new computer ID. Likewise, I want to link a user account to an existing account entry after the account's user name has changed. I do this on that computer, logged in as that user. Babawus updates the computer ID, or renames the user folder under `backup`, the entry in the configuration and the account's name in the log, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name, and "Last backup" and the history still show the account's earlier runs.
+
+Linking an account refuses to overwrite: if the new user folder already exists on the medium and the old one does too, Babawus stops and changes nothing, and the poweruser resolves it by hand. The folder and the log are changed first and the configuration last, so an interrupted link can simply be repeated.
 
 A change of hostname alone needs no action, because computers are recognised by their ID, not their hostname.
 
@@ -244,12 +247,12 @@ The path of a source file or folder is truncated at the home folder when it is w
 
 A computer is identified by a computer ID, not by its hostname, because many computers keep a default hostname (such as `mint`), and two computers with the same hostname must never share a folder on a medium.
 
-The computer ID is computed as HMAC-SHA256, with the contents of `/etc/machine-id` as the key and a fixed application ID defined by Babawus as the message. The first 128 bits are written as 32 lower-case hexadecimal digits. This follows the method systemd recommends for application-specific IDs: the raw machine ID never appears on the medium, and the computer ID cannot be matched with IDs that other applications derive from the same machine ID. A reinstalled computer gets a new machine ID, and therefore a new computer ID.
+The computer ID is computed as HMAC-SHA256. The key is the 32 hexadecimal digits in `/etc/machine-id`, as text and without the line ending. The message is the fixed application ID `io.github.ziggymax.Babawus`, as text. The first 128 bits of the result are written as 32 lower-case hexadecimal digits. Neither the key's form nor the application ID may ever change, because that would disconnect every computer from every medium. If `/etc/machine-id` does not hold 32 hexadecimal digits, the computer has no computer ID, and it is treated as not added to any medium. This follows the method systemd recommends for application-specific IDs: the raw machine ID never appears on the medium, and the computer ID cannot be matched with IDs that other applications derive from the same machine ID. A reinstalled computer gets a new machine ID, and therefore a new computer ID.
 
 For each computer added to a medium, the configuration holds:
 
 - The computer ID.
-- The name of the computer's folder under `backup`. When a computer is added, Babawus suggests its hostname converted to lower case, and if that name is already used on the medium, the hostname followed by `-2`, `-3` and so on. A name counts as used if it is in the configuration *or* a folder of that name already exists under `backup` (for example from a removed entry), so a new computer never ends up in an old one's folder. Folder names are unique on the medium, compared without regard to case.
+- The name of the computer's folder under `backup`. When a computer is added, Babawus suggests its hostname converted to lower case (or `computer`, if the hostname would not make a valid folder name), and if that name is already used on the medium, the name followed by `-2`, `-3` and so on. A name counts as used if it is in the configuration *or* a folder of that name already exists under `backup` (for example from a removed entry), so a new computer never ends up in an old one's folder. Folder names are unique on the medium, compared without regard to case.
 - The hostname last seen, for display only.
 - The user accounts added for that computer, with their selected files and folders and their exclusions.
 
@@ -282,6 +285,8 @@ When a newer version of a file needs to be written, this algorithm is used (assu
 1. The existing version of `userfile.ext` is moved to `userfile[]ext/userfile[<timestamp>].ext`, where `<timestamp>` is the current backup time.
 1. The temporary file is renamed to `userfile.ext`.
 1. If `userfile[]ext` now holds more than N older versions, the oldest ones are removed until N remain. "Oldest" is decided by the timestamp and suffix read from the names (a version without a suffix is older than one with `-2`, which is older than one with `-3`), not by sorting the names as text.
+
+An older version that cannot be removed is tried again on the next run. It is logged and counted as an error with the code `PRUNE_FAILED`, but it does not change the verdict: every file is safe, and the only cost is some space.
 
 If the name of the version folder or of the older version would be longer than the medium allows for a single name (255 bytes on Ext4, 255 characters on exFAT), the file is not updated: the existing newest copy stays as it is, the temporary file is removed, and the file is listed as skipped in the verdict. Users are expected to keep file and folder names reasonably short.
 
@@ -457,10 +462,58 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 
 `.babawus/babawus_config` is a TOML file, encoded in UTF-8, with LF line endings and a line ending after the last line.
 
-- The first line is a fixed marker comment that identifies the file as a Babawus configuration. It is followed by the boilerplate header as comments, in English.
+- The first line is the fixed marker comment `# Babawus configuration`, which identifies the file as a Babawus configuration. It is followed by the boilerplate header as comments, in English.
 - The field `format = 1` states the version of the file format. If a file has a newer format than this Babawus understands, the medium is shown as "Needs attention" in the media list (with the hint that a newer Babawus is needed), and Babawus never writes to it.
 - The configuration itself: N, and for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, the selected files and folders, and the exclusions.
 - The last line is the checksum, written as a TOML comment, so the file stays valid TOML. The checksum is the validation marker; there is no separate one.
+
+For example:
+
+    # Babawus configuration
+    # This file is written by Babawus. Change it with the Advanced functions in Babawus.
+    # If it is edited by hand, the medium needs attention until it has been saved in Babawus.
+    format = 1
+    older_versions = 10
+
+    [[computer]]
+    id = "0123456789abcdef0123456789abcdef"
+    folder = "mint"
+    hostname = "mint"
+
+    [[computer.account]]
+    username = "usera"
+    selected = ["Documents", "notes.txt"]
+    exclude_patterns = [".cache", "*.tmp", "*~"]
+    exclude_folders = [".local/share/Trash"]
+
+    # checksum: 0123456789abcdef
+
+### Reading the configuration file
+
+A medium that has a file at `.babawus/babawus_config` is a Babawus medium, whatever the file holds. The file is read in this order:
+
+1. If it starts with the marker and has a newer `format` than this Babawus understands, the medium needs attention, with the hint that a newer Babawus is needed. The rest of the file is not looked at, because a newer format may mean anything. `format` is found by looking at the lines before the first table, so this works even if the rest of the file can't be parsed.
+2. The file is parsed and its values are checked (see below), and the checksum and the marker are checked.
+
+If everything is in order, the configuration is used. Otherwise the configuration is damaged, and the medium needs attention:
+
+- **If the file can be parsed and its values are valid**, the poweruser sees the configuration in Babawus, checks it and saves it, which writes a new checksum.
+- **If not**, nothing in the file can be trusted, so the poweruser is offered to start a new configuration. That only replaces the file: all backups stay on the medium, and folders already under `backup` still count as used when new entries are added.
+
+These values are checked. Anything else makes the file invalid, including a field that Babawus does not know:
+
+- `format` is a whole number from 1 up, and N is from 1 to 99.
+- A computer ID is 32 lower-case hexadecimal digits, and no two computers have the same one.
+- A computer folder is a single, lower-case name that can be stored on exFAT (see "Names that cannot be stored"), not `.` or `..`, and no two differ only in case.
+- A user name is a single name that can be stored on exFAT, and no two accounts on a computer differ only in case, because they would share a folder.
+- A name pattern is not empty and does not contain `/`.
+- An excluded folder is a relative path with no `.` or `..` in it.
+
+Selected files and folders are not checked here: a selection with `..` in its path is dealt with during the run (see "What is copied"), so that the poweruser learns of it.
+
+### Writing the configuration file
+
+A configuration is never written in place. It is written to a temporary file in `.babawus/tmp/`, flushed, renamed over the old one, and the medium is then flushed. So an interruption leaves either the old configuration or the new one, never a damaged one. On Ext4, the file gets mode `0666`, like everything else Babawus creates.
 
 ### Checksum of the configuration file
 
@@ -474,21 +527,44 @@ The last line of `.babawus/babawus_config` holds a checksum of all lines above i
 2. The run ID, which is the same for all entries of one run.
 3. The entry type: `START`, `ERROR` or `END`.
 4. Any number of `key=value` pairs, for example `verdict=FAILED`, `reason=MEDIUM_FULL`, `copied_files=1234`.
-5. Optionally, a short English text for anyone reading the file directly.
+5. Optionally, a short English text for anyone reading the file directly. It is a fixed text from Babawus, without `=`, which is how it is told apart from the pairs.
 
-Verdicts, reasons and error codes are written as fixed, language-neutral codes (`ALL_GOOD`, `SKIPPED`, `NOT_FINISHED`, `FAILED`; `MEDIUM_FULL`, `NOT_ADDED`, `UNREADABLE`, …). The history view translates them into the user's language.
+The run ID is 16 random lower-case hexadecimal digits.
+
+Verdicts, reasons and error codes are written as fixed, language-neutral codes. The history view translates them into the user's language.
+
+| Entry | Fields |
+|---|---|
+| `START` | `account`: `username@computer folder`. If the computer has not been added to the medium, there is no computer folder, so the hostname is used in its place |
+| `ERROR` | `code`, and `path` (relative to the home folder). `files` gives the number of files in a skipped folder, if it has any |
+| `END` | `verdict` and `reason`. Except for an interrupted run, whose numbers are not known, also `scanned_files`, `copied_files`, `copied_bytes`, `skipped_files`, `errors`, `versions_removed` and `free_bytes` |
+
+The codes are:
+
+| Field | Codes |
+|---|---|
+| `verdict` | `ALL_GOOD`, `SKIPPED`, `NOT_FINISHED`, `FAILED` |
+| `reason` | `NONE` and `FILES_SKIPPED`; `CANCELLED`, `MEDIUM_REMOVED`, `INTERRUPTED` (found by a later run) and `FLUSH_FAILED`; `MEDIUM_FULL`, `NOT_ADDED` and `CANNOT_WRITE` |
+| `code` | The codes in "Names that cannot be stored", `SELECTION_MISSING`, `OUTSIDE_HOME`, `TYPE_CONFLICT`, `CHANGED_DURING_COPY`, `UNREADABLE`, `DISAPPEARED`, `NOT_WRITABLE`, `VERSION_NAME_TOO_LONG`, `WRITE_ERROR` (the general code for other write errors), `PRUNE_FAILED`, and `MULTIPLE_ERRORS` for the entry that says further errors are only counted, which has no `path` |
+
+File names on Linux are bytes, and can hold anything except `/`, including tabs and line endings. So values are escaped: a tab is written as `\t`, a line ending as `\n`, a backslash as `\\`, and any other control character and every byte that is not valid UTF-8 as `\xNN`, with two hexadecimal digits. The log therefore always stays valid UTF-8 with one entry per line, and the original name can always be read back.
 
 Writing and trimming the log:
 
 - The start entry is written and flushed to the medium (`fsync`) before any file is copied.
-- The log is trimmed at the start of a run, before the start entry, never in place: the trimmed log is written to `.babawus/tmp/`, flushed, and renamed over the old log (the same mechanism as in "Writing a new copy safely").
-- When the log is read, incomplete or garbled lines (for example a half-written last line after the medium was pulled out) are ignored, instead of rejecting the whole log.
+- Every entry is flushed to the medium as it is written.
+- The log is trimmed at the start of a run, before the start entry, never in place: the trimmed log is written to `.babawus/tmp/`, flushed, and renamed over the old log (the same mechanism as in "Writing a new copy safely"). Garbled lines are dropped when this happens.
+- When the log is read, incomplete or garbled lines (for example a half-written last line after the medium was pulled out) are ignored, instead of rejecting the whole log. A last line with no line ending is always incomplete, even if it looks whole.
+- Before anything is added to a log whose last line has no line ending, a line ending is written, so that the new entry does not become part of the garbled line.
+- On Ext4, a new log gets mode `0666`.
+
+At the start of a run the order is: take the medium's lock, empty `.babawus/tmp/`, close interrupted runs (see "Interrupted runs in the log"), trim the log, write the start entry.
 
 ### Interrupted runs in the log
 
 A run with a start entry but no end entry was interrupted. When the log is read, such a run counts as "Backup not finished", and it does not count as a backup for "See when I last made a backup".
 
-At the start of each run, after taking the medium's lock, Babawus writes the missing end entry for every such run: verdict `NOT_FINISHED`, with the reason that the run was interrupted and the time it was detected. The log then only ever holds complete runs. A run whose lock is still live (see "One Babawus at a time") is never closed this way.
+At the start of each run, after taking the medium's lock, Babawus writes the missing end entry for every such run: verdict `NOT_FINISHED`, reason `INTERRUPTED`, and the time it was detected as the timestamp. The log then only ever holds complete runs. A run whose lock is still live (see "One Babawus at a time") is never closed this way.
 
 ### Technology
 

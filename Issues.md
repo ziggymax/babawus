@@ -118,7 +118,7 @@ Testing on the development VM and a real USB stick turned up these issues. All a
 38. **Formatting may need no password.** It ran without one from an SSH session, using an administrator's account.
     - **Decided (2026-11-05):** Accepted. udisks2 may or may not ask, and the explicit confirmation is the safeguard. The manual checklist covers formatting from an account without administrator rights.
 39. **Powering off has not been tested.** The stick reports `CanPowerOff: true`, but that is all that is known.
-    - **Open:** Test it on a real stick. The `pkexec` fallback stays in Requirements.md until then, and can go if nothing needs it.
+    - **Open:** Test it on a real stick. The `pkexec` fallback stays in Requirements.md until then, and can go if nothing needs it. Tracked as T-019 in [Tasks.md](Tasks.md).
 40. **Files dated outside exFAT's range looked changed on every run.** exFAT moves times before 1980 and after 2107 to the nearest it can store, so each run copied such a file again, and pushed out a real older version.
     - **Decided (2026-11-05):** On exFAT, Babawus compares such a time as the time exFAT would store.
 41. **The chunk size was not measured.**
@@ -133,3 +133,24 @@ Testing on the development VM and a real USB stick turned up these issues. All a
     - **Decided (2026-11-06):** See "What is copied" in Requirements.md. This also covers reporting a missing selection as skipped on every run, and accepting rare false clashes between names such as `ı.txt` and `I.txt`.
 46. **A source file that disappears during a run**, between the scan and the copy.
     - **Decided (2026-11-06):** A new code, `DISAPPEARED`, says what happened more clearly than `UNREADABLE`. It covers a file or folder that vanishes at any point during a run.
+
+## Findings before building the configuration and log
+
+Comparing the requirements with what the configuration and log have to do turned up these gaps. All are now covered in Requirements.md.
+
+47. **File names don't fit the file formats.** Linux names are bytes, but the configuration and log are UTF-8, and a name can hold a tab or a line ending, which would break a log line.
+    - **Decided (2026-11-06):** Log values are escaped (`\t`, `\n`, `\\`, `\xNN`). The file explorer refuses to select anything whose path isn't valid UTF-8.
+48. **The computer ID wasn't fully defined.** `/etc/machine-id` ends in a line ending, and the application ID was never given. Changing either later would disconnect every computer from its media.
+    - **Decided (2026-11-06):** The key is the 32 hexadecimal digits as text, without the line ending. The message is `io.github.ziggymax.Babawus`.
+49. **A half-written last line could swallow the next entry.** Appending straight after it would glue the new entry onto the garbage, and the whole line would then be ignored.
+    - **Decided (2026-11-06):** A line ending is written first if the log doesn't end in one. A last line with no line ending never counts.
+50. **Renaming an account lost "Last backup".** Runs are matched on `username@computer folder`, so a linked account would show "No backup yet".
+    - **Decided (2026-11-06):** Linking an account also renames it in the log.
+51. **A run that isn't set up has no computer folder** for its log entry or lock.
+    - **Decided (2026-11-06):** The hostname is used in its place.
+52. **"Below 1 MB" wasn't precise,** and a run adds entries after the log has been trimmed.
+    - **Decided (2026-11-06):** The limit is 1,000,000 bytes. A log over 900,000 bytes at the start of a run is trimmed to that.
+53. **The configuration's edge cases.** Saving wasn't required to be safe, and invalid files had no defined status.
+    - **Decided (2026-11-06):** Saved through `.babawus/tmp/` and renamed. Any file at `.babawus/babawus_config` makes a Babawus medium, and one that isn't in order needs attention. `format` is checked first. A file that can't be parsed can only be replaced by a new configuration, which leaves the backups alone.
+54. **The log's keys and codes weren't defined,** nor was the run ID, or what a failed prune means for the verdict.
+    - **Decided (2026-11-06):** Listed in "Format of the log". A run ID is 16 random hexadecimal digits. A failed prune is an error that doesn't change the verdict.
