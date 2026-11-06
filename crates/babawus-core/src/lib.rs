@@ -7,6 +7,7 @@ pub mod copy;
 pub mod exclude;
 pub mod fs;
 pub mod identity;
+pub mod lock;
 pub mod log;
 pub mod medium;
 pub mod names;
