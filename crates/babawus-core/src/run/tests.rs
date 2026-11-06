@@ -504,7 +504,7 @@ fn a_damaged_configuration_has_its_own_reason_and_the_medium_is_not_touched() {
 }
 
 #[test]
-fn a_configuration_from_a_newer_babawus_is_not_touched() {
+fn a_configuration_from_a_newer_babawus_counts_as_damaged_and_is_not_touched() {
     let setup = Setup::new();
     let path = root().join(CONFIG_FILE);
     let newer = b"# Babawus configuration\nformat = 999\n";
@@ -513,8 +513,23 @@ fn a_configuration_from_a_newer_babawus_is_not_touched() {
 
     let outcome = setup.run();
 
-    assert_eq!(outcome.reason, Reason::NotAdded);
+    assert_eq!(outcome.reason, Reason::ConfigDamaged);
     assert_eq!(setup.medium.steps(), steps);
+}
+
+#[test]
+fn a_medium_without_a_babawus_folder_is_not_touched() {
+    let setup = Setup::new();
+    let medium = Arc::new(FakeFs::new());
+    medium.add_file(root().join("holiday.jpg"), b"", at(1));
+    let mut backup = setup.backup();
+    backup.medium = Arc::clone(&medium) as Arc<dyn FileSystem>;
+    let steps = medium.steps();
+
+    let outcome = setup.outcome_of(&backup);
+
+    assert_eq!(outcome.reason, Reason::NotAdded);
+    assert_eq!(medium.steps(), steps);
 }
 
 #[test]

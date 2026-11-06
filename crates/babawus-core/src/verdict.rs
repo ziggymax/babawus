@@ -46,7 +46,8 @@ pub enum Reason {
     FlushFailed,
     MediumFull,
     NotAdded,
-    /// Only in a verdict, never in the log, because a run doesn't touch such a medium.
+    /// There is a configuration file, but it can't be used: it is damaged, or needs a newer
+    /// Babawus. Only in a verdict, never in the log, because a run doesn't touch such a medium.
     ConfigDamaged,
     CannotWrite,
 }
