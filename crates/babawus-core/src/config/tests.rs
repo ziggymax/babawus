@@ -3,6 +3,8 @@ use std::time::SystemTime;
 
 use super::*;
 use crate::fs::fake::FakeFs;
+use crate::log::{last_backup, read_runs};
+use crate::medium::LOG_FILE;
 
 const ID: &str = "0123456789abcdef0123456789abcdef";
 const OTHER_ID: &str = "fedcba9876543210fedcba9876543210";
@@ -537,6 +539,20 @@ impl Medium {
         load(&self.fake, &root()).unwrap()
     }
 
+    fn add_log(&self) {
+        let log = "2026-11-03 17:54:00 +0100\t0123456789abcdef\tSTART\taccount=usera@mint\n\
+                   2026-11-03 17:55:00 +0100\t0123456789abcdef\tEND\tverdict=ALL_GOOD\t\
+                   reason=NONE\n";
+        let path = root().join(LOG_FILE);
+        self.fake
+            .add_file(path, log.as_bytes(), SystemTime::UNIX_EPOCH);
+    }
+
+    fn last_backup(&self, account: &str) -> bool {
+        let runs = read_runs(&self.fake, &root()).unwrap();
+        last_backup(&runs, account).is_some()
+    }
+
     fn link(&self, config: &mut Config, old: &str, new: &str) -> Result<(), EntryError> {
         link_account(&self.fake, &root(), Format::ExFat, config, ID, old, new)
     }
@@ -711,11 +727,24 @@ fn linking_needs_a_valid_free_name_and_an_existing_entry() {
 }
 
 #[test]
+fn a_linked_account_keeps_its_last_backup() {
+    let medium = Medium::new();
+    let mut config = config();
+    medium.add_log();
+
+    medium.link(&mut config, "usera", "anna").unwrap();
+
+    assert!(medium.last_backup("anna@mint"));
+    assert!(!medium.last_backup("usera@mint"));
+}
+
+#[test]
 fn an_interrupted_link_can_be_repeated() {
     let steps = {
         let medium = Medium::new();
         let mut config = config();
         medium.add_backup("mint/usera/file");
+        medium.add_log();
         medium.save(&config);
         let before = medium.fake.steps();
         medium.link(&mut config, "usera", "anna").unwrap();
@@ -726,6 +755,7 @@ fn an_interrupted_link_can_be_repeated() {
             let medium = Medium::new();
             let mut config = config();
             medium.add_backup("mint/usera/file");
+            medium.add_log();
             medium.save(&config);
             medium.fake.pull_at_step(medium.fake.steps() + step);
 
@@ -733,8 +763,6 @@ fn an_interrupted_link_can_be_repeated() {
 
             if lose_unflushed {
                 medium.fake.reinsert_losing_unflushed();
-62
-
             } else {
                 medium.fake.reinsert();
             }
@@ -746,6 +774,7 @@ fn an_interrupted_link_can_be_repeated() {
             }
             assert!(loaded.account(ID, "anna").is_some(), "step {step}");
             assert!(medium.has_backup("mint/anna/file"), "step {step}");
+            assert!(medium.last_backup("anna@mint"), "step {step}");
         }
     }
 }

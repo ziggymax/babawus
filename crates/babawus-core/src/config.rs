@@ -15,6 +15,7 @@ use sha2::{Digest, Sha256};
 use crate::exclude::Exclusions;
 use crate::fs::FileSystem;
 use crate::identity::{hex, is_computer_id};
+use crate::log::{account_name, rename_account};
 use crate::medium::{BACKUP_FOLDER, CONFIG_FILE, read_file, replace_file};
 use crate::names::{fold, name_problem};
 use crate::scan::{Selection, account_folder};
@@ -432,7 +433,8 @@ pub fn folders_on_medium(medium: &dyn FileSystem, root: &Path) -> io::Result<Vec
 }
 
 /// Links this account to the existing entry `old_username` after its user name has changed, so
-/// that backups go on in the same place. Renames its folder, and then saves the configuration.
+/// that backups go on in the same place. Renames its folder and its name in the log, and then
+/// saves the configuration.
 ///
 /// The configuration comes last, so that an interrupted link can simply be repeated. If both
 /// folders exist, nothing is changed, because the poweruser has to resolve that by hand.
@@ -465,6 +467,9 @@ pub fn link_account(
         }
         medium.rename(&old_folder, &new_folder)?;
     }
+    let old_account = account_name(old_username, folder);
+    let new_account = account_name(new_username, folder);
+    rename_account(medium, root, format, &old_account, &new_account)?;
     save(medium, root, format, &changed)?;
     *config = changed;
     Ok(())
