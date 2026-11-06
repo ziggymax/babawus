@@ -490,19 +490,31 @@ fn a_computer_without_an_id_counts_as_not_added() {
 }
 
 #[test]
-fn a_medium_that_is_not_in_order_is_not_touched() {
-    let contents: [&[u8]; 2] = [b"nonsense", b"# babawus\nformat = 999\n"];
-    for data in contents {
-        let setup = Setup::new();
-        let path = root().join(CONFIG_FILE);
-        setup.medium.add_file(path, data, at(1));
-        let steps = setup.medium.steps();
+fn a_damaged_configuration_has_its_own_reason_and_the_medium_is_not_touched() {
+    let setup = Setup::new();
+    let path = root().join(CONFIG_FILE);
+    setup.medium.add_file(path, b"nonsense", at(1));
+    let steps = setup.medium.steps();
 
-        let outcome = setup.run();
+    let outcome = setup.run();
 
-        assert_eq!(outcome.reason, Reason::NotAdded);
-        assert_eq!(setup.medium.steps(), steps);
-    }
+    assert_eq!(outcome.reason, Reason::ConfigDamaged);
+    assert_eq!(outcome.verdict(), Verdict::Failed);
+    assert_eq!(setup.medium.steps(), steps);
+}
+
+#[test]
+fn a_configuration_from_a_newer_babawus_is_not_touched() {
+    let setup = Setup::new();
+    let path = root().join(CONFIG_FILE);
+    let newer = b"# Babawus configuration\nformat = 999\n";
+    setup.medium.add_file(path, newer, at(1));
+    let steps = setup.medium.steps();
+
+    let outcome = setup.run();
+
+    assert_eq!(outcome.reason, Reason::NotAdded);
+    assert_eq!(setup.medium.steps(), steps);
 }
 
 #[test]

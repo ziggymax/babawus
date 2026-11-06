@@ -130,7 +130,8 @@ impl Backup {
         let stopped = |error: &_| early(stop_for(medium, &self.root, error).into());
         let config = match load(medium, &self.root) {
             Ok(Loaded::Ready(config)) => config,
-            Ok(_) => return early(Reason::NotAdded),
+            Ok(Loaded::Damaged(_)) => return early(Reason::ConfigDamaged),
+            Ok(Loaded::Missing | Loaded::NewerFormat) => return early(Reason::NotAdded),
             Err(error) => return stopped(&error),
         };
         let (account, plan) = self.plan(&config);

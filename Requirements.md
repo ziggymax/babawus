@@ -147,7 +147,7 @@ As a user I want every backup run to end with a clear, unmistakable verdict, wit
 | All good | Everything that needed copying was copied | None |
 | Some files were skipped | The run finished, but files were skipped (for example unreadable, name cannot be stored, case clash, version name too long) | Contact your poweruser |
 | Backup not finished | The run was interrupted: the medium was removed, the computer was shut down, or I cancelled | Run the backup again. If it happens again, contact your poweruser |
-| Backup failed | The run cannot succeed without the poweruser: the medium is full, the computer or account has not been added, or the medium cannot be written to | Contact your poweruser |
+| Backup failed | The run cannot succeed without the poweruser: the medium is full, the computer or account has not been added, the configuration is damaged, or the medium cannot be written to | Contact your poweruser |
 
 If several of these happen in one run, the worst verdict wins: Backup failed, then Backup not finished, then Some files were skipped, then All good.
 
@@ -190,7 +190,7 @@ As a poweruser I want to remove a computer or user account from a medium, for ex
 
 ### Back up from a computer or account that has not been added
 
-As a user, if the computer or user account I am using has not been added to a medium, I want the media list to show this plainly ("Not set up for you: contact your poweruser"), and not let me start a backup on that medium. That way I see why before I try, and know what to do. (If the configuration changes between showing the list and starting the backup, the run copies nothing and ends with "Backup failed", with the reason that the medium is not set up for this computer or user. The same goes for a configuration that has gone missing or needs attention by then, and because such a medium may need a newer Babawus, the run then leaves it untouched: no lock and no log entry.)
+As a user, if the computer or user account I am using has not been added to a medium, I want the media list to show this plainly ("Not set up for you: contact your poweruser"), and not let me start a backup on that medium. That way I see why before I try, and know what to do. (If the configuration changes between showing the list and starting the backup, the run copies nothing and ends with "Backup failed", with the reason that the medium is not set up for this computer or user. The same goes for a configuration that has gone missing or needs a newer Babawus by then, and a damaged configuration ends the same way, with the reason that the configuration is damaged. Such a medium may mean anything to this Babawus, so the run then leaves it untouched: no lock and no log entry.)
 
 ### Recover from an interrupted backup
 
@@ -547,7 +547,7 @@ The codes are:
 | Field | Codes |
 |---|---|
 | `verdict` | `ALL_GOOD`, `SKIPPED`, `NOT_FINISHED`, `FAILED` |
-| `reason` | `NONE` and `FILES_SKIPPED`; `CANCELLED`, `MEDIUM_REMOVED`, `INTERRUPTED` (found by a later run) and `FLUSH_FAILED`; `MEDIUM_FULL`, `NOT_ADDED` and `CANNOT_WRITE` |
+| `reason` | `NONE` and `FILES_SKIPPED`; `CANCELLED`, `MEDIUM_REMOVED`, `INTERRUPTED` (found by a later run) and `FLUSH_FAILED`; `MEDIUM_FULL`, `NOT_ADDED` and `CANNOT_WRITE`. `CONFIG_DAMAGED` is also a reason, but only in a verdict: a run with a damaged configuration writes no log |
 | `code` | The codes in "Names that cannot be stored", `SELECTION_MISSING`, `OUTSIDE_HOME`, `TYPE_CONFLICT`, `CHANGED_DURING_COPY`, `UNREADABLE`, `DISAPPEARED`, `NOT_WRITABLE`, `VERSION_NAME_TOO_LONG`, `WRITE_ERROR` (the general code for other write errors), `PRUNE_FAILED`, and `MULTIPLE_ERRORS` for the entry that says further errors are only counted, which has no `path` |
 
 File names on Linux are bytes, and can hold anything except `/`, including tabs and line endings. So values are escaped: a tab is written as `\t`, a line ending as `\n`, a backslash as `\\`, and any other control character and every byte that is not valid UTF-8 as `\xNN`, with two hexadecimal digits. The log therefore always stays valid UTF-8 with one entry per line, and the original name can always be read back.
