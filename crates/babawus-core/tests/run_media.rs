@@ -12,7 +12,7 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::time::{Duration, SystemTime};
 
-use babawus_core::config::{Config, save};
+use babawus_core::config::{Config, Loaded, load, save};
 use babawus_core::fs::RealFs;
 use babawus_core::lock::ThisProcess;
 use babawus_core::log::{new_run_id, read_runs};
@@ -162,6 +162,33 @@ fn a_worker_thread_runs_a_backup(format: Format) {
         Message::Ended(Ended::Finished(outcome)) if outcome.reason == Reason::None
     ));
     assert!(test.copy_path("Documents/a.txt").exists());
+}
+
+fn a_new_hostname_is_saved(format: Format) {
+    let test = Test::new(format);
+    test.write("Documents/a.txt", b"first");
+    let mut backup = test.backup();
+    backup.hostname = "new-name".to_owned();
+
+    let ended = backup.run(&AtomicBool::new(false), &mut |_| {});
+
+    assert!(matches!(ended, Ended::Finished(outcome) if outcome.reason == Reason::None));
+    let Loaded::Ready(config) = load(&RealFs, test.root()).unwrap() else {
+        panic!("the configuration is not in order");
+    };
+    assert_eq!(config.computer(ID).unwrap().hostname, "new-name");
+}
+
+#[test]
+#[ignore = "uses sudo and a loop device"]
+fn a_new_hostname_is_saved_on_exfat() {
+    a_new_hostname_is_saved(Format::ExFat);
+}
+
+#[test]
+#[ignore = "uses sudo and a loop device"]
+fn a_new_hostname_is_saved_on_ext4() {
+    a_new_hostname_is_saved(Format::Ext4);
 }
 
 #[test]

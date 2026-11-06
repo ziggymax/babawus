@@ -253,7 +253,7 @@ For each computer added to a medium, the configuration holds:
 
 - The computer ID.
 - The name of the computer's folder under `backup`. When a computer is added, Babawus suggests its hostname converted to lower case (or `computer`, if the hostname would not make a valid folder name), and if that name is already used on the medium, the name followed by `-2`, `-3` and so on. A name counts as used if it is in the configuration *or* a folder of that name already exists under `backup` (for example from a removed entry), so a new computer never ends up in an old one's folder. Folder names are unique on the medium, compared without regard to case.
-- The hostname last seen, for display only.
+- The hostname last seen, for display only. A backup saves it if it has changed, for a computer that has been added. If that fails, the backup goes on, its verdict stays the same, and the next backup tries again.
 - The user accounts added for that computer, with their selected files and folders and their exclusions.
 
 ### Handling of file versioning

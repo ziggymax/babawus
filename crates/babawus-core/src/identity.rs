@@ -10,6 +10,7 @@ use crate::fs::FileSystem;
 use crate::medium::read_file;
 
 const MACHINE_ID_FILE: &str = "/etc/machine-id";
+const HOSTNAME_FILE: &str = "/proc/sys/kernel/hostname";
 
 /// The message of the HMAC. This must never change, because that would disconnect every computer
 /// from every medium.
@@ -70,6 +71,12 @@ pub fn this_computer_id(fs: &dyn FileSystem) -> io::Result<Option<String>> {
     Ok(str::from_utf8(&contents).ok().and_then(computer_id))
 }
 
+/// The hostname of this computer.
+pub fn this_hostname(fs: &dyn FileSystem) -> io::Result<String> {
+    let contents = read_file(fs, Path::new(HOSTNAME_FILE))?;
+    Ok(String::from_utf8_lossy(&contents).trim_end().to_owned())
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::SystemTime;
@@ -80,6 +87,19 @@ mod tests {
     const MACHINE_ID: &str = "0123456789abcdef0123456789abcdef";
     /// Worked out separately, with Python's `hmac` module. This value must never change.
     const COMPUTER_ID: &str = "203a901d9caa4803d310150d35b859a5";
+
+    #[test]
+    fn the_hostname_is_read_without_its_line_ending() {
+        let fake = FakeFs::new();
+        fake.add_file(HOSTNAME_FILE, b"mint\n", SystemTime::UNIX_EPOCH);
+
+        assert_eq!(this_hostname(&fake).unwrap(), "mint");
+    }
+
+    #[test]
+    fn this_computer_has_a_hostname() {
+        assert!(!this_hostname(&crate::fs::RealFs).unwrap().is_empty());
+    }
 
     fn hmac_hex(key: &[u8], message: &[u8]) -> String {
         hex(&hmac_sha256(key, message), 32)

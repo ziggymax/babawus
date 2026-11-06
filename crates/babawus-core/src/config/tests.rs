@@ -778,3 +778,40 @@ fn an_interrupted_link_can_be_repeated() {
         }
     }
 }
+
+#[test]
+fn a_new_hostname_is_noted() {
+    let mut config = config();
+
+    assert!(config.note_hostname(ID, "new-laptop"));
+
+    let computer = config.computer(ID).unwrap();
+    assert_eq!(computer.hostname, "new-laptop");
+    assert_eq!(computer.folder, "mint");
+}
+
+#[test]
+fn the_same_hostname_changes_nothing() {
+    let mut config = config();
+    let hostname = config.computer(ID).unwrap().hostname.clone();
+
+    assert!(!config.note_hostname(ID, &hostname));
+}
+
+#[test]
+fn an_empty_hostname_changes_nothing() {
+    let mut config = config();
+    let before = config.clone();
+
+    assert!(!config.note_hostname(ID, ""));
+    assert_eq!(config, before);
+}
+
+#[test]
+fn the_hostname_of_an_unknown_computer_changes_nothing() {
+    let mut config = config();
+    let before = config.clone();
+
+    assert!(!config.note_hostname(OTHER_ID, "elsewhere"));
+    assert_eq!(config, before);
+}
