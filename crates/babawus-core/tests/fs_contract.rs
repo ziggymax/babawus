@@ -60,6 +60,27 @@ const CASES: &[Case] = &[
     ("sync_medium_succeeds", sync_medium_succeeds),
 ];
 
+/// For file systems that ignore case in names, so exFAT.
+const IGNORE_CASE_CASES: &[Case] = &[
+    ("lookup_ignores_case", lookup_ignores_case),
+    (
+        "create_new_refuses_another_case",
+        create_new_refuses_another_case,
+    ),
+    (
+        "read_dir_keeps_the_original_case",
+        read_dir_keeps_the_original_case,
+    ),
+    (
+        "a_new_file_takes_its_own_case",
+        a_new_file_takes_its_own_case,
+    ),
+    (
+        "rename_replaces_in_another_case",
+        rename_replaces_in_another_case,
+    ),
+];
+
 /// For file systems that store permissions, so not exFAT.
 const MODE_CASES: &[Case] = &[("set_mode_is_exact", set_mode_is_exact)];
 
@@ -305,6 +326,50 @@ fn sync_medium_succeeds(fs: &dyn FileSystem, dir: &Path) {
     fs.sync_medium(dir).unwrap();
 }
 
+fn lookup_ignores_case(fs: &dyn FileSystem, dir: &Path) {
+    write(fs, &dir.join("Report.PDF"), b"content");
+
+    assert_eq!(read(fs, &dir.join("report.pdf")), b"content");
+    assert_eq!(fs.metadata(&dir.join("REPORT.pdf")).unwrap().len, 7);
+}
+
+fn create_new_refuses_another_case(fs: &dyn FileSystem, dir: &Path) {
+    write(fs, &dir.join("file"), b"content");
+
+    assert_eq!(
+        error_kind(fs.create_new(&dir.join("FILE"))),
+        ErrorKind::AlreadyExists
+    );
+}
+
+fn read_dir_keeps_the_original_case(fs: &dyn FileSystem, dir: &Path) {
+    write(fs, &dir.join("MixedCase"), b"content");
+
+    assert_eq!(fs.read_dir(dir).unwrap(), ["MixedCase"]);
+}
+
+fn a_new_file_takes_its_own_case(fs: &dyn FileSystem, dir: &Path) {
+    let (old, temp) = (dir.join("report"), dir.join("temp"));
+    write(fs, &old, b"old");
+    write(fs, &temp, b"new");
+    fs.remove_file(&old).unwrap();
+
+    fs.rename(&temp, &dir.join("Report")).unwrap();
+
+    assert_eq!(fs.read_dir(dir).unwrap(), ["Report"]);
+}
+
+fn rename_replaces_in_another_case(fs: &dyn FileSystem, dir: &Path) {
+    let temp = dir.join("temp");
+    write(fs, &dir.join("report"), b"old");
+    write(fs, &temp, b"new");
+
+    fs.rename(&temp, &dir.join("REPORT")).unwrap();
+
+    assert_eq!(read(fs, &dir.join("report")), b"new");
+    assert_eq!(fs.read_dir(dir).unwrap().len(), 1);
+}
+
 fn set_mode_is_exact(fs: &dyn FileSystem, dir: &Path) {
     let (file, folder) = (dir.join("file"), dir.join("folder"));
     write(fs, &file, b"content");
@@ -345,6 +410,15 @@ fn fake() {
 }
 
 #[test]
+fn fake_exfat() {
+    let fake = FakeFs::exfat();
+
+    run(CASES, &fake, Path::new("/"));
+    fake.create_dir(Path::new("/case")).unwrap();
+    run(IGNORE_CASE_CASES, &fake, Path::new("/case"));
+}
+
+#[test]
 fn real_folder() {
     let dir = TempDir::new("contract");
 
@@ -367,6 +441,7 @@ fn exfat() {
     let medium = LoopMedium::new(MediumFormat::ExFat, 32 * 1024 * 1024);
 
     run(CASES, &RealFs, medium.path());
+    run(IGNORE_CASE_CASES, &RealFs, medium.path());
 }
 
 #[test]
