@@ -246,6 +246,7 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 
 ### System quirks
 
+- **GUI runs over SSH have no session bus:** a second start then can't find the first, so it shows "Babawus is already open" instead of raising the window. To test that, run both inside `dbus-run-session`.
 - **Package flags:** after the original setup, `build-essential`, `g++` and `g++-x86-64-linux-gnu` were installed but marked for removal (`ri` in `dpkg -l`). The cause wasn't found. If it happens again, run `printf 'build-essential install\ng++ install\ng++-x86-64-linux-gnu install\n' | sudo dpkg --set-selections`.
 - **Held-back updates:** `apt` may hold back a package with `(phased 40%)` in `apt-cache policy`. Ubuntu is rolling it out gradually, and it arrives by itself later.
 - **Guest Additions:** the Guest Additions packages aren't installed. The kernel's own `vboxguest` module is loaded, and nothing so far has needed more.

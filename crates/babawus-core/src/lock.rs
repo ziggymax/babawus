@@ -5,7 +5,8 @@
 //! over.
 //!
 //! Between creating the lock file and writing to it, the lock looks left over. Only another
-//! Babawus on this computer could see that, and the lock in `/run/lock/` rules that out.
+//! Babawus on this computer could see that, and the lock in `/run/lock/` normally rules that out.
+//! In case that lock can't be used, a new lock is read back, and only counts if it is still ours.
 
 use std::collections::BTreeSet;
 use std::io::{self, ErrorKind};
@@ -88,8 +89,8 @@ pub struct Holder {
 
 #[derive(Debug)]
 pub enum LockError {
-    /// A live lock is in the way.
-    Held(Holder),
+    /// A live lock is in the way. Without a holder, another Babawus is just taking the lock.
+    Held(Option<Holder>),
     Io(io::Error),
 }
 
@@ -142,7 +143,7 @@ impl<'a> MediumLock<'a> {
         account: &str,
     ) -> Result<Self, LockError> {
         if let Some(holder) = live_holder(medium, root, system, this)? {
-            return Err(LockError::Held(holder));
+            return Err(LockError::Held(Some(holder)));
         }
         let path = root.join(LOCK_FILE);
         match medium.remove_file(&path) {
@@ -164,6 +165,12 @@ impl<'a> MediumLock<'a> {
             // If this fails too, what is left isn't a live lock.
             let _ = medium.remove_file(&path);
             return Err(error.into());
+        }
+        drop(file);
+        match read_holder(medium, root)? {
+            Some(found) if found.run_id == run_id => {}
+            // The file is no longer ours, so it stays as it is.
+            other => return Err(LockError::Held(other)),
         }
         held_runs().insert(run_id.to_owned());
         Ok(Self {

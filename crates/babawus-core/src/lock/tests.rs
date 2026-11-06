@@ -1,10 +1,13 @@
+use std::ffi::OsString;
+use std::io::Read;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, SystemTime};
 
 use super::*;
-use crate::fs::RealFs;
+use crate::fs::WriteFile;
 use crate::fs::fake::FakeFs;
+use crate::fs::{Metadata, RealFs};
 use crate::log::new_run_id;
 
 const COMPUTER: &str = "0123456789abcdef0123456789abcdef";
@@ -158,7 +161,7 @@ fn a_live_lock_of_another_process_stops_a_new_one() {
 
     let result = setup.take();
 
-    assert!(matches!(result, Err(LockError::Held(holder)) if holder == other));
+    assert!(matches!(result, Err(LockError::Held(Some(holder))) if holder == other));
     assert_eq!(setup.holder(), Some(other));
 }
 
@@ -319,6 +322,153 @@ fn a_lock_that_could_not_be_written_is_not_left_behind() {
 
     assert!(!setup.has_lock_file());
     assert!(!held_runs().contains(&run_id));
+}
+
+/// A medium where another Babawus acts right after this one has written its lock.
+struct Rival {
+    fake: FakeFs,
+    /// What the rival leaves in the lock file. Without it, the rival only removes the file.
+    replacement: Option<Vec<u8>>,
+}
+
+struct RivalFile {
+    file: Box<dyn WriteFile>,
+    fake: FakeFs,
+    replacement: Option<Vec<u8>>,
+}
+
+impl WriteFile for RivalFile {
+    fn write_all(&mut self, data: &[u8]) -> io::Result<()> {
+        self.file.write_all(data)?;
+        self.fake.remove_file(&lock_path())?;
+        if let Some(replacement) = &self.replacement {
+            let mut file = self.fake.create_new(&lock_path())?;
+            file.write_all(replacement)?;
+        }
+        Ok(())
+    }
+
+    fn set_modified(&mut self, time: SystemTime) -> io::Result<()> {
+        self.file.set_modified(time)
+    }
+
+    fn sync(&mut self) -> io::Result<()> {
+        self.file.sync()
+    }
+}
+
+impl FileSystem for Rival {
+    fn metadata(&self, path: &Path) -> io::Result<Metadata> {
+        self.fake.metadata(path)
+    }
+
+    fn read_dir(&self, path: &Path) -> io::Result<Vec<OsString>> {
+        self.fake.read_dir(path)
+    }
+
+    fn open(&self, path: &Path) -> io::Result<Box<dyn Read + Send>> {
+        self.fake.open(path)
+    }
+
+    fn create_new(&self, path: &Path) -> io::Result<Box<dyn WriteFile>> {
+        Ok(Box::new(RivalFile {
+            file: self.fake.create_new(path)?,
+            fake: self.fake.clone(),
+            replacement: self.replacement.clone(),
+        }))
+    }
+
+    fn open_append(&self, path: &Path) -> io::Result<Box<dyn WriteFile>> {
+        self.fake.open_append(path)
+    }
+
+    fn create_dir(&self, path: &Path) -> io::Result<()> {
+        self.fake.create_dir(path)
+    }
+
+    fn rename(&self, from: &Path, to: &Path) -> io::Result<()> {
+        self.fake.rename(from, to)
+    }
+
+    fn remove_file(&self, path: &Path) -> io::Result<()> {
+        self.fake.remove_file(path)
+    }
+
+    fn set_mode(&self, path: &Path, mode: u32) -> io::Result<()> {
+        self.fake.set_mode(path, mode)
+    }
+
+    fn free_space(&self, path: &Path) -> io::Result<u64> {
+        self.fake.free_space(path)
+    }
+
+    fn sync_medium(&self, path: &Path) -> io::Result<()> {
+        self.fake.sync_medium(path)
+    }
+}
+
+fn take_against(rival: &Rival, setup: &Setup, run_id: &str) -> LockError {
+    let result = MediumLock::take(
+        rival,
+        &setup.root,
+        Format::Ext4,
+        &setup.system,
+        &this(),
+        run_id,
+        ACCOUNT,
+    );
+    match result {
+        Ok(_) => panic!("the lock was taken"),
+        Err(error) => error,
+    }
+}
+
+#[test]
+fn a_lock_replaced_right_after_writing_it_is_not_ours() {
+    let setup = Setup::new();
+    let other = holder(OTHER_PROCESS);
+    let text = toml::to_string(&other).unwrap();
+    let rival = Rival {
+        fake: setup.medium.clone(),
+        replacement: Some(text.clone().into_bytes()),
+    };
+    let run_id = new_run_id();
+
+    let error = take_against(&rival, &setup, &run_id);
+
+    assert!(matches!(error, LockError::Held(Some(holder)) if holder == other));
+    assert!(!held_runs().contains(&run_id));
+    let left = read_file(&setup.medium, &lock_path()).unwrap();
+    assert_eq!(left, text.as_bytes());
+}
+
+#[test]
+fn a_lock_removed_right_after_writing_it_is_not_ours() {
+    let setup = Setup::new();
+    let rival = Rival {
+        fake: setup.medium.clone(),
+        replacement: None,
+    };
+    let run_id = new_run_id();
+
+    let error = take_against(&rival, &setup, &run_id);
+
+    assert!(matches!(error, LockError::Held(None)));
+    assert!(!held_runs().contains(&run_id));
+}
+
+#[test]
+fn a_lock_half_written_by_a_rival_is_not_ours() {
+    let setup = Setup::new();
+    let rival = Rival {
+        fake: setup.medium.clone(),
+        replacement: Some(Vec::new()),
+    };
+
+    let error = take_against(&rival, &setup, &new_run_id());
+
+    assert!(matches!(error, LockError::Held(None)));
+    assert!(setup.has_lock_file());
 }
 
 #[test]
