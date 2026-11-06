@@ -9,6 +9,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime};
 
 use crate::fs::{FileKind, FileSystem, Metadata, WriteFile};
+use crate::medium::{DIR_MODE, FILE_MODE, TEMP_FOLDER, set_mode};
 use crate::versions::{Format, fits_on, older_version, version_folder, versions_to_remove};
 
 /// Each chunk is flushed before the next, so that progress shows what has reached the medium.
@@ -22,9 +23,6 @@ const TIME_TOLERANCE: Duration = Duration::from_secs(2);
 /// any other time to the nearest it can store.
 const EXFAT_EARLIEST: u64 = 315_532_800;
 const EXFAT_LATEST: u64 = 4_354_819_199;
-
-const FILE_MODE: u32 = 0o666;
-const DIR_MODE: u32 = 0o777;
 
 /// Why a file was skipped. The run goes on with the next file.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -141,7 +139,7 @@ impl<'a> FileCopier<'a> {
     }
 
     fn temp_folder(&self) -> PathBuf {
-        self.root.join(".babawus/tmp")
+        self.root.join(TEMP_FOLDER)
     }
 
     /// Empties the temporary folder, at the start of a run.
@@ -435,10 +433,7 @@ impl<'a> FileCopier<'a> {
     }
 
     fn set_mode(&self, path: &Path, mode: u32) -> io::Result<()> {
-        match self.format {
-            Format::Ext4 => self.medium.set_mode(path, mode),
-            Format::ExFat => Ok(()),
-        }
+        set_mode(self.medium, self.format, path, mode)
     }
 
     /// Removes a temporary file. If this fails, the next run empties the folder anyway.
