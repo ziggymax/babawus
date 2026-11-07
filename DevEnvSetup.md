@@ -198,9 +198,20 @@ These results come from the Kingston stick, using the `Format` and `CreatePartit
 - **Ownership:** `take-ownership` leaves the root folder owned by the user with mode `0700`. The user can then set `0777` and the default ACL without root.
 - **Format times:** Ext4 took 50–62 seconds with the options and 29 seconds without, and exFAT took 0.3 seconds.
 - **D-Bus timeout:** GIO's default call timeout is 25 seconds, which is shorter than every Ext4 format here. The test used 900 seconds, so Babawus must set a long timeout on the call. Testing with the default timeout was not tried.
-- **Partition types:** the test used `0x83` for Ext4 and `0x07` for exFAT on the MBR. The GPT types in Requirements.md haven't been tested.
+- **Partition types:** the test used `0x83` for Ext4 and `0x07` for exFAT on the MBR. The integration tests have since written both GPT types on loop devices.
 - **No automount after formatting:** Cinnamon didn't mount the stick after a format, so Babawus has to mount it itself.
 - **Finding block groups:** when counting groups in `dumpe2fs` output, match `^Group [0-9]`. A plain `^Group ` also matches the "Group descriptor size" line.
+
+### Formatting in Babawus
+
+Babawus's own formatting, through udisks2, on the Kingston stick on 2026-11-07:
+
+- **Times:** Ext4 took 57.7 seconds and exFAT 3.0 seconds, including unmounting, partitioning, mounting and creating the configuration.
+- **Ext4 result:** the root folder, `.babawus` and `backup` were owned by the user with mode `0777`, the default ACL was set, there were no reserved blocks, and every block group was initialised. No `ext4lazyinit` thread was running afterwards.
+- **The old file system came back:** when an old partition started where the new one did, the new one showed the old file system, and Cinnamon mounted it while udisks2 was wiping it. Babawus now wipes the old partitions first (see `Issues.md`, item 61).
+- **Loop devices detach themselves:** when udisks2 mounts a loop device for the user who set it up, it sets the device to detach itself once unmounted. Reformatting one in a test then fails, because unmounting it removes the device. The test turns that off again with the `SetAutoclear` method.
+- **Setting up loop devices at once:** two `udisksctl loop-setup` calls at the same time can pick the same free device, and one fails with "Device or resource busy". The test helper sets them up one at a time.
+- **Permissions in CI:** polkit lets the user of the active desktop session use udisks2. GitHub's runner has no such session, so CI adds a polkit rule for its own user.
 
 ### Speed on a real stick
 

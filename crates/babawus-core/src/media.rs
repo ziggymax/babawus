@@ -69,11 +69,33 @@ impl Volume {
     }
 }
 
+/// A block device, with or without a file system, as udisks2 reports it.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Block {
+    pub object_path: String,
+    /// The object path of its drive, or `/` if it has none.
+    pub drive: String,
+    /// The object path of the whole disk, if this is a partition on it.
+    pub partition_of: Option<String>,
+    /// In bytes.
+    pub size: u64,
+    /// Where its file system is mounted.
+    pub mount_points: Vec<PathBuf>,
+    /// udisks2 thinks it belongs to the system, rather than to a user.
+    pub hint_system: bool,
+    /// It is in use by something other than a mounted file system: it is active swap, or
+    /// another device sits on it, such as encryption, LVM or RAID.
+    pub held: bool,
+}
+
 /// Everything udisks2 reported at one moment.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Snapshot {
     pub drives: Vec<Drive>,
+    /// The block devices that have a file system.
     pub volumes: Vec<Volume>,
+    /// All block devices.
+    pub blocks: Vec<Block>,
 }
 
 /// A row of the media list: a mounted file system on a USB medium.

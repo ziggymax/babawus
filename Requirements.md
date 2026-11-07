@@ -420,28 +420,28 @@ The root folder of a new Ext4 file system belongs to `root`. This is handled onc
 
 A **USB medium** is a drive that udisks2 reports with `Removable` set and `ConnectionBus` set to `usb`. `MediaRemovable` is not used, because it is false for a USB stick, whose medium cannot be taken out of the drive.
 
-Babawus only offers to format USB media. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself. The format view lists devices whether they are mounted or not.
+Babawus only offers to format USB media. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself. A partition is in use if it is active swap, if another device sits on it (such as encryption, LVM or RAID), or if it is mounted anywhere other than below `/media/` or `/run/media/`, where the desktop mounts removable media. A disk that udisks2 marks as a system disk (`HintSystem`) is never offered either. The format view lists devices whether they are mounted or not.
 
 Babawus always identifies a drive by its udisks2 drive ID, never by a device name such as `/dev/sda`: those names can change between boots, and the system disk can then get the name a USB stick had before. Right after the poweruser has confirmed, and before anything is changed, Babawus checks that the drive with that ID is still present and still meets the rules above. If not, it stops and changes nothing.
 
 Babawus always formats a medium before using it for the first time; there is no way to prepare a medium "as it is". Formatting goes through the udisks2 service (see "Technology"), and works like this:
 
 1. Every mounted file system on the device is unmounted.
-2. A new partition table is written to the whole device: MBR, or GPT if the device is larger than 2 TiB. It holds one partition that spans the whole device, with the type that matches the file system:
+2. The signatures of the old partitions are wiped, so that the new partition, which starts where an old one did, does not show the old file system: the desktop would mount it while it is being formatted. Then a new partition table is written to the whole device: MBR, or GPT if the device is larger than 2 TiB. It holds one partition that spans the whole device, with the type that matches the file system:
 
     | File system | MBR | GPT |
     |---|---|---|
     | exFAT | `0x07` | Microsoft basic data |
     | Ext4 | `0x83` | Linux file system |
 
-3. The file system is created on that partition, with the label the poweruser has entered. The label has at most 11 characters (the exFAT limit), using letters, digits and `-`. Babawus suggests one, for example `BACKUP-A`.
+3. The file system is created on that partition, with the label the poweruser has entered. The label has 1 to 11 characters (the exFAT limit), using the letters `A`–`Z` and `a`–`z`, digits and `-`. Babawus suggests the first of `BACKUP-A` to `BACKUP-Z`, then `BACKUP-1`, `BACKUP-2` and so on, that no attached medium has, ignoring case.
     - **exFAT:** the defaults of `mkfs.exfat`.
     - **Ext4:** no reserved blocks (`-m 0`), and full initialisation during formatting (`-E lazy_itable_init=0,lazy_journal_init=0`), so that the medium is finished when formatting is, and Ext4 does not keep initialising in the background after the first mount. These options are passed on through the `mkfs-args` option of udisks2. The formatting user is made the owner of the root folder (the `take-ownership` option of udisks2), so that Babawus can do step 5 as an ordinary user.
 4. The medium is mounted through udisks2.
 5. On Ext4 only:
     - The root folder gets mode `0777`.
     - A default ACL is set on the root folder (the equivalent of `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`), so that files that other programs create on the medium are also readable and writable by everyone. Babawus still sets modes explicitly on everything it creates, because a computer may mount the medium without ACL support. This relies on ACL support being a default mount option, which `mkfs.ext4` sets on Mint 22.
-6. Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes the configuration.
+6. Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes a new configuration, with no computers yet. The medium then shows as "Not set up for you" until the poweruser adds this computer and account.
 
 Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minute on a 16 GB stick, and longer on larger media, while exFAT is almost instant.
 

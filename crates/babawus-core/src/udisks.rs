@@ -13,15 +13,31 @@ use std::time::Duration;
 
 use gio::glib::{self, Variant, thread_guard::ThreadGuard};
 use gio::prelude::*;
-use gio::{BusType, DBusObjectManagerClient, DBusObjectManagerClientFlags, DBusProxy};
+use gio::{
+    BusType, DBusCallFlags, DBusConnection, DBusObjectManagerClient, DBusObjectManagerClientFlags,
+    DBusProxy,
+};
 
-use crate::media::{Drive, Snapshot, Volume};
+use crate::format::{
+    Refusal, Target, file_system_type, label_is_valid, mkfs_args, prepare, set_default_acl,
+};
+use crate::fs::RealFs;
+use crate::media::{Block, Drive, Snapshot, Volume};
+use crate::versions::Format;
 
 const SERVICE: &str = "org.freedesktop.UDisks2";
 const MANAGER_PATH: &str = "/org/freedesktop/UDisks2";
 const DRIVE: &str = "org.freedesktop.UDisks2.Drive";
 const BLOCK: &str = "org.freedesktop.UDisks2.Block";
 const FILESYSTEM: &str = "org.freedesktop.UDisks2.Filesystem";
+const PARTITION: &str = "org.freedesktop.UDisks2.Partition";
+const PARTITION_TABLE: &str = "org.freedesktop.UDisks2.PartitionTable";
+const SWAPSPACE: &str = "org.freedesktop.UDisks2.Swapspace";
+const PROPERTIES: &str = "org.freedesktop.DBus.Properties";
+
+/// No timeout: formatting Ext4 took up to a minute on a 16 GB stick, and the default is 25
+/// seconds. Unmounting can take long too, while it writes out what is still in memory.
+const NO_TIMEOUT: i32 = i32::MAX;
 
 /// How long to gather a burst of changes. This is short enough to look immediate.
 const GATHER_CHANGES: Duration = Duration::from_millis(100);
@@ -58,11 +74,22 @@ impl Udisks {
             if let Some(drive) = proxy(DRIVE) {
                 snapshot.drives.push(drive_from(&path, &drive));
             }
-            if let (Some(block), Some(file_system)) = (proxy(BLOCK), proxy(FILESYSTEM)) {
+            let Some(block) = proxy(BLOCK) else {
+                continue;
+            };
+            let file_system = proxy(FILESYSTEM);
+            if let Some(file_system) = &file_system {
                 snapshot
                     .volumes
-                    .push(volume_from(&path, &block, &file_system));
+                    .push(volume_from(&path, &block, file_system));
             }
+            snapshot.blocks.push(block_from(
+                &path,
+                &block,
+                file_system.as_ref(),
+                proxy(PARTITION).as_ref(),
+                proxy(SWAPSPACE).as_ref(),
+            ));
         }
         snapshot
     }
@@ -115,6 +142,229 @@ impl Udisks {
     }
 }
 
+/// A step of formatting. Everything before [`Step::Partition`] leaves the data on the drive.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Step {
+    Unmount,
+    Partition,
+    Format,
+    Mount,
+    /// Setting permissions, and creating the folders and the configuration.
+    Prepare,
+}
+
+/// Why formatting failed.
+#[derive(Debug)]
+pub enum FormatError {
+    /// The label is not allowed. Nothing was changed.
+    InvalidLabel,
+    /// The drive may not be formatted, or has gone. Nothing was changed.
+    Refused(Refusal),
+    /// A step failed, for example because udisks2 or the administrator said no.
+    Failed { step: Step, message: String },
+}
+
+impl FormatError {
+    /// Whether the drive still holds what it held before.
+    pub fn nothing_erased(&self) -> bool {
+        match self {
+            Self::InvalidLabel | Self::Refused(_) => true,
+            Self::Failed { step, .. } => *step == Step::Unmount,
+        }
+    }
+}
+
+fn failed(step: Step) -> impl FnOnce(glib::Error) -> FormatError {
+    move |error| FormatError::Failed {
+        step,
+        message: error.message().to_owned(),
+    }
+}
+
+impl Udisks {
+    /// Formats the drive with the udisks2 drive ID `id` as a Babawus medium, and returns where
+    /// the new file system is mounted. See "Formatting a medium" in Requirements.md.
+    ///
+    /// The drive is checked again first, and nothing is changed if it may not be formatted.
+    /// This runs on the main context, and can't be cancelled once it has started.
+    pub async fn format(
+        &self,
+        id: &str,
+        format: Format,
+        label: &str,
+    ) -> Result<PathBuf, FormatError> {
+        if !label_is_valid(label) {
+            return Err(FormatError::InvalidLabel);
+        }
+        let target = self.snapshot().target(id).map_err(FormatError::Refused)?;
+        self.format_target(&target, format, label).await
+    }
+
+    /// Formats `target`, which must have come from [`Snapshot::target`] just now. Only the tests
+    /// use this directly, on a loop device they created themselves, which has no drive.
+    pub async fn format_target(
+        &self,
+        target: &Target,
+        format: Format,
+        label: &str,
+    ) -> Result<PathBuf, FormatError> {
+        if !label_is_valid(label) {
+            return Err(FormatError::InvalidLabel);
+        }
+        for file_system in &target.mounted {
+            self.call(file_system, FILESYSTEM, "Unmount", &[options(&[])])
+                .await
+                .map_err(failed(Step::Unmount))?;
+        }
+        for partition in &target.partitions {
+            self.call(
+                partition,
+                BLOCK,
+                "Format",
+                &["empty".to_variant(), options(&[])],
+            )
+            .await
+            .map_err(failed(Step::Partition))?;
+        }
+        let table = target.table;
+        self.call(
+            &target.disk,
+            BLOCK,
+            "Format",
+            &[table.udisks_type().to_variant(), options(&[])],
+        )
+        .await
+        .map_err(failed(Step::Partition))?;
+        let created = self
+            .call(
+                &target.disk,
+                PARTITION_TABLE,
+                "CreatePartition",
+                &[
+                    0u64.to_variant(),
+                    // The largest size that fits.
+                    0u64.to_variant(),
+                    table.partition_type(format).to_variant(),
+                    "".to_variant(),
+                    options(&[]),
+                ],
+            )
+            .await
+            .map_err(failed(Step::Partition))?;
+        let partition = created
+            .child_value(0)
+            .str()
+            .map(str::to_owned)
+            .ok_or_else(|| FormatError::Failed {
+                step: Step::Partition,
+                message: "udisks2 did not name the new partition".to_owned(),
+            })?;
+        self.format_partition(&partition, format, label).await?;
+        let root = self.mount(&partition).await?;
+        let prepared = if format == Format::Ext4 {
+            set_default_acl(&root)
+        } else {
+            Ok(())
+        }
+        .and_then(|()| prepare(&RealFs, &root, format));
+        prepared.map_err(|error| FormatError::Failed {
+            step: Step::Prepare,
+            message: error.to_string(),
+        })?;
+        Ok(root)
+    }
+
+    /// Creates the file system on `partition`. The formatting user is made the owner of an
+    /// Ext4 root folder, so that Babawus can set its permissions without administrator rights.
+    async fn format_partition(
+        &self,
+        partition: &str,
+        format: Format,
+        label: &str,
+    ) -> Result<(), FormatError> {
+        let args: Vec<String> = mkfs_args(format)
+            .iter()
+            .map(|&arg| arg.to_owned())
+            .collect();
+        let mut format_options = vec![("label", label.to_variant())];
+        if format == Format::Ext4 {
+            format_options.push(("take-ownership", true.to_variant()));
+            format_options.push(("mkfs-args", args.to_variant()));
+        }
+        let parameters = [
+            file_system_type(format).to_variant(),
+            options(&format_options),
+        ];
+        self.call(partition, BLOCK, "Format", &parameters)
+            .await
+            .map_err(failed(Step::Format))?;
+        Ok(())
+    }
+
+    /// Mounts the file system on `block`, and returns where. If the desktop got there first,
+    /// its mount is used.
+    async fn mount(&self, block: &str) -> Result<PathBuf, FormatError> {
+        let mounted = self.call(block, FILESYSTEM, "Mount", &[options(&[])]).await;
+        let error = match mounted {
+            Ok(reply) => {
+                if let Some(path) = reply.child_value(0).str() {
+                    return Ok(PathBuf::from(path));
+                }
+                glib::Error::new(gio::IOErrorEnum::Failed, "udisks2 did not say where")
+            }
+            Err(error) => error,
+        };
+        let points = self
+            .call(
+                block,
+                PROPERTIES,
+                "Get",
+                &[FILESYSTEM.to_variant(), "MountPoints".to_variant()],
+            )
+            .await
+            .ok()
+            .and_then(|reply| reply.child_value(0).as_variant())
+            .and_then(|points| points.get::<Vec<Vec<u8>>>());
+        match points.and_then(|points| points.into_iter().next()) {
+            Some(point) => Ok(path_from_bytes(point)),
+            None => Err(failed(Step::Mount)(error)),
+        }
+    }
+
+    /// Calls `method` on udisks2, allowing it to ask for the administrator password, and with
+    /// no timeout.
+    async fn call(
+        &self,
+        object_path: &str,
+        interface: &str,
+        method: &str,
+        parameters: &[Variant],
+    ) -> Result<Variant, glib::Error> {
+        let connection: DBusConnection = self.manager.connection();
+        connection
+            .call_future(
+                Some(SERVICE),
+                object_path,
+                interface,
+                method,
+                Some(&Variant::tuple_from_iter(parameters.iter().cloned())),
+                None,
+                DBusCallFlags::ALLOW_INTERACTIVE_AUTHORIZATION,
+                NO_TIMEOUT,
+            )
+            .await
+    }
+}
+
+/// udisks2's options for a call, an `a{sv}`.
+fn options(entries: &[(&str, Variant)]) -> Variant {
+    let dict = glib::VariantDict::new(None);
+    for (key, value) in entries {
+        dict.insert_value(key, value);
+    }
+    dict.end()
+}
+
 fn drive_from(path: &str, drive: &DBusProxy) -> Drive {
     Drive {
         object_path: path.to_owned(),
@@ -128,12 +378,46 @@ fn drive_from(path: &str, drive: &DBusProxy) -> Drive {
     }
 }
 
+fn block_from(
+    path: &str,
+    block: &DBusProxy,
+    file_system: Option<&DBusProxy>,
+    partition: Option<&DBusProxy>,
+    swap: Option<&DBusProxy>,
+) -> Block {
+    let device = property::<Vec<u8>>(block, "Device").map(path_from_bytes);
+    let swap_active = swap.is_some_and(|swap| flag(swap, "Active"));
+    Block {
+        object_path: path.to_owned(),
+        drive: string(block, "Drive"),
+        partition_of: partition.map(|partition| string(partition, "Table")),
+        size: number(block, "Size"),
+        mount_points: file_system.map(mount_points).unwrap_or_default(),
+        hint_system: flag(block, "HintSystem"),
+        held: swap_active || device.as_deref().is_some_and(has_holders),
+    }
+}
+
+/// Whether another device, such as encryption, LVM or RAID, sits on the device `device`, for
+/// example `/dev/sdb1`. The kernel lists those in the device's `holders` folder.
+fn has_holders(device: &Path) -> bool {
+    let Some(name) = device.file_name() else {
+        return false;
+    };
+    let holders = Path::new("/sys/class/block").join(name).join("holders");
+    std::fs::read_dir(holders).is_ok_and(|mut entries| entries.next().is_some())
+}
+
+fn mount_points(file_system: &DBusProxy) -> Vec<PathBuf> {
+    property::<Vec<Vec<u8>>>(file_system, "MountPoints")
+        .unwrap_or_default()
+        .into_iter()
+        .map(path_from_bytes)
+        .collect()
+}
+
 fn volume_from(path: &str, block: &DBusProxy, file_system: &DBusProxy) -> Volume {
-    let mount_point = file_system
-        .cached_property("MountPoints")
-        .and_then(|points| points.get::<Vec<Vec<u8>>>())
-        .and_then(|points| points.into_iter().next())
-        .map(path_from_bytes);
+    let mount_point = mount_points(file_system).into_iter().next();
     let read_only = flag(block, "ReadOnly")
         || mount_point
             .as_deref()

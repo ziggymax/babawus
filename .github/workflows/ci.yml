@@ -44,7 +44,19 @@ jobs:
           Acquire::Retries "3";
           EOF
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libgtk-4-dev pkg-config exfatprogs udisks2
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev pkg-config exfatprogs udisks2 acl
+
+      # The tests format loop devices through udisks2. On a desktop, polkit lets the user of the
+      # active session do that, but the runner has no session, so this rule lets it on CI only.
+      - name: Allow udisks2 for the runner
+        run: |
+          sudo tee /etc/polkit-1/rules.d/50-babawus-ci.rules > /dev/null <<'EOF'
+          polkit.addRule(function (action, subject) {
+              if (action.id.indexOf("org.freedesktop.udisks2.") == 0 && subject.user == "runner") {
+                  return polkit.Result.YES;
+              }
+          });
+          EOF
 
       - name: Install Rust
         run: |

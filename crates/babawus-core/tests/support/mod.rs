@@ -14,11 +14,14 @@
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 const LABEL: &str = "BACKUP-A";
 
 static NEXT_ID: AtomicU32 = AtomicU32::new(0);
+
+static SETTING_UP: Mutex<()> = Mutex::new(());
 
 #[derive(Clone, Copy, Debug)]
 pub enum MediumFormat {
@@ -78,7 +81,6 @@ impl LoopMedium {
     }
 
     /// Mounts the file system again, read-only.
-    #[allow(dead_code)] // Not every test file uses it.
     pub fn remount_read_only(&self) {
         sudo(&["mount", "-o", "remount,ro", path_str(&self.mount_point)]);
     }
@@ -134,6 +136,116 @@ impl Drop for LoopMedium {
         report_failure(
             "losetup",
             Command::new("sudo").args(["-n", "losetup", "-d", &device]),
+        );
+        if let Err(error) = fs::remove_dir_all(&self.dir) {
+            eprintln!("could not remove {}: {error}", self.dir.display());
+        }
+    }
+}
+
+/// A blank image attached as a loop device through udisks2, for tests that format it through
+/// udisks2. udisks2 lets the user who set up a loop device change it without asking, and scans
+/// it for partitions. A blank image has no file system, so the desktop doesn't mount it.
+/// Dropping it unmounts and removes everything.
+pub struct BlankLoop {
+    dir: PathBuf,
+    device: String,
+}
+
+impl BlankLoop {
+    pub fn new(size: u64) -> Self {
+        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+        let name = format!("babawus-medium-{}-blank-{id}", std::process::id());
+        let dir = std::env::temp_dir().join(name);
+        fs::create_dir_all(&dir).expect("create the medium folder");
+        let image = dir.join("medium.img");
+        File::create(&image)
+            .and_then(|file| file.set_len(size))
+            .expect("create the image file");
+        let image = image.canonicalize().expect("resolve the image path");
+
+        // udisks2 picks a free loop device, and two set-ups at once can pick the same one.
+        let setting_up = SETTING_UP.lock().unwrap_or_else(|error| error.into_inner());
+        let output = command_output(
+            "udisksctl",
+            &[
+                "loop-setup",
+                "--no-user-interaction",
+                "--file",
+                path_str(&image),
+            ],
+        );
+        // "Mapped file /tmp/.../medium.img as /dev/loop8."
+        let device = output
+            .rsplit(' ')
+            .next()
+            .map(|device| device.trim_end_matches('.').to_owned())
+            .unwrap_or_default();
+        drop(setting_up);
+        let blank = Self { dir, device };
+        let backing_file = command_output(
+            "losetup",
+            &["--noheadings", "--output", "BACK-FILE", &blank.device],
+        );
+        check_device(&blank.device, &backing_file, &image).expect("refusing to format");
+        blank
+    }
+
+    /// Keeps the loop device attached when its file system is unmounted. udisks2 sets the
+    /// device to detach itself when it mounts it for the user who set it up.
+    pub fn keep_attached(&self) {
+        command_output(
+            "gdbus",
+            &[
+                "call",
+                "--system",
+                "--dest",
+                "org.freedesktop.UDisks2",
+                "--object-path",
+                &self.object_path(),
+                "--method",
+                "org.freedesktop.UDisks2.Loop.SetAutoclear",
+                "false",
+                "{}",
+            ],
+        );
+    }
+
+    /// For example `/dev/loop8`.
+    pub fn device(&self) -> &str {
+        &self.device
+    }
+
+    /// The udisks2 object path of the whole device.
+    pub fn object_path(&self) -> String {
+        let name = self.device.trim_start_matches("/dev/");
+        format!("/org/freedesktop/UDisks2/block_devices/{name}")
+    }
+}
+
+impl Drop for BlankLoop {
+    fn drop(&mut self) {
+        // Whatever formatting left mounted.
+        if let Ok(mounts) = Command::new("findmnt")
+            .args(["-rn", "-o", "SOURCE,TARGET"])
+            .output()
+        {
+            for line in String::from_utf8_lossy(&mounts.stdout).lines() {
+                let mut fields = line.split(' ');
+                let (Some(source), Some(target)) = (fields.next(), fields.next()) else {
+                    continue;
+                };
+                if source.starts_with(&format!("{}p", self.device)) {
+                    report_failure(
+                        "umount",
+                        Command::new("sudo").args(["-n", "umount", "--lazy", target]),
+                    );
+                }
+            }
+        }
+        report_failure(
+            "losetup",
+            Command::new("sudo").args(["-n", "losetup", "-d", &self.device]),
         );
         if let Err(error) = fs::remove_dir_all(&self.dir) {
             eprintln!("could not remove {}: {error}", self.dir.display());
