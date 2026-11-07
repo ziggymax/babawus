@@ -356,6 +356,69 @@ impl Udisks {
     }
 }
 
+/// How far ejecting got.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Ejected {
+    /// The medium was unmounted and powered off, so it can be pulled out.
+    PoweredOff,
+    /// The medium was unmounted, but powering it off was not possible, so its light may stay
+    /// on. It can still be pulled out safely. `reason` is for the details, if udisks2 gave one.
+    UnmountedOnly { reason: Option<String> },
+}
+
+/// Why ejecting failed. The medium is still mounted, at least in part.
+#[derive(Debug, PartialEq, Eq)]
+pub enum EjectError {
+    /// The drive has gone, or isn't a USB medium.
+    Gone,
+    /// A program is still using a file system on it, such as an open file or a file manager
+    /// window.
+    Busy,
+    Failed(String),
+}
+
+/// udisks2's error for a file system that is in use.
+const DEVICE_BUSY: &str = "org.freedesktop.UDisks2.Error.DeviceBusy";
+
+impl Udisks {
+    /// Ejects the drive with the udisks2 drive ID `id`, like "Safely remove" in the file
+    /// manager: every file system on it is unmounted, and then it is powered off, if possible.
+    /// See "Offer to eject" in Requirements.md.
+    pub async fn eject(&self, id: &str) -> Result<Ejected, EjectError> {
+        let plan = self.snapshot().eject_plan(id).ok_or(EjectError::Gone)?;
+        self.unmount_all(&plan.mounted).await?;
+        if !plan.drive.can_power_off {
+            return Ok(Ejected::UnmountedOnly { reason: None });
+        }
+        let powered_off = self
+            .call(&plan.drive.object_path, DRIVE, "PowerOff", &[options(&[])])
+            .await;
+        Ok(match powered_off {
+            Ok(_) => Ejected::PoweredOff,
+            Err(error) => Ejected::UnmountedOnly {
+                reason: Some(error.message().to_owned()),
+            },
+        })
+    }
+
+    /// Unmounts the file systems `mounted`, given by their object paths. Only the tests use
+    /// this directly, on loop devices, which have no drive to eject.
+    pub async fn unmount_all(&self, mounted: &[String]) -> Result<(), EjectError> {
+        for file_system in mounted {
+            self.call(file_system, FILESYSTEM, "Unmount", &[options(&[])])
+                .await
+                .map_err(|error| {
+                    if gio::DBusError::remote_error(&error).as_deref() == Some(DEVICE_BUSY) {
+                        EjectError::Busy
+                    } else {
+                        EjectError::Failed(error.message().to_owned())
+                    }
+                })?;
+        }
+        Ok(())
+    }
+}
+
 /// udisks2's options for a call, an `a{sv}`.
 fn options(entries: &[(&str, Variant)]) -> Variant {
     let dict = glib::VariantDict::new(None);

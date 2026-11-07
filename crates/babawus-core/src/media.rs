@@ -138,6 +138,36 @@ impl Snapshot {
     }
 }
 
+/// What ejecting a drive involves.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EjectPlan {
+    pub drive: Drive,
+    /// The object paths of the drive's mounted file systems, which are unmounted first.
+    pub mounted: Vec<String>,
+}
+
+impl Snapshot {
+    /// What ejecting the drive with the udisks2 drive ID `id` involves, or nothing if it has
+    /// gone or isn't a USB medium. Only USB media are ever ejected, because powering off a
+    /// drive takes it away until it is plugged in again.
+    pub fn eject_plan(&self, id: &str) -> Option<EjectPlan> {
+        let drive = self
+            .drives
+            .iter()
+            .find(|drive| !id.is_empty() && drive.id == id && drive.is_usb_medium())?;
+        let mounted = self
+            .blocks
+            .iter()
+            .filter(|block| block.drive == drive.object_path && !block.mount_points.is_empty())
+            .map(|block| block.object_path.clone())
+            .collect();
+        Some(EjectPlan {
+            drive: drive.clone(),
+            mounted,
+        })
+    }
+}
+
 /// What a medium in the list is ready for.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Status {

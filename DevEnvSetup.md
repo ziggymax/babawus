@@ -211,6 +211,7 @@ Babawus's own formatting, through udisks2, on the Kingston stick on 2026-11-07:
 - **The old file system came back:** when an old partition started where the new one did, the new one showed the old file system, and Cinnamon mounted it while udisks2 was wiping it. Babawus now wipes the old partitions first (see `Issues.md`, item 61).
 - **Loop devices detach themselves:** when udisks2 mounts a loop device for the user who set it up, it sets the device to detach itself once unmounted. Reformatting one in a test then fails, because unmounting it removes the device. The test turns that off again with the `SetAutoclear` method.
 - **Setting up loop devices at once:** two `udisksctl loop-setup` calls at the same time can pick the same free device, and one fails with "Device or resource busy". The test helper sets them up one at a time.
+- **Ejecting:** unmounting and powering off the stick took 0.2 seconds. udisks2 sent it `SYNCHRONIZE CACHE` and `START STOP UNIT`, and removed it from the USB bus, so it left the VM. It came back once it was attached again from the host. With a file open on the stick, unmounting failed with udisks2's `DeviceBusy` error.
 - **Permissions in CI:** polkit lets the user of the active desktop session use udisks2. GitHub's runner has no such session, so CI adds a polkit rule for its own user.
 
 ### Speed on a real stick

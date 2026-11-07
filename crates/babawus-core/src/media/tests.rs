@@ -123,6 +123,63 @@ fn a_volume_whose_drive_is_not_reported_yet_is_left_out() {
     assert!(snapshot.media().is_empty());
 }
 
+fn block(name: &str, drive: &str, mount_point: Option<&str>) -> Block {
+    Block {
+        object_path: format!("/org/freedesktop/UDisks2/block_devices/{name}"),
+        drive: drive.to_owned(),
+        mount_points: mount_point.map(PathBuf::from).into_iter().collect(),
+        ..Block::default()
+    }
+}
+
+fn eject_snapshot() -> Snapshot {
+    Snapshot {
+        drives: vec![disk(), stick()],
+        volumes: Vec::new(),
+        blocks: vec![
+            block("sda3", DISK, Some("/")),
+            block("sdb", STICK, None),
+            block("sdb1", STICK, Some(ROOT)),
+            block("sdb2", STICK, None),
+            block("sdb3", STICK, Some("/media/usera/SPARE")),
+        ],
+    }
+}
+
+#[test]
+fn ejecting_unmounts_every_mounted_file_system_on_the_drive() {
+    let plan = eject_snapshot().eject_plan(&stick().id).unwrap();
+
+    assert_eq!(plan.drive, stick());
+    assert_eq!(
+        plan.mounted,
+        [
+            "/org/freedesktop/UDisks2/block_devices/sdb1",
+            "/org/freedesktop/UDisks2/block_devices/sdb3"
+        ]
+    );
+}
+
+#[test]
+fn only_a_usb_medium_that_is_still_there_is_ejected() {
+    let snapshot = eject_snapshot();
+    assert_eq!(snapshot.eject_plan(&disk().id), None);
+    assert_eq!(snapshot.eject_plan("Some-Other-Stick"), None);
+    assert_eq!(snapshot.eject_plan(""), None);
+}
+
+#[test]
+fn a_medium_that_is_not_mounted_can_still_be_powered_off() {
+    let mut snapshot = eject_snapshot();
+    for block in &mut snapshot.blocks {
+        block.mount_points.clear();
+    }
+
+    let plan = snapshot.eject_plan(&stick().id).unwrap();
+
+    assert!(plan.mounted.is_empty());
+}
+
 #[test]
 fn only_exfat_and_ext4_are_formats_babawus_uses() {
     let with = |file_system: &str| Volume {
