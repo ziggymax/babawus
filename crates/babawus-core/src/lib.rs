@@ -24,6 +24,7 @@ pub mod text;
 pub mod time;
 pub mod udisks;
 pub mod verdict;
+pub mod verdict_screen;
 pub mod versions;
 
 /// The version of Babawus.

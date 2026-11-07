@@ -1,8 +1,4 @@
 use super::*;
-use crate::lock::Holder;
-use crate::log::Stats;
-use crate::run::Outcome;
-use crate::verdict::Reason;
 
 const EN: Language = Language::English;
 
@@ -115,30 +111,4 @@ fn numbers_have_their_thousands_marked() {
     assert_eq!(number(1000, EN), "1,000");
     assert_eq!(number(1_234_567, EN), "1,234,567");
     assert_eq!(number(1_234_567, Language::German), "1.234.567");
-}
-
-#[test]
-fn the_end_says_how_it_went() {
-    let finished = |reason| {
-        Ended::Finished(Outcome {
-            reason,
-            stats: Stats::default(),
-            skipped: Vec::new(),
-            prune_failures: Vec::new(),
-        })
-    };
-    assert_eq!(ended_text(Some(&finished(Reason::None)), EN), "All good");
-    let cancelled = finished(Reason::Cancelled);
-    assert_eq!(ended_text(Some(&cancelled), EN), "Backup not finished");
-    let holder = Holder {
-        run_id: "0123456789abcdef".to_owned(),
-        account: "anna@mint-1".to_owned(),
-        computer_id: String::new(),
-        boot_id: String::new(),
-        process_id: 1,
-    };
-    let busy = Ended::Busy(Some(holder));
-    assert_eq!(ended_text(Some(&busy), EN), "Backup in progress (by anna)");
-    assert!(ended_text(Some(&Ended::Busy(None)), EN).contains("just starting"));
-    assert_eq!(ended_text(None, EN), "Backup not finished");
 }

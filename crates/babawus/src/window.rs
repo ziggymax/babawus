@@ -11,17 +11,19 @@ use std::sync::Arc;
 use std::sync::mpsc::TryRecvError;
 use std::time::{Duration, SystemTime};
 
-use babawus_core::backup_screen::{Tracker, ended_text};
+use babawus_core::backup_screen::Tracker;
 
 use babawus_core::fs::RealFs;
 use babawus_core::identity::{this_computer_id, this_hostname};
 use babawus_core::lock::ThisProcess;
+use babawus_core::log::LastBackup;
 use babawus_core::media::{Medium, Status, Viewer};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
 use babawus_core::settings::{Language, SETTINGS_FILE, Settings};
 use babawus_core::start_screen::{self, Action, Checked, Shown};
 use babawus_core::text::Text;
 use babawus_core::udisks::{EjectError, Ejected, Udisks};
+use babawus_core::verdict_screen::{Context, verdict_screen};
 use gtk4::prelude::*;
 use gtk4::{
     AboutDialog, AlertDialog, Align, Application, ApplicationWindow, Box, Button, HeaderBar, Image,
@@ -48,6 +50,9 @@ const CSS: &str = "
 .babawus-status { font-size: 13pt; }
 .babawus-last-backup { font-size: 13pt; }
 .babawus-plug-in { font-size: 16pt; }
+.babawus-verdict { font-size: 18pt; font-weight: bold; }
+.babawus-next-step { font-weight: bold; }
+.babawus-details { font-family: monospace; }
 .babawus-advanced {
     background-color: #f0a020;
     color: #3a2400;
@@ -97,6 +102,14 @@ struct DetailsWidgets {
 struct BackupState {
     /// The label of the medium.
     label: String,
+    /// The udisks2 drive ID of the medium, to eject it.
+    drive_id: String,
+    /// The account's last backup to the medium before this run.
+    previous: Option<LastBackup>,
+    /// When the run ended, once it has.
+    ended_at: Option<SystemTime>,
+    /// The details have just been copied.
+    copied: bool,
     /// Nothing once the run has ended.
     running: Option<RunningBackup>,
     tracker: Tracker,
@@ -397,6 +410,31 @@ impl Window {
             if let Some(window) = weak.upgrade() {
                 window.ask_to_stop(false);
             }
+        });
+        let weak = Rc::downgrade(self);
+        self.backup_page.eject.connect_clicked(move |_| {
+            let Some(window) = weak.upgrade() else { return };
+            let drive = window
+                .backup
+                .borrow()
+                .as_ref()
+                .map(|backup| (backup.drive_id.clone(), backup.label.clone()));
+            if let Some((drive_id, label)) = drive {
+                window.eject_drive(drive_id, label);
+            }
+        });
+        let weak = Rc::downgrade(self);
+        self.backup_page.copy.connect_clicked(move |button| {
+            let Some(window) = weak.upgrade() else { return };
+            let details = {
+                let buffer = window.backup_page.details_text();
+                buffer.text(&buffer.start_iter(), &buffer.end_iter(), false)
+            };
+            button.clipboard().set_text(&details);
+            if let Some(backup) = window.backup.borrow_mut().as_mut() {
+                backup.copied = true;
+            }
+            window.show_backup();
         });
         let weak = Rc::downgrade(self);
         self.backup_page.back.connect_clicked(move |_| {
@@ -773,24 +811,29 @@ impl Window {
     }
 
     fn eject(self: &Rc<Self>) {
-        let Some(medium) = self.selected_medium() else {
-            return;
-        };
+        if let Some(medium) = self.selected_medium() {
+            self.eject_drive(medium.drive.id, medium.volume.label);
+        }
+    }
+
+    /// Ejects the drive with the udisks2 drive ID `drive_id`, whose medium is labelled `label`,
+    /// and says how it went, on whichever screen is showing.
+    fn eject_drive(self: &Rc<Self>, drive_id: String, label: String) {
         if self.ejecting.borrow().is_some() {
             return;
         }
-        let label = medium.volume.label.clone();
-        *self.ejecting.borrow_mut() = Some(medium.drive.id.clone());
+        *self.ejecting.borrow_mut() = Some(drive_id.clone());
         *self.notice.borrow_mut() = Some(Notice {
             text: Text::Ejecting,
             label: label.clone(),
         });
         self.show_details();
+        self.show_backup();
         let weak = Rc::downgrade(self);
         glib::spawn_future_local(async move {
             let Some(window) = weak.upgrade() else { return };
             let Some(udisks) = &window.udisks else { return };
-            let result = udisks.eject(&medium.drive.id).await;
+            let result = udisks.eject(&drive_id).await;
             let text = match result {
                 Ok(Ejected::PoweredOff) => Text::Ejected,
                 Ok(Ejected::UnmountedOnly { reason }) => {
@@ -809,6 +852,7 @@ impl Window {
             *window.ejecting.borrow_mut() = None;
             *window.notice.borrow_mut() = Some(Notice { text, label });
             window.show_details();
+            window.show_backup();
         });
     }
 
@@ -817,12 +861,13 @@ impl Window {
         let Some(medium) = self.selected_medium() else {
             return;
         };
-        let ready = self.media.borrow().iter().any(|(each, checked)| {
-            each == &medium
-                && checked
-                    .as_ref()
-                    .is_some_and(|checked| matches!(checked.status, Status::Ready { .. }))
+        let previous = self.media.borrow().iter().find_map(|(each, checked)| {
+            match checked.as_ref().map(|checked| &checked.status) {
+                Some(Status::Ready { last_backup }) if each == &medium => Some(*last_backup),
+                _ => None,
+            }
         });
+        let ready = previous.is_some();
         let Some(format) = medium.volume.format() else {
             return;
         };
@@ -845,6 +890,10 @@ impl Window {
         *self.notice.borrow_mut() = None;
         *self.backup.borrow_mut() = Some(BackupState {
             label: medium.volume.label.clone(),
+            drive_id: medium.drive.id.clone(),
+            previous: previous.flatten(),
+            ended_at: None,
+            copied: false,
             running: Some(backup.start()),
             tracker: Tracker::default(),
             ended: None,
@@ -886,6 +935,7 @@ impl Window {
             close = ended && backup.close_when_done;
             if ended {
                 backup.question.cancel();
+                backup.ended_at.get_or_insert_with(SystemTime::now);
             }
         }
         self.show_backup();
@@ -907,8 +957,26 @@ impl Window {
         };
         match &backup.ended {
             Some(ended) => {
-                let text = ended_text(ended.as_ref(), language);
-                self.backup_page.show_ended(&backup.label, &text, language);
+                let context = Context {
+                    label: &backup.label,
+                    previous: backup.previous,
+                    now: backup.ended_at.unwrap_or_else(SystemTime::now),
+                };
+                let shown = verdict_screen(ended.as_ref(), &context, language);
+                let notice = self
+                    .notice
+                    .borrow()
+                    .as_ref()
+                    .map(|notice| notice.text.fill(language, &[("label", &notice.label)]));
+                let ejecting = self.ejecting.borrow().is_some();
+                self.backup_page.show_verdict(
+                    &backup.label,
+                    &shown,
+                    notice.as_deref(),
+                    ejecting,
+                    backup.copied,
+                    language,
+                );
             }
             None => {
                 let shown = backup.tracker.shown(language);

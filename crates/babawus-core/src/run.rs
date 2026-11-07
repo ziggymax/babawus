@@ -45,6 +45,8 @@ pub struct Outcome {
     pub skipped: Vec<Skipped>,
     /// Files whose older versions could not all be removed. These don't change the verdict.
     pub prune_failures: Vec<PathBuf>,
+    /// `username@computer folder`, if the run got as far as reading the configuration.
+    pub account: Option<String>,
 }
 
 impl Outcome {
@@ -59,6 +61,7 @@ impl Outcome {
             stats: Stats::default(),
             skipped: Vec::new(),
             prune_failures: Vec::new(),
+            account: None,
         }
     }
 }
@@ -205,7 +208,8 @@ impl Backup {
             Some(plan) => pass.back_up(self, plan, copier),
             None => Some(Reason::NotAdded),
         };
-        let outcome = pass.finish(self, stop);
+        let mut outcome = pass.finish(self, stop);
+        outcome.account = Some(account);
         // Only now: the lock is removed after the end entry has been written.
         drop(lock);
         Ended::Finished(outcome)
@@ -390,6 +394,7 @@ impl Pass<'_> {
             stats: self.stats,
             skipped: self.skipped,
             prune_failures: self.prune_failures,
+            account: None,
         }
     }
 }

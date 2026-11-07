@@ -1,11 +1,10 @@
-//! What the backup screen shows while a run works, and when it ends. See "Provide feedback
+//! What the backup screen shows while a run works. See "Provide feedback
 //! during a backup operation" and "Finishing a run" in Requirements.md. The UI only puts these
 //! texts on the screen.
 
-use crate::run::{Ended, Progress};
+use crate::run::Progress;
 use crate::settings::Language;
 use crate::text::{Text, size};
-use crate::verdict::Verdict;
 
 /// Where a run is, gathered from its progress messages.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -129,32 +128,6 @@ pub fn number(value: u64, language: Language) -> String {
         grouped.push(digit);
     }
     grouped
-}
-
-/// The verdict in plain words.
-pub fn verdict_text(verdict: Verdict, language: Language) -> &'static str {
-    match verdict {
-        Verdict::AllGood => Text::VerdictAllGood,
-        Verdict::Skipped => Text::VerdictSkipped,
-        Verdict::NotFinished => Text::VerdictNotFinished,
-        Verdict::Failed => Text::VerdictFailed,
-    }
-    .get(language)
-}
-
-/// What the screen says when a run has ended. The worker may have stopped without saying how,
-/// which can only be a crash, and leaves the run unfinished.
-// TODO(T-015): Replace this with the verdict screen.
-pub fn ended_text(ended: Option<&Ended>, language: Language) -> String {
-    match ended {
-        Some(Ended::Finished(outcome)) => verdict_text(outcome.verdict(), language).to_owned(),
-        Some(Ended::Busy(Some(holder))) => {
-            let user = crate::media::user_of(&holder.account);
-            Text::InProgress.fill(language, &[("user", user)])
-        }
-        Some(Ended::Busy(None)) => Text::BusyStarting.get(language).to_owned(),
-        None => verdict_text(Verdict::NotFinished, language).to_owned(),
-    }
 }
 
 #[cfg(test)]
