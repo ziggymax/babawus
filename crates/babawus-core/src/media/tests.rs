@@ -87,6 +87,7 @@ fn the_list_has_the_mounted_file_systems_on_usb_media() {
             volume("sdb2", STICK, "SPARE", None),
             volume("loop0", "/", "IMAGE", Some("/media/usera/IMAGE")),
         ],
+        blocks: Vec::new(),
     };
 
     let media = snapshot.media();
@@ -105,6 +106,7 @@ fn each_file_system_on_a_medium_has_a_row_of_its_own_sorted_by_label() {
             volume("sdb2", STICK, "BACKUP-B", Some("/media/usera/BACKUP-B")),
             volume("sdb1", STICK, "BACKUP-A", Some(ROOT)),
         ],
+        blocks: Vec::new(),
     };
 
     assert_eq!(labels(&snapshot), ["BACKUP-A", "BACKUP-B"]);
@@ -115,6 +117,7 @@ fn a_volume_whose_drive_is_not_reported_yet_is_left_out() {
     let snapshot = Snapshot {
         drives: Vec::new(),
         volumes: vec![volume("sdb1", STICK, "BACKUP-A", Some(ROOT))],
+        blocks: Vec::new(),
     };
 
     assert!(snapshot.media().is_empty());

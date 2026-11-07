@@ -7,6 +7,7 @@ pub mod computer_lock;
 pub mod config;
 pub mod copy;
 pub mod exclude;
+pub mod format;
 pub mod fs;
 pub mod identity;
 pub mod lock;

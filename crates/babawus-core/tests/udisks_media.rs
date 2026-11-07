@@ -4,6 +4,7 @@
 //! A loop device has no drive, so it is never a USB medium: the tests check what udisks2 reports
 //! about its file system, and treat it as if it were on a USB stick for the status.
 
+#[allow(dead_code)]
 mod support;
 
 use std::path::Path;

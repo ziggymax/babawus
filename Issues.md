@@ -114,7 +114,8 @@ Testing on the development VM and a real USB stick turned up these issues. All a
 36. **Formatting can outlast the D-Bus timeout.** Ext4 took up to a minute on 16 GB, and the default timeout is 25 seconds.
     - **Decided (2026-11-05):** Formatting runs in the background with no short timeout, shows "Formatting…", and can't be cancelled once started.
 37. **Partition types were not specified.**
-    - **Decided (2026-11-05):** `0x07` for exFAT and `0x83` for Ext4 on MBR, with the matching GPT types. The GPT types have not been tested.
+    - **Decided (2026-11-05):** `0x07` for exFAT and `0x83` for Ext4 on MBR, with the matching GPT types.
+    - **Checked (2026-11-07):** The integration tests write GPT on loop devices, and udisks2 sets both GPT types. That a device over 2 TiB gets GPT is a unit test.
 38. **Formatting may need no password.** It ran without one from an SSH session, using an administrator's account.
     - **Decided (2026-11-05):** Accepted. udisks2 may or may not ask, and the explicit confirmation is the safeguard. The manual checklist covers formatting from an account without administrator rights.
 39. **Powering off has not been tested.** The stick reports `CanPowerOff: true`, but that is all that is known.
@@ -164,3 +165,12 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-06):** Babawus opens anyway, because each medium has a lock of its own. A second start by the same user goes through the session bus, which GTK does by itself. Without a session bus, it gets the message that Babawus is already open. So that the medium's lock doesn't depend on this lock, a new medium lock is read back, and only counts if it still holds its own run ID.
 59. **The details of the language choice.** Unclear what happens with several system languages, a settings file that can't be used, or a choice that can't be saved.
     - **Decided (2026-11-06):** The first system language that is available counts. A settings file that is missing or can't be understood counts as no choice, and never stops Babawus. A choice that can't be saved still applies until Babawus is closed. Choosing a language in the menu is what makes it a choice: until then, nothing is saved, and Babawus follows the system.
+
+## Findings while building formatting
+
+60. **"In use" wasn't defined.** The requirements say a disk with a partition in use other than the medium itself is never offered for formatting, but not what "in use" means.
+    - **Decided (2026-11-07):** In use means active swap, another device on top (encryption, LVM or RAID, from the kernel's `holders`), or mounted anywhere other than below `/media/` or `/run/media/`. A disk with `HintSystem` is never offered either. A file system the desktop mounted is the medium itself, and is unmounted first.
+61. **The desktop mounted the old file system while formatting.** The new partition starts where the old one did, so it showed the old exFAT file system, and Cinnamon mounted it while udisks2 was wiping it. Formatting then failed with "Device or resource busy". This happened in about one test run in three, and could happen on a real stick.
+    - **Decided (2026-11-07):** The signatures of every old partition are wiped before the new partition table is written. In the test runs since, and when reformatting the real stick, nothing mounted it.
+62. **Which letters a label may use, and which label is suggested.**
+    - **Decided (2026-11-07):** `A`–`Z`, `a`–`z`, digits and `-`, because Ext4 and exFAT store other characters differently, and some systems show them badly. Babawus suggests the first free label of `BACKUP-A` to `BACKUP-Z`, then `BACKUP-1` and so on, ignoring case.

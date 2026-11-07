@@ -3,6 +3,7 @@
 //! The tests that need a medium use sudo and loop devices, so they are ignored by a plain
 //! `cargo test`. Run them with `cargo test -- --include-ignored`.
 
+#[allow(dead_code)]
 mod support;
 
 use std::fs::{self, File};
