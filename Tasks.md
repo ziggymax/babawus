@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-013 is waiting for review. T-014, the backup screens, is next.
+T-014 is waiting for review. T-015, the verdict screen, is next.
 
 ## First version: logic
 
@@ -34,8 +34,7 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-014 | Backup screens: overview, progress, Cancel, "Finishing…" | Todo | Requirements: "Provide feedback during a backup operation" |
-| T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject. Ejecting uses `Udisks::eject`, and says what to do if the medium is busy or could only be unmounted | Todo | Requirements: "Get a clear verdict" |
+| T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject. It replaces the stand-in end of the backup screen, which only shows the verdict and Back. Ejecting uses `Udisks::eject`, and says what to do if the medium is busy or could only be unmounted | Todo | Requirements: "Get a clear verdict" |
 | T-016 | History and "what does this medium cover" views | Todo | Requirements: "View the history of a medium" |
 | T-017 | Advanced: the format view. It uses `Udisks::format`, says when nothing was erased, and leads on to adding this computer and account | Todo | Requirements: "Format USB media" |
 | T-018 | Advanced: the configuration editor, with the file explorer, live totals, read-only entries for others, and adding, linking and removing entries. It also offers checking a damaged configuration, and starting a new one | Todo | Requirements: "Configure USB media" |
@@ -82,3 +81,4 @@ Nothing is waiting for a decision.
 | T-012 | Eject a medium | [#30](https://github.com/ziggymax/babawus/pull/30) |
 | T-019 | Test powering off a real stick, and remove the `pkexec` fallback if nothing needs it | [#30](https://github.com/ziggymax/babawus/pull/30) |
 | T-013 | Start screen: media list, details, actions, the menu with Language, Advanced and About, Eject, and the text catalogue | [#31](https://github.com/ziggymax/babawus/pull/31) |
+| T-014 | Backup screens: overview, progress, Cancel, "Finishing…", and asking before closing during a backup | [#32](https://github.com/ziggymax/babawus/pull/32) |

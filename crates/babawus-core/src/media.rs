@@ -237,7 +237,7 @@ impl Viewer<'_> {
 }
 
 /// The user name in `username@computer folder`.
-fn user_of(account: &str) -> &str {
+pub(crate) fn user_of(account: &str) -> &str {
     account.split_once('@').map_or(account, |(user, _)| user)
 }
 

@@ -1,3 +1,4 @@
+mod backup_page;
 mod icons;
 mod window;
 
