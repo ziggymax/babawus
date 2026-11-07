@@ -176,7 +176,9 @@ If several of these happen in one run, the worst verdict wins: Backup failed, th
 
 Every verdict other than "All good" gives the reason in plain words (for example "the medium is full" or "the medium was removed"). Skipped files are grouped by reason (for example "3 files have characters in their names that this medium can't store"). The verdict also tells me how long it has been since my last backup (see "See when I last made a backup").
 
-Next to the verdict, Babawus shows "Details for your poweruser": the verdict, the reason, the date and time, `username@computer folder`, the medium's label, the counts, and the first errors. A "Copy" button puts these details on the clipboard, so that I can paste them into an email or a chat.
+Next to the verdict, Babawus shows "Details for your poweruser": the verdict, the reason, the date and time, `username@computer folder`, the medium's label, the counts, and the first errors. A "Copy" button puts these details on the clipboard, so that I can paste them into an email or a chat. The details are written in the language Babawus shows, with the fixed codes from the log next to the verdict, the reason and each problem, so that the poweruser can read them whatever the language. They list the first 10 problems; the log has them all. The details are folded away until I open them, so that the verdict itself stays plain.
+
+The verdict screen takes the place of the backup screen when the run ends. It shows a mark next to the verdict: a green tick for "All good", an amber "!" for "Some files were skipped" and "Backup not finished", and a red cross for "Backup failed". Below it come the reason, the skipped files by reason, the next step, what was copied ("Copied: 12 files (3.4 MB)", or "Everything was already up to date."), and the last backup. When the run counts as a backup, an "Eject" button offers to eject the medium (see "Offer to eject media after a successful backup operation"). "Back" returns to the start screen.
 
 ### See which files and folders a medium covers
 

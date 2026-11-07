@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use babawus_core::start_screen::Mark;
+use babawus_core::verdict_screen::VerdictMark;
 use gtk4::gdk::Texture;
 use gtk4::gdk_pixbuf::Pixbuf;
 use gtk4::{Image, gio, glib};
@@ -15,6 +16,7 @@ const STICK_OTHER: &[u8] = include_bytes!("../assets/ui/stick-other.svg");
 const MARK_READY: &[u8] = include_bytes!("../assets/ui/mark-ready.svg");
 const MARK_ATTENTION: &[u8] = include_bytes!("../assets/ui/mark-attention.svg");
 const MARK_UNUSABLE: &[u8] = include_bytes!("../assets/ui/mark-unusable.svg");
+const MARK_FAILED: &[u8] = include_bytes!("../assets/ui/mark-failed.svg");
 
 /// Drawn at twice the size shown, so that it stays sharp on a screen with scaling.
 const SCALE: i32 = 2;
@@ -34,6 +36,15 @@ pub fn mark(mark: Mark) -> Texture {
         Mark::Unusable => MARK_UNUSABLE,
     };
     texture(svg, 32)
+}
+
+pub fn verdict_mark(mark: VerdictMark) -> Texture {
+    let svg = match mark {
+        VerdictMark::Good => MARK_READY,
+        VerdictMark::Attention => MARK_ATTENTION,
+        VerdictMark::Failed => MARK_FAILED,
+    };
+    texture(svg, 48)
 }
 
 /// An image of `size` pixels, for a texture from this module.

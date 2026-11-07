@@ -196,3 +196,10 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-07):** The backup screen fills the window until the run has ended and the user goes back.
 70. **Closing the window during a backup.** Quitting there and then would end the run without its end entry, so the next run would report it as interrupted.
     - **Decided (2026-11-07):** Closing asks "Stop the backup?", like Cancel. On yes, the run is cancelled and the window closes once it has ended properly.
+
+## Decisions on the verdict screen
+
+71. **Which language the details for the poweruser are in.** The user's language is easiest to read, but the poweruser may not share it.
+    - **Decided (2026-11-07):** The user's language, with the fixed codes from the log next to the verdict, the reason and each problem, so that the poweruser can look them up whatever the language.
+72. **A mark for "Backup failed".** The start screen's grey cross means "can't be used", which is too mild for a run that failed.
+    - **Decided (2026-11-07):** A red cross. "Some files were skipped" and "Backup not finished" get the amber "!", "All good" the green tick.

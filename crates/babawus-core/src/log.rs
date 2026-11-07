@@ -138,7 +138,7 @@ fn is_run_id(id: &str) -> bool {
 }
 
 /// Writes a value so that it stays on one line, in valid UTF-8, and can be read back exactly.
-fn escape(value: &[u8]) -> String {
+pub(crate) fn escape(value: &[u8]) -> String {
     let mut text = String::new();
     for chunk in value.utf8_chunks() {
         for character in chunk.valid().chars() {

@@ -505,8 +505,10 @@ fn sleeps_when_started_by_another_test() {
     }
 }
 
+/// Starts a copy of this test program, and waits until it runs as this program. Until `exec`
+/// has replaced it, the new process still has the name of the test thread that started it.
 fn start_copy_of_this_program() -> Child {
-    Command::new(std::env::current_exe().unwrap())
+    let child = Command::new(std::env::current_exe().unwrap())
         .args([
             "lock::tests::sleeps_when_started_by_another_test",
             "--exact",
@@ -514,7 +516,18 @@ fn start_copy_of_this_program() -> Child {
         .env(SLEEP_IN_CHILD, "1")
         .stdout(Stdio::null())
         .spawn()
-        .unwrap()
+        .unwrap();
+    let own = std::fs::read_to_string("/proc/self/comm").unwrap();
+    let name = format!("/proc/{}/comm", child.id());
+    let start = std::time::Instant::now();
+    while std::fs::read_to_string(&name).ok().as_ref() != Some(&own) {
+        assert!(
+            start.elapsed() < Duration::from_secs(10),
+            "the copy did not start"
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    child
 }
 
 #[test]
