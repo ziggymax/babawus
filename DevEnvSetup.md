@@ -234,6 +234,9 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 - **Detecting removable devices:** udisks2 reports the stick as `Removable: true` but `MediaRemovable: false`, because the stick and its medium are one unit. To decide what to offer for formatting, Babawus must use `Removable`, together with `ConnectionBus: usb`.
 - **Other udisks2 properties:** the stick also reports `HintSystem: false`, `Ejectable: true` and `CanPowerOff: true`, so eject and power off should be possible.
 - **Automounting:** Cinnamon mounts a passed-through stick under `/media/steen/` as usual, also when the VM boots with the stick attached.
+- **Read-only mounts:** udisks2's `ReadOnly` is about the device, so a stick mounted with `-o ro` still reports `false`. Babawus checks the mount itself with `statvfs`.
+- **Change signals:** a single unmount or mount reached Babawus as up to seven separate D-Bus messages, spread over more than one pass of the main loop. Gathering them for 100 ms turned each change into one update.
+- **Loop devices:** udisks2 reports a loop device's file system, label and mount points like any other, with `/` as its drive. So the integration tests can check what udisks2 reports, but a loop device never counts as a USB medium.
 - **Device names change:** after a reboot with the stick attached, the stick was `/dev/sda` and the system disk `/dev/sdb`, the reverse of before. Never use a device name from an earlier session: look the stick up by model first, for example with `lsblk -o NAME,TRAN,MODEL`. A model check is what stopped a test script here from using the wrong device.
 
 ### Build and packaging

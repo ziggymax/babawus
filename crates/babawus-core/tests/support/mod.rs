@@ -77,6 +77,12 @@ impl LoopMedium {
         &self.mount_point
     }
 
+    /// Mounts the file system again, read-only.
+    #[allow(dead_code)] // Not every test file uses it.
+    pub fn remount_read_only(&self) {
+        sudo(&["mount", "-o", "remount,ro", path_str(&self.mount_point)]);
+    }
+
     fn format_and_mount(&mut self, format: MediumFormat) {
         let device = self.device.clone();
         let mount_point = path_str(&self.mount_point).to_owned();

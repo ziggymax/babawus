@@ -1,4 +1,5 @@
-//! All Babawus logic: versioning, configuration, log, name rules and verdicts.
+//! All Babawus logic: versioning, configuration, log, name rules, verdicts, and the media
+//! that udisks2 reports.
 //!
 //! This crate must stay free of UI code.
 
@@ -10,12 +11,14 @@ pub mod fs;
 pub mod identity;
 pub mod lock;
 pub mod log;
+pub mod media;
 pub mod medium;
 pub mod names;
 pub mod run;
 pub mod scan;
 pub mod settings;
 pub mod time;
+pub mod udisks;
 pub mod verdict;
 pub mod versions;
 
