@@ -80,5 +80,5 @@ Nothing is waiting for a decision.
 | T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | [#25](https://github.com/ziggymax/babawus/pull/25) |
 | T-009 | Settings file and the choice of language | [#26](https://github.com/ziggymax/babawus/pull/26) |
 | T-010 | Find USB media, work out their file system and status, and follow changes | [#27](https://github.com/ziggymax/babawus/pull/27) |
-| T-011 | Format a medium, including the check of the drive ID, permissions and the first configuration | Not merged yet |
-| T-023 | Test the GPT partition types on a medium over 2 TiB, or with a simulated one | Not merged yet |
+| T-011 | Format a medium, including the check of the drive ID, permissions and the first configuration | [#29](https://github.com/ziggymax/babawus/pull/29) |
+| T-023 | Test the GPT partition types on a medium over 2 TiB, or with a simulated one | [#29](https://github.com/ziggymax/babawus/pull/29) |
