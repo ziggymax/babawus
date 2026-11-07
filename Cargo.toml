@@ -9,6 +9,8 @@ publish = false
 
 [workspace.dependencies]
 babawus-core = { path = "crates/babawus-core" }
+# The gio that gtk4 uses, for udisks2 over D-Bus.
+gio = "0.22"
 # v4_14 is the GTK version in Linux Mint 22. Do not raise it above the supported platform.
 gtk4 = { version = "0.11", features = ["v4_14"] }
 libc = "0.2"

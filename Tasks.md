@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Nothing is in progress. T-010 is next.
+T-010 is waiting for review. T-011 is next.
 
 ## First version: logic
 
@@ -30,7 +30,6 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-010 | Find USB media, work out their file system and status, and follow changes | Todo | Requirements: "Start Babawus and see status" |
 | T-011 | Format a medium, including the check of the drive ID, permissions and the first configuration | Todo | Requirements: "Formatting a medium" |
 | T-012 | Eject a medium | Todo | Requirements: "Offer to eject" |
 
@@ -38,7 +37,7 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-013 | Start screen with the media list, and the language menu, which is in the placeholder window for now | Todo | Requirements: "Start Babawus and see status" |
+| T-013 | Start screen with the media list, and the language menu, which is in the placeholder window for now. Work out the statuses off the main thread, because they read every medium | Todo | Requirements: "Start Babawus and see status" |
 | T-014 | Backup screens: overview, progress, Cancel, "Finishing…" | Todo | Requirements: "Provide feedback during a backup operation" |
 | T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject | Todo | Requirements: "Get a clear verdict" |
 | T-016 | History and "what does this medium cover" views | Todo | Requirements: "View the history of a medium" |
@@ -82,3 +81,4 @@ Nothing is waiting for a decision.
 | T-007 | Keep "hostname last seen" up to date in the configuration | [#24](https://github.com/ziggymax/babawus/pull/24) |
 | T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | [#25](https://github.com/ziggymax/babawus/pull/25) |
 | T-009 | Settings file and the choice of language | [#26](https://github.com/ziggymax/babawus/pull/26) |
+| T-010 | Find USB media, work out their file system and status, and follow changes | [#27](https://github.com/ziggymax/babawus/pull/27) |
