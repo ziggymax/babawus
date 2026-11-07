@@ -81,4 +81,4 @@ Nothing is waiting for a decision.
 | T-007 | Keep "hostname last seen" up to date in the configuration | [#24](https://github.com/ziggymax/babawus/pull/24) |
 | T-008 | One Babawus per computer: the lock in `/run/lock/`, and bringing the existing window to the front | [#25](https://github.com/ziggymax/babawus/pull/25) |
 | T-009 | Settings file and the choice of language | [#26](https://github.com/ziggymax/babawus/pull/26) |
-| T-010 | Find USB media, work out their file system and status, and follow changes | Not merged yet |
+| T-010 | Find USB media, work out their file system and status, and follow changes | [#27](https://github.com/ziggymax/babawus/pull/27) |
