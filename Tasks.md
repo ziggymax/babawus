@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-029.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-030.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-012 is waiting for review. The udisks2 tasks are done, and T-013 is next.
+T-013 is waiting for review. T-014, the backup screens, is next.
 
 ## First version: logic
 
@@ -34,13 +34,12 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-013 | Start screen with the media list, and the language menu, which is in the placeholder window for now. Work out the statuses off the main thread, because they read every medium | Todo | Requirements: "Start Babawus and see status" |
 | T-014 | Backup screens: overview, progress, Cancel, "Finishing…" | Todo | Requirements: "Provide feedback during a backup operation" |
 | T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject. Ejecting uses `Udisks::eject`, and says what to do if the medium is busy or could only be unmounted | Todo | Requirements: "Get a clear verdict" |
 | T-016 | History and "what does this medium cover" views | Todo | Requirements: "View the history of a medium" |
 | T-017 | Advanced: the format view. It uses `Udisks::format`, says when nothing was erased, and leads on to adding this computer and account | Todo | Requirements: "Format USB media" |
 | T-018 | Advanced: the configuration editor, with the file explorer, live totals, read-only entries for others, and adding, linking and removing entries. It also offers checking a damaged configuration, and starting a new one | Todo | Requirements: "Configure USB media" |
-| T-020 | Translations: English and German, including codes from the log, and changing the language at once when the menu changes | Todo | Requirements: "Change the language" |
+| T-020 | Translations: the German texts in the catalogue, including codes from the log | Todo | Requirements: "Change the language" |
 
 ## First version: release
 
@@ -50,6 +49,7 @@ Everything here is done.
 | T-022 | Pull a real stick during a copy, and check that its errors count as "medium gone" | Todo | Pull request 14 |
 | T-024 | Test formatting from an account without administrator rights | Todo | Issues: 38 |
 | T-025 | Install, update and uninstall the `.deb` for real, and write the uninstall notes | Todo | Requirements: "Packaging" |
+| T-029 | `real_processes_are_told_apart` failed once in a full `cargo test`: it may check the copy of the test program before `exec` has replaced its name, which until then is the test thread's. Wait until the copy is running before checking | Todo | Pull request 31 |
 
 ## Needs a decision
 
@@ -81,3 +81,4 @@ Nothing is waiting for a decision.
 | T-023 | Test the GPT partition types on a medium over 2 TiB, or with a simulated one | [#29](https://github.com/ziggymax/babawus/pull/29) |
 | T-012 | Eject a medium | [#30](https://github.com/ziggymax/babawus/pull/30) |
 | T-019 | Test powering off a real stick, and remove the `pkexec` fallback if nothing needs it | [#30](https://github.com/ziggymax/babawus/pull/30) |
+| T-013 | Start screen: media list, details, actions, the menu with Language, Advanced and About, Eject, and the text catalogue | [#31](https://github.com/ziggymax/babawus/pull/31) |

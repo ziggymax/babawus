@@ -25,7 +25,7 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 | Term | Meaning |
 |---|---|
 | Account | A user account on a computer, identified by its user name. Also called a user account. |
-| Advanced | The menu item or button that leads to the poweruser's functions. |
+| Advanced | The menu item that shows the poweruser's actions until Babawus is closed (see "Start Babawus and see status"). |
 | Backup | A file or folder copied to a medium, or the act of making those copies (see *run*). |
 | Babawus medium | A medium that Babawus has formatted and set up, recognised by its configuration file. |
 | Checksum | The last line of the configuration file, used to detect damage and accidental edits. It is also the file's validation marker. |
@@ -68,16 +68,37 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 
 As a user I want to be able to simply start Babawus by clicking on an icon in a menu or the desktop. Babawus should then start and show me a list with the current status of attached media: which media they are, and whether they are ready for me to back up to. That way I can see if Babawus is ready to start a backup.
 
-The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row shows the medium's label in large type (for example **BACKUP-A**), its maker, model and size in small type below it (for example "SanDisk Ultra · 64 GB"), an icon, and a status in plain words:
+The window is titled "Backup". The list of media is on the left. The details of the selected medium are on the right, with the actions for it below them. A menu button in the title bar holds Language, Advanced and About. The window is compact and uncluttered, and fits on a 1366 × 768 screen with room to spare. Every control has a tooltip.
 
-| Status | When | Can be clicked |
+The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row shows only the medium's label in large type (for example **BACKUP-A**), a picture of a stick, and a mark. Everything else is in the details. The stick is in colour for a Babawus medium and grey for anything else. The mark shows at a glance whether a backup can be started. Its shape differs as well as its colour, so it can be read without telling colours apart:
+
+| Status | When | Mark |
 |---|---|---|
-| Ready, with "Last backup: …" | A Babawus medium, and this computer and account have been added to it | Yes |
-| Not set up for you: contact your poweruser | A Babawus medium, but this computer or account has not been added | No |
-| Backup in progress (by `<user>`) | Another Babawus holds the lock on the medium (see "One Babawus at a time") | No |
-| Needs attention: contact your poweruser | The configuration is damaged (see "Reading the configuration file") or has a newer format than this Babawus understands | No |
-| Write-protected | A Babawus medium that is mounted read-only | No |
-| Not a backup medium | Anything else | No |
+| Ready | A Babawus medium, and this computer and account have been added to it | Green tick |
+| Not set up for you | A Babawus medium, but this computer or account has not been added | Amber "!" |
+| Backup in progress (by `<user>`) | Another Babawus holds the lock on the medium (see "One Babawus at a time") | Amber "!" |
+| Needs attention | The configuration is damaged (see "Reading the configuration file") or has a newer format than this Babawus understands | Amber "!" |
+| Write-protected | A Babawus medium that is mounted read-only | Grey cross |
+| Not a backup medium | Anything else | Grey cross |
+
+Working out a status reads the medium, so it happens off the main thread. Until it is known, the row shows a small spinner in place of the mark, and the details say "Checking…".
+
+**Selecting.** Clicking a row selects it, and never starts anything. If nothing is selected and exactly one medium is Ready, that medium is selected, so the usual case needs only a press on "Start backup". The selection follows the medium while the list changes. When the selected medium is removed, nothing is selected.
+
+**The details** show a small Babawus logo in their upper right corner, out of the way of everything else. They also show the label, the status with its mark, the maker and model, the size and the free space (for example "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free"). Sizes are in GB, as on the packaging. For a Ready medium they also show the last backup (see "See when I last made a backup"). For any other status they say in plain words what it means and what to do, for example "This stick hasn't been set up for you on this computer. Contact your poweruser." With nothing selected, the details only say "Plug in your backup stick", or "Choose a stick in the list" if the list isn't empty.
+
+**The actions** for the selected medium:
+
+| Action | Shown for | Role |
+|---|---|---|
+| Start backup | Every medium. It only works on a Ready medium: otherwise it is greyed out, and its tooltip says why | User |
+| Show history | A Babawus medium whose log has at least one run (see "View the history of a medium") | User |
+| What's backed up | A Ready medium (see "See which files and folders a medium covers") | User |
+| Eject | Every medium (see "Offer to eject media after a successful backup operation") | User |
+| Prepare… | A medium that may be formatted (see "Format USB media") | Poweruser |
+| Change setup… | A Babawus medium (see "Configure USB media") | Poweruser |
+
+**Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 
 
 ### Update Babawus media status
@@ -86,7 +107,7 @@ As a user I want Babawus to continuously update the list of attached USB media. 
 
 ### Start a backup on a specific medium
 
-As a user I want to be able to simply click on a Ready medium in the Babawus list of USB media to start a backup. Babawus should provide me with explicit feedback indicating that the backup has started. That way I can confidently start a backup.
+As a user I want to be able to simply select a Ready medium in the Babawus list of USB media and press "Start backup" to start a backup. Babawus should provide me with explicit feedback indicating that the backup has started. That way I can confidently start a backup.
 
 ### Provide feedback during a backup operation
 
@@ -103,7 +124,7 @@ As a user I want Babawus to show me a summary when a backup process completes. N
 
 ### Offer to "eject" media after a successful backup operation
 
-As a user I want Babawus to offer to eject a medium that has just been used for a successful backup, so that I can immediately detach it. Ejecting works like "Safely remove" in the file manager: Babawus unmounts the medium and then powers off the device, so its light goes out and the system no longer shows it. If powering off is not possible, Babawus only unmounts it, and says that the medium can still be pulled out safely. If a program is still using the medium, for example an open file or a file manager window, Babawus leaves it mounted and asks me to close that program and try again. Only USB media are ever ejected. That way I can quickly conclude my backup and store the USB medium away.
+As a user I want Babawus to offer to eject a medium that has just been used for a successful backup, so that I can immediately detach it. Ejecting works like "Safely remove" in the file manager: Babawus unmounts the medium and then powers off the device, so its light goes out and the system no longer shows it. If powering off is not possible, Babawus only unmounts it, and says that the medium can still be pulled out safely. If a program is still using the medium, for example an open file or a file manager window, Babawus leaves it mounted and asks me to close that program and try again. Only USB media are ever ejected. That way I can quickly conclude my backup and store the USB medium away. Eject is also one of the actions on the start screen, for any medium in the list, so that I can remove a medium safely without a backup too.
 
 ### Format USB media
 
@@ -157,11 +178,11 @@ Next to the verdict, Babawus shows "Details for your poweruser": the verdict, th
 
 ### See which files and folders a medium covers
 
-As a user I want to be able to see, for a Ready medium, in plain words which files and folders on this computer are backed up to it for my account. This is shown on request, not on the start screen, which only shows the status of each medium and, as the one exception, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
+As a user I want to be able to see, for a Ready medium, in plain words which files and folders on this computer are backed up to it for my account. This is shown on request, through "What's backed up", not in the details on the start screen, which only show the medium itself, its status and, for a Ready medium, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
 
 ### See when I last made a backup
 
-As a user I want the start screen to show, for each Ready medium, how long it has been since my last backup on this computer to that medium (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
+As a user I want the details of a Ready medium on the start screen to show how long it has been since my last backup on this computer to that medium (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
 
 - Only my own account on this computer counts (`username@computer folder`), not backups by other computers or accounts on a shared medium.
 - Both "All good" and "Some files were skipped" count as a backup, because the run finished. If the last backup skipped files, a small warning mark is shown next to the date.
@@ -208,7 +229,7 @@ As a poweruser I want to set, in the configuration of a medium, how many older v
 
 ### Change the language
 
-As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. That way I can use Babawus in the language I understand best.
+As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. That way I can use Babawus in the language I understand best.
 
 ## Technical requirements
 
@@ -458,7 +479,7 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 - A running process only counts if it is Babawus, because the system can give a process ID to another program after a crash. A lock with Babawus's own process ID only counts while that action is still going, because a medium can be pulled and put back while Babawus stays open.
 - A lock file that can't be understood isn't live.
 - The lock is not flushed to the medium, when taken or when removed, because a lock that isn't live stops nobody.
-- In the media list, a medium with a live lock shows "Backup in progress (by `<user>`)" and cannot be clicked. If the lock has become live since the list was shown, a backup that is started does nothing, gives no verdict, and the list shows the same.
+- In the media list, a medium with a live lock shows "Backup in progress (by `<user>`)", and a backup can't be started on it. If the lock has become live since the list was shown, a backup that is started does nothing, gives no verdict, and the list shows the same.
 - After a backup, the lock is removed after the end entry has been written to the log.
 
 ### Format of the configuration file
@@ -574,6 +595,7 @@ At the start of each run, after taking the medium's lock, Babawus writes the mis
 - **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. It builds against GTK 4.14, the version in Mint 22, and uses nothing newer. If this does not work out, the fallback is Python with GTK 3.
 - **Structure.** All logic (versioning, configuration, log, name rules, verdicts) lives in a library with no UI code, and a thin UI sits on top.
 - **Dependencies.** Rust crates count as dependencies: each must be well maintained and replace more than a handful of lines, and the list stays short.
+- **Translations.** Every text the user sees comes from a small catalogue of Babawus's own in the library, with one entry per text and language, not from gettext, because the language must change at once without a restart. A test checks that every text exists in every language. When the language changes, the UI sets all its texts again.
 - **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, mounting while formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate). udisks2 may ask for the administrator password itself, depending on the rules of the system, but it may also ask for nothing. Babawus must work either way, so the safeguard against formatting by mistake is the explicit confirmation (see "Format USB media"), not a password. Every step works through udisks2, so Babawus never runs `pkexec` or `sudo`.
 
 ### Responsiveness
