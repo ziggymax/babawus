@@ -83,6 +83,28 @@ texts! {
     NotYetAvailable: "Not yet available", "";
     CantStart: "No backup can start: {reason}", "";
 
+    GettingReady: "Finding the files to back up…", "";
+    BackingUp: "Backing up…", "";
+    Stopping: "Stopping at a safe point…", "";
+    Finishing: "Finishing… Don't pull out the stick yet.", "";
+    Overview: "To back up: {files} files ({size})", "";
+    OverviewOneFile: "To back up: 1 file ({size})", "";
+    FilesLeft: "Files left: {files}", "";
+    BytesLeft: "Left to copy: {size}", "";
+    Cancel: "Cancel", "";
+    CancelTooltip: "Stop the backup", "";
+    StopQuestion: "Stop the backup?", "";
+    StopDetail: "The files copied so far stay on the stick, but the backup won't be finished.", "";
+    KeepGoing: "Keep going", "";
+    StopBackup: "Stop backup", "";
+    Back: "Back", "";
+    BackTooltip: "Go back to the list of sticks", "";
+    BusyStarting: "Another backup to this stick is just starting. Try again in a moment.", "";
+    VerdictAllGood: "All good", "";
+    VerdictSkipped: "Some files were skipped", "";
+    VerdictNotFinished: "Backup not finished", "";
+    VerdictFailed: "Backup failed", "";
+
     Ejecting: "Ejecting {label}…", "";
     Ejected: "You can pull out {label} now.", "";
     EjectedUnmountedOnly: "You can pull out {label} safely now, even if its light stays on.", "";

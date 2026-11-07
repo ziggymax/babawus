@@ -189,3 +189,10 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-07):** Advanced is a menu item that adds the poweruser's actions next to the user's. It is off at every start and never saved, and the title bar shows a clear marker while it is on. Eject is for everyone, on any medium in the list.
 68. **How texts are translated.** The language must change at once without a restart, which gettext handles badly.
     - **Decided (2026-11-07):** A small catalogue of Babawus's own in the library, with a test that every text exists in every language. The UI sets its texts again when the language changes. No new dependency is needed.
+
+## Decisions on the backup screen
+
+69. **What the rest of the window does during a backup.** Leaving the list in view would let the user start a second backup or eject the medium mid-run.
+    - **Decided (2026-11-07):** The backup screen fills the window until the run has ended and the user goes back.
+70. **Closing the window during a backup.** Quitting there and then would end the run without its end entry, so the next run would report it as interrupted.
+    - **Decided (2026-11-07):** Closing asks "Stop the backup?", like Cancel. On yes, the run is cancelled and the window closes once it has ended properly.

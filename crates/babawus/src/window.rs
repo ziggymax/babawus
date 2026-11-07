@@ -5,29 +5,39 @@
 
 use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::rc::{Rc, Weak};
-use std::time::SystemTime;
+use std::sync::Arc;
+use std::sync::mpsc::TryRecvError;
+use std::time::{Duration, SystemTime};
+
+use babawus_core::backup_screen::{Tracker, ended_text};
 
 use babawus_core::fs::RealFs;
-use babawus_core::identity::this_computer_id;
+use babawus_core::identity::{this_computer_id, this_hostname};
 use babawus_core::lock::ThisProcess;
-use babawus_core::media::{Medium, Viewer};
+use babawus_core::media::{Medium, Status, Viewer};
+use babawus_core::run::{Backup, Ended, Message, RunningBackup};
 use babawus_core::settings::{Language, SETTINGS_FILE, Settings};
 use babawus_core::start_screen::{self, Action, Checked, Shown};
 use babawus_core::text::Text;
 use babawus_core::udisks::{EjectError, Ejected, Udisks};
 use gtk4::prelude::*;
 use gtk4::{
-    AboutDialog, Align, Application, ApplicationWindow, Box, Button, HeaderBar, Image, Label,
-    ListBox, ListBoxRow, MenuButton, Orientation, Overlay, PolicyType, ScrolledWindow,
+    AboutDialog, AlertDialog, Align, Application, ApplicationWindow, Box, Button, HeaderBar, Image,
+    Label, ListBox, ListBoxRow, MenuButton, Orientation, Overlay, PolicyType, ScrolledWindow,
     SelectionMode, Separator, Spinner, Stack, gio, glib,
 };
 
+use crate::backup_page::BackupPage;
 use crate::icons;
 
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
 const LIST_WIDTH: i32 = 260;
+/// How often the backup screen is updated: at most about 10 times a second. See
+/// "Responsiveness" in Requirements.md.
+const BACKUP_UPDATES: Duration = Duration::from_millis(100);
 const LOGO_SIZE: i32 = 64;
 /// Leaves room for the logo in the upper right corner of the details.
 const LOGO_ROOM: i32 = LOGO_SIZE + MARGIN;
@@ -83,8 +93,28 @@ struct DetailsWidgets {
     logo: Image,
 }
 
+/// A backup, from starting it until the user goes back to the start screen.
+struct BackupState {
+    /// The label of the medium.
+    label: String,
+    /// Nothing once the run has ended.
+    running: Option<RunningBackup>,
+    tracker: Tracker,
+    /// How the run ended, once it has. `Some(None)` means the worker stopped without saying,
+    /// which can only be a crash.
+    ended: Option<Option<Ended>>,
+    /// The user closed the window and agreed to stop, so it closes once the run has ended.
+    close_when_done: bool,
+    /// Closes the question whether to stop, if the run ends while it is open.
+    question: gio::Cancellable,
+}
+
 struct Window {
     window: ApplicationWindow,
+    /// The start screen, or the backup screen.
+    screens: Stack,
+    backup_page: BackupPage,
+    backup: RefCell<Option<BackupState>>,
     title: Label,
     advanced_marker: Label,
     menu: MenuButton,
@@ -95,7 +125,7 @@ struct Window {
     udisks: Option<Udisks>,
     this: ThisProcess,
     username: String,
-    settings_path: std::path::PathBuf,
+    settings_path: PathBuf,
 
     language: Cell<Language>,
     advanced: Cell<bool>,
@@ -165,17 +195,24 @@ pub fn show(app: &Application) {
     content.append(&list_scroll);
     content.append(&Separator::new(Orientation::Vertical));
     content.append(&details_view);
+    let backup_page = BackupPage::new();
+    let screens = Stack::new();
+    screens.add_named(&content, Some("start"));
+    screens.add_named(&backup_page.root, Some("backup"));
 
     let window = ApplicationWindow::builder()
         .application(app)
         .default_width(820)
         .default_height(500)
         .titlebar(&header)
-        .child(&content)
+        .child(&screens)
         .build();
 
     let this_window = Rc::new(Window {
         window,
+        screens,
+        backup_page,
+        backup: RefCell::new(None),
         title,
         advanced_marker,
         menu,
@@ -356,6 +393,36 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
 impl Window {
     fn connect_signals(self: &Rc<Self>) {
         let weak = Rc::downgrade(self);
+        self.backup_page.cancel.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.ask_to_stop(false);
+            }
+        });
+        let weak = Rc::downgrade(self);
+        self.backup_page.back.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.back_to_start();
+            }
+        });
+        // Closing the window during a run asks first, like Cancel. Closing it straight away
+        // would end the run without its end entry in the log.
+        let weak = Rc::downgrade(self);
+        self.window.connect_close_request(move |_| {
+            let Some(window) = weak.upgrade() else {
+                return glib::Propagation::Proceed;
+            };
+            let running = window
+                .backup
+                .borrow()
+                .as_ref()
+                .is_some_and(|backup| backup.running.is_some());
+            if !running {
+                return glib::Propagation::Proceed;
+            }
+            window.ask_to_stop(true);
+            glib::Propagation::Stop
+        });
+        let weak = Rc::downgrade(self);
         self.list.connect_row_selected(move |_, row| {
             let Some(window) = weak.upgrade() else { return };
             if window.updating.get() {
@@ -486,6 +553,7 @@ impl Window {
         }
         self.update_rows();
         self.show_details();
+        self.show_backup();
     }
 
     /// udisks2 reported a change, or Babawus has just started: the list is read again, and each
@@ -697,8 +765,10 @@ impl Window {
 
     fn act(self: &Rc<Self>, action: Action) {
         // The buttons for the other actions are greyed out until their screens are built.
-        if action == Action::Eject {
-            self.eject();
+        match action {
+            Action::StartBackup => self.start_backup(),
+            Action::Eject => self.eject(),
+            _ => {}
         }
     }
 
@@ -740,6 +810,176 @@ impl Window {
             *window.notice.borrow_mut() = Some(Notice { text, label });
             window.show_details();
         });
+    }
+
+    /// Starts a backup to the selected medium, if it is Ready.
+    fn start_backup(self: &Rc<Self>) {
+        let Some(medium) = self.selected_medium() else {
+            return;
+        };
+        let ready = self.media.borrow().iter().any(|(each, checked)| {
+            each == &medium
+                && checked
+                    .as_ref()
+                    .is_some_and(|checked| matches!(checked.status, Status::Ready { .. }))
+        });
+        let Some(format) = medium.volume.format() else {
+            return;
+        };
+        if !ready || self.backup.borrow().is_some() {
+            return;
+        }
+        // Only shown in the log and the configuration, so a missing hostname stops nothing.
+        let hostname = this_hostname(&RealFs).unwrap_or_default();
+        let backup = Backup {
+            medium: Arc::new(RealFs),
+            root: medium.root.clone(),
+            format,
+            system: Arc::new(RealFs),
+            this: self.this.clone(),
+            username: self.username.clone(),
+            hostname,
+            home: glib::home_dir(),
+            now: Arc::new(SystemTime::now),
+        };
+        *self.notice.borrow_mut() = None;
+        *self.backup.borrow_mut() = Some(BackupState {
+            label: medium.volume.label.clone(),
+            running: Some(backup.start()),
+            tracker: Tracker::default(),
+            ended: None,
+            close_when_done: false,
+            question: gio::Cancellable::new(),
+        });
+        self.screens.set_visible_child_name("backup");
+        self.show_backup();
+        let weak = Rc::downgrade(self);
+        glib::timeout_add_local(BACKUP_UPDATES, move || {
+            let Some(window) = weak.upgrade() else {
+                return glib::ControlFlow::Break;
+            };
+            window.take_messages()
+        });
+    }
+
+    /// Takes the run's messages that have come since last time, and shows where it is now.
+    /// Only the last of them matters for the screen.
+    fn take_messages(&self) -> glib::ControlFlow {
+        let mut ended = false;
+        let mut close = false;
+        if let Some(backup) = self.backup.borrow_mut().as_mut() {
+            while let Some(running) = &backup.running {
+                match running.messages.try_recv() {
+                    Ok(Message::Progress(progress)) => backup.tracker.update(progress),
+                    Ok(Message::Ended(result)) => {
+                        backup.ended = Some(Some(result));
+                        backup.running = None;
+                    }
+                    Err(TryRecvError::Empty) => break,
+                    Err(TryRecvError::Disconnected) => {
+                        backup.ended = Some(None);
+                        backup.running = None;
+                    }
+                }
+            }
+            ended = backup.running.is_none();
+            close = ended && backup.close_when_done;
+            if ended {
+                backup.question.cancel();
+            }
+        }
+        self.show_backup();
+        if close {
+            self.window.close();
+        }
+        if ended {
+            glib::ControlFlow::Break
+        } else {
+            glib::ControlFlow::Continue
+        }
+    }
+
+    fn show_backup(&self) {
+        let language = self.language.get();
+        let backup = self.backup.borrow();
+        let Some(backup) = backup.as_ref() else {
+            return;
+        };
+        match &backup.ended {
+            Some(ended) => {
+                let text = ended_text(ended.as_ref(), language);
+                self.backup_page.show_ended(&backup.label, &text, language);
+            }
+            None => {
+                let shown = backup.tracker.shown(language);
+                self.backup_page
+                    .show_progress(&backup.label, &shown, language);
+            }
+        }
+    }
+
+    /// Asks whether to stop the run, and stops it if so. `closing` closes the window once the
+    /// run has ended.
+    fn ask_to_stop(self: &Rc<Self>, closing: bool) {
+        let already = self
+            .backup
+            .borrow()
+            .as_ref()
+            .is_none_or(|backup| backup.tracker.cancelling());
+        if already {
+            if closing && let Some(backup) = self.backup.borrow_mut().as_mut() {
+                backup.close_when_done = true;
+            }
+            return;
+        }
+        let language = self.language.get();
+        let dialog = AlertDialog::builder()
+            .message(Text::StopQuestion.get(language))
+            .detail(Text::StopDetail.get(language))
+            .buttons([
+                Text::KeepGoing.get(language),
+                Text::StopBackup.get(language),
+            ])
+            .cancel_button(0)
+            .default_button(0)
+            .modal(true)
+            .build();
+        let question = self
+            .backup
+            .borrow()
+            .as_ref()
+            .map(|backup| backup.question.clone());
+        let weak = Rc::downgrade(self);
+        dialog.choose(Some(&self.window), question.as_ref(), move |answer| {
+            let Some(window) = weak.upgrade() else { return };
+            if answer != Ok(1) {
+                return;
+            }
+            if let Some(backup) = window.backup.borrow_mut().as_mut()
+                && let Some(running) = &backup.running
+            {
+                running.cancel();
+                backup.tracker.cancel();
+                backup.close_when_done |= closing;
+            }
+            window.show_backup();
+        });
+    }
+
+    /// Leaves the backup screen once the run has ended. The list is checked again, because the
+    /// run changed the last backup.
+    fn back_to_start(self: &Rc<Self>) {
+        let ended = self
+            .backup
+            .borrow()
+            .as_ref()
+            .is_some_and(|backup| backup.running.is_none());
+        if !ended {
+            return;
+        }
+        *self.backup.borrow_mut() = None;
+        self.screens.set_visible_child_name("start");
+        self.media_changed();
     }
 
     fn selected_medium(&self) -> Option<Medium> {
