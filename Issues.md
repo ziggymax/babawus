@@ -176,3 +176,16 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-07):** `A`–`Z`, `a`–`z`, digits and `-`, because Ext4 and exFAT store other characters differently, and some systems show them badly. Babawus suggests the first free label of `BACKUP-A` to `BACKUP-Z`, then `BACKUP-1` and so on, ignoring case.
 63. **Ejecting a medium that is in use.** The requirements didn't say what happens if a program still has a file open on the medium, or a file manager window shows it.
     - **Decided (2026-11-07):** udisks2 refuses to unmount it, and Babawus leaves it mounted and asks the user to close that program and try again. If powering off fails after unmounting, the medium can still be pulled out safely, and Babawus says so. Only USB media are ever ejected.
+
+## Decisions on the start screen
+
+64. **One click started a backup.** The requirements had a click on a Ready medium start the backup, which left no room for anything else to do with a medium, and let a stray click start a run.
+    - **Decided (2026-11-07):** The window has the media list on the left and the details of the selected medium on the right, with its actions below. A click only selects. The backup starts with "Start backup". If exactly one medium is Ready, it is selected already, so the usual case still takes one press.
+65. **Two marks were not enough for six statuses.** A tick and a cross blur "needs your poweruser" with "can never be used".
+    - **Decided (2026-11-07):** A green tick for Ready, an amber "!" for Not set up, Backup in progress and Needs attention, and a grey cross for Write-protected and Not a backup medium. The shapes differ as well as the colours. The stick itself is in colour for a Babawus medium and grey for anything else. A row shows only the label, the stick and the mark. The maker, model, size, free space and last backup are in the details, with a small logo in their upper right corner.
+66. **Actions that don't apply.** Hiding them would leave the user wondering where "Start backup" went.
+    - **Decided (2026-11-07):** "Start backup" is always shown, and greyed out with a tooltip giving the reason when the medium isn't Ready. Other actions only appear when they apply.
+67. **How Advanced works, and whether it lasts.** If it were saved, the next user could meet "Prepare…" by chance.
+    - **Decided (2026-11-07):** Advanced is a menu item that adds the poweruser's actions next to the user's. It is off at every start and never saved, and the title bar shows a clear marker while it is on. Eject is for everyone, on any medium in the list.
+68. **How texts are translated.** The language must change at once without a restart, which gettext handles badly.
+    - **Decided (2026-11-07):** A small catalogue of Babawus's own in the library, with a test that every text exists in every language. The UI sets its texts again when the language changes. No new dependency is needed.

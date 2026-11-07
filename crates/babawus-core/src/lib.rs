@@ -18,6 +18,8 @@ pub mod names;
 pub mod run;
 pub mod scan;
 pub mod settings;
+pub mod start_screen;
+pub mod text;
 pub mod time;
 pub mod udisks;
 pub mod verdict;
