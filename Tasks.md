@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-011 is waiting for review. T-012 is next.
+T-012 is waiting for review. The udisks2 tasks are done, and T-013 is next.
 
 ## First version: logic
 
@@ -28,9 +28,7 @@ Everything here is done.
 
 ## First version: udisks2
 
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-012 | Eject a medium | Todo | Requirements: "Offer to eject" |
+Everything here is done.
 
 ## First version: user interface
 
@@ -38,7 +36,7 @@ Everything here is done.
 | --- | --- | --- | --- |
 | T-013 | Start screen with the media list, and the language menu, which is in the placeholder window for now. Work out the statuses off the main thread, because they read every medium | Todo | Requirements: "Start Babawus and see status" |
 | T-014 | Backup screens: overview, progress, Cancel, "Finishing…" | Todo | Requirements: "Provide feedback during a backup operation" |
-| T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject | Todo | Requirements: "Get a clear verdict" |
+| T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject. Ejecting uses `Udisks::eject`, and says what to do if the medium is busy or could only be unmounted | Todo | Requirements: "Get a clear verdict" |
 | T-016 | History and "what does this medium cover" views | Todo | Requirements: "View the history of a medium" |
 | T-017 | Advanced: the format view. It uses `Udisks::format`, says when nothing was erased, and leads on to adding this computer and account | Todo | Requirements: "Format USB media" |
 | T-018 | Advanced: the configuration editor, with the file explorer, live totals, read-only entries for others, and adding, linking and removing entries. It also offers checking a damaged configuration, and starting a new one | Todo | Requirements: "Configure USB media" |
@@ -49,7 +47,6 @@ Everything here is done.
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
 | T-021 | Write the manual release checklist | Todo | Requirements: "Testing" |
-| T-019 | Test powering off a real stick, and remove the `pkexec` fallback if nothing needs it | Todo | Issues: 39 |
 | T-022 | Pull a real stick during a copy, and check that its errors count as "medium gone" | Todo | Pull request 14 |
 | T-024 | Test formatting from an account without administrator rights | Todo | Issues: 38 |
 | T-025 | Install, update and uninstall the `.deb` for real, and write the uninstall notes | Todo | Requirements: "Packaging" |
@@ -82,3 +79,5 @@ Nothing is waiting for a decision.
 | T-010 | Find USB media, work out their file system and status, and follow changes | [#27](https://github.com/ziggymax/babawus/pull/27) |
 | T-011 | Format a medium, including the check of the drive ID, permissions and the first configuration | [#29](https://github.com/ziggymax/babawus/pull/29) |
 | T-023 | Test the GPT partition types on a medium over 2 TiB, or with a simulated one | [#29](https://github.com/ziggymax/babawus/pull/29) |
+| T-012 | Eject a medium | [#30](https://github.com/ziggymax/babawus/pull/30) |
+| T-019 | Test powering off a real stick, and remove the `pkexec` fallback if nothing needs it | [#30](https://github.com/ziggymax/babawus/pull/30) |

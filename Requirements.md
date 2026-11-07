@@ -103,7 +103,7 @@ As a user I want Babawus to show me a summary when a backup process completes. N
 
 ### Offer to "eject" media after a successful backup operation
 
-As a user I want Babawus to offer to eject a medium that has just been used for a successful backup, so that I can immediately detach it. Ejecting works like "Safely remove" in the file manager: Babawus unmounts the medium and then powers off the device, so its light goes out and the system no longer shows it. If powering off is not possible, Babawus only unmounts it. That way I can quickly conclude my backup and store the USB medium away.
+As a user I want Babawus to offer to eject a medium that has just been used for a successful backup, so that I can immediately detach it. Ejecting works like "Safely remove" in the file manager: Babawus unmounts the medium and then powers off the device, so its light goes out and the system no longer shows it. If powering off is not possible, Babawus only unmounts it, and says that the medium can still be pulled out safely. If a program is still using the medium, for example an open file or a file manager window, Babawus leaves it mounted and asks me to close that program and try again. Only USB media are ever ejected. That way I can quickly conclude my backup and store the USB medium away.
 
 ### Format USB media
 
@@ -574,7 +574,7 @@ At the start of each run, after taking the medium's lock, Babawus writes the mis
 - **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. It builds against GTK 4.14, the version in Mint 22, and uses nothing newer. If this does not work out, the fallback is Python with GTK 3.
 - **Structure.** All logic (versioning, configuration, log, name rules, verdicts) lives in a library with no UI code, and a thin UI sits on top.
 - **Dependencies.** Rust crates count as dependencies: each must be well maintained and replace more than a handful of lines, and the list stays short.
-- **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, mounting while formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate). udisks2 may ask for the administrator password itself, depending on the rules of the system, but it may also ask for nothing. Babawus must work either way, so the safeguard against formatting by mistake is the explicit confirmation (see "Format USB media"), not a password. If a step turns out not to be possible through udisks2, it is done with a single `pkexec` call.
+- **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, mounting while formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate). udisks2 may ask for the administrator password itself, depending on the rules of the system, but it may also ask for nothing. Babawus must work either way, so the safeguard against formatting by mistake is the explicit confirmation (see "Format USB media"), not a password. Every step works through udisks2, so Babawus never runs `pkexec` or `sudo`.
 
 ### Responsiveness
 

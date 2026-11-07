@@ -68,7 +68,7 @@
 23. **Packaging.** A `.deb` package or something else. Flatpak's sandbox clashes with formatting, udisks and full access to home.
     - **Decided (2026-11-05):** A `.deb` package built with `cargo-deb`. Our own APT repository is a possible later addition.
 24. **Formatting and eject.** Use udisks2/polkit or pkexec. Decide whether xxHash64 comes from a library or is written natively.
-    - **Decided (2026-11-05):** udisks2 over D-Bus for everything, with no root code in Babawus; a single `pkexec` call is the fallback for anything udisks2 can't do. The config checksum is SHA-256, first 16 hex digits, replacing xxHash64. Rust crates count under doctrine 3.
+    - **Decided (2026-11-05):** udisks2 over D-Bus for everything, with no root code in Babawus; a single `pkexec` call is the fallback for anything udisks2 can't do (removed on 2026-11-07, because nothing needed it: see item 39). The config checksum is SHA-256, first 16 hex digits, replacing xxHash64. Rust crates count under doctrine 3.
 25. **Platforms.** Which Mint version and desktop to target, and whether to support Wayland, X11 or both.
     - **Decided (2026-11-05):** Supported: Mint 22.x Cinnamon on X11. Everything else is best effort. The target is reviewed when a new major Mint version comes out.
 26. **Testing exFAT and Ext4 behaviour.** Loop devices need root; fake file systems may not behave like the real ones. Pick an approach.
@@ -119,7 +119,7 @@ Testing on the development VM and a real USB stick turned up these issues. All a
 38. **Formatting may need no password.** It ran without one from an SSH session, using an administrator's account.
     - **Decided (2026-11-05):** Accepted. udisks2 may or may not ask, and the explicit confirmation is the safeguard. The manual checklist covers formatting from an account without administrator rights.
 39. **Powering off has not been tested.** The stick reports `CanPowerOff: true`, but that is all that is known.
-    - **Open:** Test it on a real stick. The `pkexec` fallback stays in Requirements.md until then, and can go if nothing needs it. Tracked as T-019 in [Tasks.md](Tasks.md).
+    - **Checked (2026-11-07):** Babawus powered off the Kingston stick through udisks2's `PowerOff`, without a password, after unmounting it. udisks2 flushed the stick's cache, stopped it, and removed it from the USB bus. Partitioning, formatting, mounting and unmounting had already worked through udisks2, so nothing needs the `pkexec` fallback, and it is removed from Requirements.md.
 40. **Files dated outside exFAT's range looked changed on every run.** exFAT moves times before 1980 and after 2107 to the nearest it can store, so each run copied such a file again, and pushed out a real older version.
     - **Decided (2026-11-05):** On exFAT, Babawus compares such a time as the time exFAT would store.
 41. **The chunk size was not measured.**
@@ -174,3 +174,5 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-07):** The signatures of every old partition are wiped before the new partition table is written. In the test runs since, and when reformatting the real stick, nothing mounted it.
 62. **Which letters a label may use, and which label is suggested.**
     - **Decided (2026-11-07):** `A`–`Z`, `a`–`z`, digits and `-`, because Ext4 and exFAT store other characters differently, and some systems show them badly. Babawus suggests the first free label of `BACKUP-A` to `BACKUP-Z`, then `BACKUP-1` and so on, ignoring case.
+63. **Ejecting a medium that is in use.** The requirements didn't say what happens if a program still has a file open on the medium, or a file manager window shows it.
+    - **Decided (2026-11-07):** udisks2 refuses to unmount it, and Babawus leaves it mounted and asks the user to close that program and try again. If powering off fails after unmounting, the medium can still be pulled out safely, and Babawus says so. Only USB media are ever ejected.
