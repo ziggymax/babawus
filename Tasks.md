@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-031.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-032.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-017 is waiting for review. T-018, the configuration editor, is next.
+T-018 is waiting for review. T-031, the configuration editor's tree of the home folder, is next.
 
 ## First version: logic
 
@@ -34,7 +34,7 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-018 | Advanced: the configuration editor, with the file explorer, live totals, read-only entries for others, and adding, linking and removing entries. It also offers checking a damaged configuration, and starting a new one | Todo | Requirements: "Configure USB media" |
+| T-031 | Advanced: the configuration editor's "Choose what to back up…": the home folder tree with tick boxes and "Leave out", the name patterns, and live file and byte totals that don't freeze the window | Todo | Requirements: "Configure USB media"; Issues: 27, 82 |
 | T-020 | Translations: the German texts in the catalogue, including codes from the log | Todo | Requirements: "Change the language" |
 | T-030 | "Last backup" counts whole 24-hour periods, so a backup two calendar days ago can read "yesterday" while the history shows its date. Count calendar days, as the history does | Todo | Pull request 34 |
 
@@ -83,3 +83,4 @@ Nothing is waiting for a decision.
 | T-029 | Wait until the copy of the test program runs before checking it, so that `real_processes_are_told_apart` no longer fails now and then | [#33](https://github.com/ziggymax/babawus/pull/33) |
 | T-016 | History and "What's backed up" views | [#34](https://github.com/ziggymax/babawus/pull/34) |
 | T-017 | Advanced: the format view, which says when nothing was erased, and leads on to adding this computer and account | [#35](https://github.com/ziggymax/babawus/pull/35) |
+| T-018 | Advanced: the configuration editor's overview: older versions, every entry, adding, linking and removing entries, Save and Cancel, a damaged configuration, and starting a new one | [#36](https://github.com/ziggymax/babawus/pull/36) |

@@ -22,6 +22,7 @@ pub mod names;
 pub mod run;
 pub mod scan;
 pub mod settings;
+pub mod setup_screen;
 pub mod start_screen;
 pub mod text;
 pub mod time;

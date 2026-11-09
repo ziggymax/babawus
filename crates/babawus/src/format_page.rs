@@ -253,9 +253,8 @@ impl FormatPage {
         self.working_detail
             .set_label(Text::FormatWorkingDetail.get(language));
         self.add.set_label(Text::AddComputer.get(language));
-        // TODO(T-018): Lead on to adding this computer and account.
         self.add
-            .set_tooltip_text(Some(Text::NotYetAvailable.get(language)));
+            .set_tooltip_text(Some(Text::AddComputerTooltip.get(language)));
         self.try_again.set_label(Text::TryAgain.get(language));
         self.try_again
             .set_tooltip_text(Some(Text::TryAgainTooltip.get(language)));
@@ -360,7 +359,6 @@ impl FormatPage {
         self.parts.set_visible_child_name(name);
         self.erase.set_visible(part == Part::Choose);
         self.add.set_visible(false);
-        self.add.set_sensitive(false);
         self.try_again.set_visible(false);
         // Formatting can't be stopped, so there is no way back while it runs.
         self.back.set_visible(part != Part::Working);

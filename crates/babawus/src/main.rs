@@ -2,6 +2,7 @@ mod backup_page;
 mod format_page;
 mod icons;
 mod info_page;
+mod setup_page;
 mod window;
 
 use std::cell::RefCell;

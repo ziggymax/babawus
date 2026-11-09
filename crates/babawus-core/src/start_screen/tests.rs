@@ -202,14 +202,11 @@ fn the_poweruser_actions_only_appear_with_advanced() {
 }
 
 #[test]
-fn only_change_setup_is_not_yet_available() {
+fn every_action_on_a_ready_medium_can_be_used() {
     let details = details_of(Some(&ready(None)), true);
     for button in &details.buttons {
-        let available = button.action != Action::ChangeSetup;
-        assert_eq!(button.enabled, available, "{:?}", button.action);
-        if !available {
-            assert_eq!(button.tooltip, "Not yet available");
-        }
+        assert!(button.enabled, "{:?}", button.action);
+        assert_ne!(button.tooltip, "Not yet available");
     }
 }
 
