@@ -163,6 +163,31 @@ texts! {
     EjectGone: "{label} has already been removed.", "";
     EjectFailed: "{label} could not be ejected. Contact your poweruser.", "";
 
+    HistoryHeading: "Backups to this stick", "";
+    HistoryEmpty: "No backups to this stick yet.", "";
+    HistoryUnreadable: "The history on this stick can't be read. Go back and try again.", "";
+    HistoryRunning: "Backup in progress", "";
+    HistoryToday: "Today, {time}", "";
+    HistoryYesterday: "Yesterday, {time}", "";
+    HistoryDate: "{date}, {time}", "";
+    HistoryWho: "By {user} on {computer}", "";
+    HistorySkipped: "Skipped: {files}", "";
+
+    CoverageHeading: "What's backed up to this stick", "";
+    CoverageIntro: "These are backed up from this computer for {user}:", "";
+    CoverageNothing: "Nothing has been chosen for backup yet. Contact your poweruser.", "";
+    CoverageUnreadable: "The setup on this stick can't be read. Go back and try again.", "";
+    CoverageHome: "Your home folder", "";
+    CoverageMissing: "Doesn't exist any more, so nothing is backed up from it", "";
+    CoverageExcluded: "Not backed up, because it is left out below", "";
+    CoverageOutsideHome: "Not backed up, because it is outside your home folder", "";
+    CoverageLink: "Not backed up, because it is a link, which Babawus doesn't follow", "";
+    CoverageUnreadableItem: "Can't be read, so it can't be backed up", "";
+    CoverageLeftOut: "Left out:", "";
+    CoveragePatterns: "Anything named {names}, in any folder", "";
+    Either: "{first} or {last}", "";
+    Loading: "Reading the stick…", "";
+
     Bytes: "{size} bytes", "";
     Kilobytes: "{size} kB", "";
     Megabytes: "{size} MB", "";

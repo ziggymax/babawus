@@ -175,10 +175,9 @@ impl Action {
 
     /// Whether the screen this action leads to has been built yet.
     fn available(self) -> bool {
-        // TODO(T-016): Show the history, and what is backed up.
         // TODO(T-017): Prepare a medium.
         // TODO(T-018): Change the setup.
-        matches!(self, Self::StartBackup | Self::Eject)
+        !matches!(self, Self::Prepare | Self::ChangeSetup)
     }
 }
 

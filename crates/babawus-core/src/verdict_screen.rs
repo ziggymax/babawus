@@ -8,7 +8,7 @@ use std::time::SystemTime;
 
 use crate::backup_screen::number;
 use crate::copy::Skip;
-use crate::log::{LastBackup, PRUNE_FAILED, escape};
+use crate::log::{LastBackup, PRUNE_FAILED, Stats, escape};
 use crate::media::user_of;
 use crate::run::{Ended, Outcome};
 use crate::settings::Language;
@@ -28,6 +28,16 @@ pub enum VerdictMark {
     Attention,
     /// A red cross: the backup can't succeed without the poweruser.
     Failed,
+}
+
+impl VerdictMark {
+    pub fn of(verdict: Verdict) -> Self {
+        match verdict {
+            Verdict::AllGood => Self::Good,
+            Verdict::Skipped | Verdict::NotFinished => Self::Attention,
+            Verdict::Failed => Self::Failed,
+        }
+    }
 }
 
 /// The verdict screen.
@@ -110,26 +120,13 @@ pub fn verdict_screen(
 fn finished(outcome: &Outcome, context: &Context, language: Language) -> VerdictShown {
     let verdict = outcome.verdict();
     let counts = matches!(verdict, Verdict::AllGood | Verdict::Skipped);
-    let mark = match verdict {
-        Verdict::AllGood => VerdictMark::Good,
-        Verdict::Skipped | Verdict::NotFinished => VerdictMark::Attention,
-        Verdict::Failed => VerdictMark::Failed,
-    };
+    let mark = VerdictMark::of(verdict);
     let next_step = match verdict {
         Verdict::AllGood => None,
         Verdict::NotFinished => Some(Text::NextRunAgain),
         Verdict::Skipped | Verdict::Failed => Some(Text::NextContact),
     };
-    let stats = &outcome.stats;
-    let copied = (stats.scanned_files > 0 || stats.copied_files > 0).then(|| {
-        if stats.copied_files == 0 && verdict == Verdict::AllGood {
-            Text::NothingToCopy.get(language).to_owned()
-        } else {
-            let files = files_text(stats.copied_files, language);
-            let size = size(stats.copied_bytes, language);
-            Text::Copied.fill(language, &[("files", &files), ("size", &size)])
-        }
-    });
+    let copied = copied_text(&outcome.stats, verdict, language);
     let previous = if counts {
         Some(LastBackup {
             time: context.now,
@@ -151,7 +148,21 @@ fn finished(outcome: &Outcome, context: &Context, language: Language) -> Verdict
     }
 }
 
-fn verdict_title(verdict: Verdict) -> Text {
+/// What a run copied, for a run that got that far: "Copied: 12 files (3.4 MB)", or "Everything
+/// was already up to date."
+pub(crate) fn copied_text(stats: &Stats, verdict: Verdict, language: Language) -> Option<String> {
+    (stats.scanned_files > 0 || stats.copied_files > 0).then(|| {
+        if stats.copied_files == 0 && verdict == Verdict::AllGood {
+            Text::NothingToCopy.get(language).to_owned()
+        } else {
+            let files = files_text(stats.copied_files, language);
+            let size = size(stats.copied_bytes, language);
+            Text::Copied.fill(language, &[("files", &files), ("size", &size)])
+        }
+    })
+}
+
+pub(crate) fn verdict_title(verdict: Verdict) -> Text {
     match verdict {
         Verdict::AllGood => Text::VerdictAllGood,
         Verdict::Skipped => Text::VerdictSkipped,
@@ -161,7 +172,7 @@ fn verdict_title(verdict: Verdict) -> Text {
 }
 
 /// The reason in plain words. "All good" needs none.
-fn reason_text(reason: Reason) -> Option<Text> {
+pub(crate) fn reason_text(reason: Reason) -> Option<Text> {
     Some(match reason {
         Reason::None => return None,
         Reason::FilesSkipped => Text::ReasonFilesSkipped,
@@ -196,7 +207,7 @@ fn skip_text(skip: Skip) -> Text {
 }
 
 /// "1 file" or "3 files".
-fn files_text(files: u64, language: Language) -> String {
+pub(crate) fn files_text(files: u64, language: Language) -> String {
     if files == 1 {
         Text::OneFile.get(language).to_owned()
     } else {

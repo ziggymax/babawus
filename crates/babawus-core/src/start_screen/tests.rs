@@ -202,10 +202,10 @@ fn the_poweruser_actions_only_appear_with_advanced() {
 }
 
 #[test]
-fn start_backup_and_eject_work_and_the_rest_is_not_yet_available() {
+fn only_the_poweruser_actions_are_not_yet_available() {
     let details = details_of(Some(&ready(None)), true);
     for button in &details.buttons {
-        let available = matches!(button.action, Action::StartBackup | Action::Eject);
+        let available = !matches!(button.action, Action::Prepare | Action::ChangeSetup);
         assert_eq!(button.enabled, available, "{:?}", button.action);
         if !available {
             assert_eq!(button.tooltip, "Not yet available");

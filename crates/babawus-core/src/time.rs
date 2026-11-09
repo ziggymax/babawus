@@ -44,6 +44,46 @@ pub fn version_timestamp(time: SystemTime) -> String {
     )
 }
 
+/// A date and a time of day, as a clock shows them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ClockTime {
+    pub year: i32,
+    pub month: i32,
+    pub day: i32,
+    pub hour: i32,
+    pub minute: i32,
+}
+
+impl ClockTime {
+    fn of(fields: &libc::tm) -> Self {
+        Self {
+            year: fields.tm_year + 1900,
+            month: fields.tm_mon + 1,
+            day: fields.tm_mday,
+            hour: fields.tm_hour,
+            minute: fields.tm_min,
+        }
+    }
+
+    /// The number of calendar days from `self` to `later`, whatever the times of day.
+    pub fn days_until(self, later: Self) -> i64 {
+        let days =
+            |time: Self| days_from_civil(time.year.into(), time.month.into(), time.day.into());
+        days(later) - days(self)
+    }
+}
+
+/// `time` in local time, for the user to read.
+pub fn local_clock(time: SystemTime) -> ClockTime {
+    ClockTime::of(&broken_down(time, libc::localtime_r))
+}
+
+/// `time` in UTC. The tests use this in place of [`local_clock`], so that they don't depend on
+/// the time zone.
+pub fn utc_clock(time: SystemTime) -> ClockTime {
+    ClockTime::of(&broken_down(time, libc::gmtime_r))
+}
+
 /// A time in local time with the UTC offset, for the log.
 pub fn log_timestamp(time: SystemTime) -> String {
     let fields = broken_down(time, libc::localtime_r);

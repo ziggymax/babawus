@@ -184,6 +184,8 @@ The verdict screen takes the place of the backup screen when the run ends. It sh
 
 As a user I want to be able to see, for a Ready medium, in plain words which files and folders on this computer are backed up to it for my account. This is shown on request, through "What's backed up", not in the details on the start screen, which only show the medium itself, its status and, for a Ready medium, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
 
+"What's backed up" fills the window with the files and folders selected for my account, in the order of the configuration, each with a folder or file picture. Babawus looks each one up on this computer. One from which nothing would be backed up is marked with an amber "!" and says why: it doesn't exist any more, it is left out by an exclusion, it is outside my home folder, it is a link, or it can't be read. Below come the exclusions, under "Left out": the excluded folders, then the name patterns in one line ("Anything named .cache, *.tmp or *~, in any folder"). If nothing is selected, it says so and to contact the poweruser. "Back" returns to the start screen.
+
 ### See when I last made a backup
 
 As a user I want the details of a Ready medium on the start screen to show how long it has been since my last backup on this computer to that medium (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
@@ -196,6 +198,8 @@ As a user I want the details of a Ready medium on the start screen to show how l
 ### View the history of a medium
 
 As a user I want to be able to view the history of backups made on a medium, in plain words: when each backup ran and what its verdict was. That way I can see that my backups have been running as expected. (The history is read from the log on the medium, see "Maintain a log".)
+
+"Show history" fills the window with the runs on the medium, newest first. Each run shows the verdict with its mark (as on the verdict screen), when it started ("Today, 14:03", "Yesterday, 09:12" or "2026-11-03, 17:54", counting calendar days in local time), the reason for any verdict but "All good", what was copied (files and bytes), how many files were skipped, and whose run it was ("By anna on laptop"). Every run on the medium is listed, whichever computer or account made it. A run that is still going, by whoever holds the medium's lock, shows "Backup in progress". "Back" returns to the start screen.
 
 ### Add a computer or user account to a medium
 

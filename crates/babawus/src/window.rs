@@ -13,15 +13,18 @@ use std::time::{Duration, SystemTime};
 
 use babawus_core::backup_screen::Tracker;
 
+use babawus_core::coverage_screen::{Gathered, coverage_screen};
 use babawus_core::fs::RealFs;
+use babawus_core::history_screen::history;
 use babawus_core::identity::{this_computer_id, this_hostname};
 use babawus_core::lock::ThisProcess;
-use babawus_core::log::LastBackup;
+use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
 use babawus_core::settings::{Language, SETTINGS_FILE, Settings};
 use babawus_core::start_screen::{self, Action, Checked, Shown};
 use babawus_core::text::Text;
+use babawus_core::time::local_clock;
 use babawus_core::udisks::{EjectError, Ejected, Udisks};
 use babawus_core::verdict_screen::{Context, verdict_screen};
 use gtk4::prelude::*;
@@ -33,6 +36,7 @@ use gtk4::{
 
 use crate::backup_page::BackupPage;
 use crate::icons;
+use crate::info_page::InfoPage;
 
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
@@ -122,12 +126,37 @@ struct BackupState {
     question: gio::Cancellable,
 }
 
+/// What the history or "What's backed up" screen is about. The texts are made again from it when
+/// the language changes.
+enum InfoView {
+    /// The user whose backup to the medium is running, if any, and the runs once they have been
+    /// read. `Some(None)` means the log could not be read.
+    History {
+        in_progress: Option<String>,
+        runs: Option<Option<Vec<Run>>>,
+    },
+    /// What reading the medium found, once it is done.
+    Coverage(Option<Gathered>),
+}
+
+/// The history or "What's backed up" screen, from opening it until the user goes back.
+struct InfoState {
+    /// The label of the medium.
+    label: String,
+    view: InfoView,
+    /// Counts the screens opened, so that what an older one read is dropped.
+    generation: u64,
+}
+
 struct Window {
     window: ApplicationWindow,
-    /// The start screen, or the backup screen.
+    /// The start screen, the backup screen, or the history or "What's backed up".
     screens: Stack,
     backup_page: BackupPage,
     backup: RefCell<Option<BackupState>>,
+    info_page: InfoPage,
+    info: RefCell<Option<InfoState>>,
+    info_generation: Cell<u64>,
     title: Label,
     advanced_marker: Label,
     menu: MenuButton,
@@ -212,6 +241,8 @@ pub fn show(app: &Application) {
     let screens = Stack::new();
     screens.add_named(&content, Some("start"));
     screens.add_named(&backup_page.root, Some("backup"));
+    let info_page = InfoPage::new();
+    screens.add_named(&info_page.root, Some("info"));
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -226,6 +257,9 @@ pub fn show(app: &Application) {
         screens,
         backup_page,
         backup: RefCell::new(None),
+        info_page,
+        info: RefCell::new(None),
+        info_generation: Cell::new(0),
         title,
         advanced_marker,
         menu,
@@ -442,6 +476,12 @@ impl Window {
                 window.back_to_start();
             }
         });
+        let weak = Rc::downgrade(self);
+        self.info_page.back.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.close_info();
+            }
+        });
         // Closing the window during a run asks first, like Cancel. Closing it straight away
         // would end the run without its end entry in the log.
         let weak = Rc::downgrade(self);
@@ -592,6 +632,7 @@ impl Window {
         self.update_rows();
         self.show_details();
         self.show_backup();
+        self.show_info();
     }
 
     /// udisks2 reported a change, or Babawus has just started: the list is read again, and each
@@ -806,8 +847,134 @@ impl Window {
         match action {
             Action::StartBackup => self.start_backup(),
             Action::Eject => self.eject(),
-            _ => {}
+            Action::ShowHistory => self.open_history(),
+            Action::WhatsBackedUp => self.open_coverage(),
+            Action::Prepare | Action::ChangeSetup => {}
         }
+    }
+
+    /// Opens the history of the selected medium, and reads its log off the main thread.
+    fn open_history(self: &Rc<Self>) {
+        let Some(medium) = self.selected_medium() else {
+            return;
+        };
+        let in_progress = self.media.borrow().iter().find_map(|(each, checked)| {
+            match checked.as_ref().map(|checked| &checked.status) {
+                Some(Status::InProgress { user }) if each == &medium => Some(user.clone()),
+                _ => None,
+            }
+        });
+        let view = InfoView::History {
+            in_progress,
+            runs: None,
+        };
+        let generation = self.open_info(&medium, view);
+        let root = medium.root.clone();
+        let reading = gio::spawn_blocking(move || read_runs(&RealFs, &root).ok());
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            let runs = reading.await.ok().flatten();
+            if let Some(window) = weak.upgrade() {
+                window.info_read(generation, |view| {
+                    if let InfoView::History { runs: read, .. } = view {
+                        *read = Some(runs);
+                    }
+                });
+            }
+        });
+    }
+
+    /// Opens "What's backed up" for the selected medium, and reads it off the main thread.
+    fn open_coverage(self: &Rc<Self>) {
+        let Some(medium) = self.selected_medium() else {
+            return;
+        };
+        let generation = self.open_info(&medium, InfoView::Coverage(None));
+        let this = self.this.clone();
+        let username = self.username.clone();
+        let root = medium.root.clone();
+        let home = glib::home_dir();
+        let reading = gio::spawn_blocking(move || {
+            let viewer = Viewer {
+                system: &RealFs,
+                this: &this,
+                username: &username,
+            };
+            viewer.coverage(&RealFs, &root, &home)
+        });
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            // Reading can only fail by panicking, which has been reported already.
+            let gathered = reading.await.unwrap_or(Gathered::Unreadable);
+            if let Some(window) = weak.upgrade() {
+                window.info_read(generation, |view| {
+                    *view = InfoView::Coverage(Some(gathered));
+                });
+            }
+        });
+    }
+
+    /// Switches to the history or "What's backed up" screen for `medium`. Returns the number
+    /// that tells what is read for this screen from what was read for an earlier one.
+    fn open_info(&self, medium: &Medium, view: InfoView) -> u64 {
+        let generation = self.info_generation.get() + 1;
+        self.info_generation.set(generation);
+        *self.notice.borrow_mut() = None;
+        *self.info.borrow_mut() = Some(InfoState {
+            label: medium.volume.label.clone(),
+            view,
+            generation,
+        });
+        self.screens.set_visible_child_name("info");
+        self.show_info();
+        generation
+    }
+
+    /// Something has been read for the screen numbered `generation`. It is dropped if the user
+    /// has gone back since.
+    fn info_read(&self, generation: u64, change: impl FnOnce(&mut InfoView)) {
+        if let Some(info) = self.info.borrow_mut().as_mut()
+            && info.generation == generation
+        {
+            change(&mut info.view);
+        }
+        self.show_info();
+    }
+
+    fn show_info(&self) {
+        let language = self.language.get();
+        let info = self.info.borrow();
+        let Some(info) = info.as_ref() else {
+            return;
+        };
+        let page = &self.info_page;
+        match &info.view {
+            InfoView::History { runs: None, .. } => {
+                page.show_loading(&info.label, Text::HistoryHeading, language);
+            }
+            InfoView::History {
+                in_progress,
+                runs: Some(runs),
+            } => {
+                let rows = runs.as_ref().map(|runs| {
+                    let now = SystemTime::now();
+                    history(runs, in_progress.as_deref(), now, local_clock, language)
+                });
+                page.show_history(&info.label, rows.as_deref(), language);
+            }
+            InfoView::Coverage(None) => {
+                page.show_loading(&info.label, Text::CoverageHeading, language);
+            }
+            InfoView::Coverage(Some(gathered)) => {
+                let shown = coverage_screen(gathered, &self.username, language);
+                page.show_coverage(&info.label, &shown, language);
+            }
+        }
+    }
+
+    fn close_info(&self) {
+        *self.info.borrow_mut() = None;
+        self.screens.set_visible_child_name("start");
     }
 
     fn eject(self: &Rc<Self>) {
