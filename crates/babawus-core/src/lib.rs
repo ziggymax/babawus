@@ -4,6 +4,7 @@
 //! This crate must stay free of UI code.
 
 pub mod backup_screen;
+pub mod choose_screen;
 pub mod computer_lock;
 pub mod config;
 pub mod copy;

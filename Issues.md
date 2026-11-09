@@ -238,3 +238,14 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-09):** Changes collect in the editor until "Save". Saving takes the medium's lock, writes the file safely and releases the lock. "Cancel" discards the changes, and leaving with unsaved changes asks first. Removing an entry and linking an account each ask for their own confirmation.
 85. **How T-018 is delivered.**
     - **Decided (2026-11-09):** In two pull requests. T-018 covers the overview, N, adding, linking and removing entries, Save and Cancel, a damaged configuration, starting a new configuration, and the format view's "Add this computer and account…". T-031 covers the tree, the exclusions and the live totals.
+
+## Decisions on choosing what to back up
+
+86. **What unticking a folder inside a ticked folder does.** Its tick is inherited from the folder above.
+    - **Decided (2026-11-09):** Unticking it leaves it out: it becomes an excluded folder, and is shown crossed out. Ticking it again removes the exclusion. So one tick box per row does both, in place of the separate "Leave out" choice in item 82. A file inside a ticked folder can't be unticked on its own, because only folders and name patterns can be excluded.
+87. **Whether the tree shows hidden files and folders**, whose names start with a dot.
+    - **Decided (2026-11-09):** Not at first. A "Show hidden files" switch above the tree shows them. A hidden item that is already selected or left out is always shown, so that nothing chosen is out of sight.
+88. **How the name patterns are edited.**
+    - **Decided (2026-11-09):** As a list, each pattern on its own row with "Remove", and a text field with "Add" below. An empty pattern, or one containing `/`, is refused with the reason.
+89. **What the live totals count.**
+    - **Decided (2026-11-09):** The files and bytes chosen, next to the free space on the stick, for example "Chosen: 12,345 files (4.2 GB) · 15.5 GB free on the stick". They are counted in the background with a spinner, and counting starts over on each change, so the window never freezes. When the total is more than the free space, a warning says so.

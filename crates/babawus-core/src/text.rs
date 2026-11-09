@@ -80,7 +80,6 @@ texts! {
     PrepareTooltip: "Erase this stick and set it up for backups with Babawus", "";
     ChangeSetup: "Change setup…", "";
     ChangeSetupTooltip: "Change what is backed up to this stick, and for whom", "";
-    NotYetAvailable: "Not yet available", "";
     CantStart: "No backup can start: {reason}", "";
 
     GettingReady: "Finding the files to back up…", "";
@@ -246,6 +245,7 @@ texts! {
     SetupAddAccount: "Add {user}", "";
     SetupLinkAccount: "Link to {old}…", "";
     SetupChoose: "Choose what to back up…", "";
+    SetupChooseTooltip: "Choose which of your files and folders are backed up to this stick", "";
     SetupEntries: "Computers and accounts on this stick", "";
     SetupEmpty: "No computers or accounts are set up on this stick yet.", "";
     SetupThisComputer: "{folder} (this computer)", "";
@@ -278,6 +278,32 @@ texts! {
     SetupInvalid: "That change can't be made, because it clashes with another entry.", "";
     SetupBothFolders: "Both your earlier and your new name have a folder on the stick, so Babawus can't link them. Your poweruser has to sort this out by hand.", "";
     SetupSaveFailed: "The setup couldn't be saved: {error}", "";
+
+    ChooseHeading: "What's backed up for {user}", "";
+    ChooseIntro: "Tick the files and folders to back up. A ticked folder is backed up with everything in it. To leave out a folder inside it, untick that folder.", "";
+    ChooseShowHidden: "Show hidden files", "";
+    ChooseNoteLeftOut: "Left out", "";
+    ChooseNoteLeftOutAbove: "Left out with a folder above it", "";
+    ChooseNotePattern: "Left out by the name pattern {pattern}", "";
+    ChooseNoteOtherDrive: "On another drive, so it is only backed up if ticked on its own", "";
+    ChooseNoteLink: "A link, which Babawus doesn't follow", "";
+    ChooseNoteNotText: "Its name isn't valid text, so it can't be chosen on its own", "";
+    ChooseUnreadable: "This folder can't be read.", "";
+    ChoosePatterns: "Leave out anything named:", "";
+    ChoosePatternsDetail: "In any folder. * stands for any characters, and ? for one character.", "";
+    ChoosePatternAdd: "Add", "";
+    ChoosePatternRemove: "Remove", "";
+    ChoosePatternEmpty: "Type a name or a pattern first.", "";
+    ChoosePatternSlash: "A pattern can't contain /. To leave out one folder, untick it in the tree.", "";
+    ChoosePatternDuplicate: "That pattern is in the list already.", "";
+    ChooseCounting: "Counting…", "";
+    ChooseNothing: "Nothing is chosen yet.", "";
+    ChooseTotals: "Chosen: {files} ({size}) · {free} free on the stick", "";
+    ChooseTotalsNoFree: "Chosen: {files} ({size})", "";
+    ChooseTooBig: "That is more than the free space on the stick, unless much of it is backed up there already.", "";
+    ChooseDone: "Done", "";
+    ChooseDoneTooltip: "Go back to the setup. The changes are written when you save there.", "";
+    ChooseCancelTooltip: "Go back to the setup without these changes", "";
 
     Bytes: "{size} bytes", "";
     Kilobytes: "{size} kB", "";

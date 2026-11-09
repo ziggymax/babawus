@@ -18,7 +18,7 @@ use babawus_core::format_screen::{
     DriveChoice, Failure, can_format, drive_choices, label_problem, result_screen, suggested_label,
     warning,
 };
-use babawus_core::fs::RealFs;
+use babawus_core::fs::{FileSystem, RealFs};
 use babawus_core::history_screen::history;
 use babawus_core::identity::{this_computer_id, this_hostname};
 use babawus_core::lock::ThisProcess;
@@ -43,6 +43,7 @@ use gtk4::{
 };
 
 use crate::backup_page::BackupPage;
+use crate::choose_page::ChoosePage;
 use crate::format_page::FormatPage;
 use crate::icons;
 use crate::info_page::InfoPage;
@@ -240,6 +241,9 @@ struct Window {
     /// ignored.
     format_updating: Cell<bool>,
     setup_page: SetupPage,
+    choose_page: Rc<ChoosePage>,
+    /// "Choose what to back up…" is showing, over the editor.
+    choosing: Cell<bool>,
     setup: RefCell<Option<SetupState>>,
     setup_generation: Cell<u64>,
     /// Set while Babawus itself changes the editor's widgets, so that their signals are ignored.
@@ -342,6 +346,8 @@ pub fn show(app: &Application) {
         }
     });
     screens.add_named(&setup_page.root, Some("setup"));
+    let choose_page = ChoosePage::new();
+    screens.add_named(&choose_page.root, Some("choose"));
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -363,6 +369,8 @@ pub fn show(app: &Application) {
         format: RefCell::new(None),
         format_updating: Cell::new(false),
         setup_page,
+        choose_page,
+        choosing: Cell::new(false),
         setup: RefCell::new(None),
         setup_generation: Cell::new(0),
         setup_updating: Cell::new(false),
@@ -767,6 +775,9 @@ impl Window {
         self.show_info();
         self.show_format();
         self.show_setup();
+        if self.choosing.get() {
+            self.choose_page.set_language(language);
+        }
     }
 
     /// udisks2 reported a change, or Babawus has just started: the list is read again, and each
@@ -1134,6 +1145,24 @@ impl Window {
             window.show_setup();
         });
         let weak = Rc::downgrade(self);
+        page.choose.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.open_choose();
+            }
+        });
+        let weak = Rc::downgrade(self);
+        self.choose_page.done.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.close_choose(true);
+            }
+        });
+        let weak = Rc::downgrade(self);
+        self.choose_page.cancel.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.close_choose(false);
+            }
+        });
+        let weak = Rc::downgrade(self);
         page.save.connect_clicked(move |_| {
             if let Some(window) = weak.upgrade() {
                 window.save_setup(None);
@@ -1205,6 +1234,9 @@ impl Window {
     }
 
     fn setup_unsaved(&self) -> bool {
+        if self.choosing.get() && self.choose_page.changed() {
+            return true;
+        }
         self.setup
             .borrow()
             .as_ref()
@@ -1554,9 +1586,63 @@ impl Window {
         }
     }
 
+    /// Opens "Choose what to back up…" for this account, over the editor.
+    fn open_choose(&self) {
+        let opened = {
+            let setup = self.setup.borrow();
+            let Some(setup) = setup.as_ref() else { return };
+            let SetupStage::Editing(editor) = &setup.stage else {
+                return;
+            };
+            let here = Here {
+                system: &RealFs,
+                this: &self.this,
+                username: &self.username,
+                hostname: &setup.hostname,
+            };
+            let free = RealFs.free_space(&setup.root).ok();
+            editor.choice(&here).map(|choice| (choice, free))
+        };
+        let Some((choice, free)) = opened else { return };
+        self.choosing.set(true);
+        self.choose_page
+            .open(&self.username, choice, free, self.language.get());
+        self.screens.set_visible_child_name("choose");
+    }
+
+    /// Leaves "Choose what to back up…". With `keep`, the choice goes into the editor, and waits
+    /// for Save there.
+    fn close_choose(&self, keep: bool) {
+        if !self.choosing.replace(false) {
+            return;
+        }
+        if keep {
+            let choice = self.choose_page.choice();
+            let mut setup = self.setup.borrow_mut();
+            if let Some(setup) = setup.as_mut()
+                && let SetupStage::Editing(editor) = &mut setup.stage
+            {
+                let here = Here {
+                    system: &RealFs,
+                    this: &self.this,
+                    username: &self.username,
+                    hostname: &setup.hostname,
+                };
+                editor.set_choice(&here, &choice);
+                setup.notice = None;
+            }
+        }
+        self.choose_page.close();
+        self.screens.set_visible_child_name("setup");
+        self.show_setup();
+    }
+
     /// Leaves the editor, dropping any unsaved changes. The list is checked again, because the
     /// setup may have changed.
     fn close_setup(self: &Rc<Self>) {
+        if self.choosing.replace(false) {
+            self.choose_page.close();
+        }
         if self.setup.take().is_none() {
             return;
         }
