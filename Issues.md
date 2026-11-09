@@ -203,3 +203,16 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-07):** The user's language, with the fixed codes from the log next to the verdict, the reason and each problem, so that the poweruser can look them up whatever the language.
 72. **A mark for "Backup failed".** The start screen's grey cross means "can't be used", which is too mild for a run that failed.
     - **Decided (2026-11-07):** A red cross. "Some files were skipped" and "Backup not finished" get the amber "!", "All good" the green tick.
+
+## Decisions on the history and "What's backed up"
+
+73. **How the history shows when a run happened.** Month names would need translating, and "3 days ago" says little about a run months back.
+    - **Decided (2026-11-09):** The start time, as "Today, 14:03", "Yesterday, 09:12" or "2026-11-03, 17:54". Today and yesterday are calendar days in local time, so a run at 23:50 is yesterday's even a few minutes after midnight.
+74. **Whose runs the history shows on a medium shared by several computers or accounts.**
+    - **Decided (2026-11-09):** Every run on the medium, newest first, each showing whose it was ("By anna on laptop"). A run with no end entry whose user holds the lock shows "Backup in progress" rather than "Backup not finished".
+75. **What each row of the history shows besides the time and the verdict.**
+    - **Decided (2026-11-09):** The reason in plain words, the files and bytes copied, and how many files were skipped.
+76. **How the history and "What's backed up" open.**
+    - **Decided (2026-11-09):** Each fills the window, like the backup screen, with "Back" to return to the start screen.
+77. **What "What's backed up" lists for my account.**
+    - **Decided (2026-11-09):** The selected files and folders, the excluded folders and the excluded name patterns. Each selection is looked up on this computer when the screen opens, and one that is missing gets an amber "!" and says so. So does one that backs up nothing for another reason: excluded, outside the home folder, a link, or unreadable.

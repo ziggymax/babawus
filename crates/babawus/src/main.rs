@@ -1,5 +1,6 @@
 mod backup_page;
 mod icons;
+mod info_page;
 mod window;
 
 use std::cell::RefCell;
