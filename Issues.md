@@ -249,3 +249,17 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-09):** As a list, each pattern on its own row with "Remove", and a text field with "Add" below. An empty pattern, or one containing `/`, is refused with the reason.
 89. **What the live totals count.**
     - **Decided (2026-11-09):** The files and bytes chosen, next to the free space on the stick, for example "Chosen: 12,345 files (4.2 GB) · 15.5 GB free on the stick". They are counted in the background with a spinner, and counting starts over on each change, so the window never freezes. When the total is more than the free space, a warning says so.
+
+## Decisions on the German texts
+
+90. **Whether German addresses the user as "Sie" or "du".**
+    - **Decided (2026-11-09):** "du", for example "Steck deinen Backup-Stick ein".
+91. **What "your poweruser" is in German.**
+    - **Decided (2026-11-09):** "dein Betreuer", for example "Wende dich an deinen Betreuer". The Advanced marker is "Erweitert".
+92. **How German dates look in the history.**
+    - **Decided (2026-11-09):** The same as in English: "Heute, 14:03", "Gestern, 09:12" and "2026-11-03, 17:54". Only the words change.
+
+## Decisions on "Last backup"
+
+93. **Whether "Last backup" shows the time.** Several backups can be made in one day, and "today" doesn't say which was last.
+    - **Decided (2026-11-09):** It shows when the last backup finished, after the words: "Last backup: today at 14:03", "Last backup: yesterday at 09:12", "Last backup: 47 days ago (2026-09-23 at 17:54)". The start screen and the verdict screen show it alike. Days are calendar days in local time, as in the history, so that a backup at 23:00 is never "today" the next morning. A time in the future, from a wrong clock, counts as today.

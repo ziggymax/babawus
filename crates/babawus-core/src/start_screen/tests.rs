@@ -4,9 +4,11 @@ use std::time::{Duration, SystemTime};
 use super::*;
 use crate::log::LastBackup;
 use crate::media::{Drive, Volume};
+use crate::time::utc_clock;
 
 const EN: Language = Language::English;
 const DAY: Duration = Duration::from_secs(86_400);
+const HOUR: Duration = Duration::from_secs(3600);
 
 fn medium(name: &str, label: &str) -> Medium {
     Medium {
@@ -46,7 +48,8 @@ fn ready(last_backup: Option<LastBackup>) -> Checked {
 }
 
 fn now() -> SystemTime {
-    SystemTime::UNIX_EPOCH + 20_000 * DAY
+    // 2024-10-04 12:00 UTC.
+    SystemTime::UNIX_EPOCH + 20_000 * DAY + 12 * HOUR
 }
 
 fn details_of(checked: Option<&Checked>, advanced: bool) -> Details {
@@ -56,7 +59,7 @@ fn details_of(checked: Option<&Checked>, advanced: bool) -> Details {
         checked,
         formattable: true,
     };
-    details(&shown, now(), EN, advanced)
+    details(&shown, now(), utc_clock, EN, advanced)
 }
 
 fn actions(details: &Details) -> Vec<Action> {
@@ -130,11 +133,14 @@ fn a_ready_medium_shows_the_last_backup() {
     };
     let last = |checked: Checked| details_of(Some(&checked), false).last_backup;
     assert_eq!(last(ready(None)), Some(("No backup yet".to_owned(), false)));
-    let today = Some(("Last backup: today".to_owned(), false));
+    let today = Some(("Last backup: today at 11:59".to_owned(), false));
     assert_eq!(last(ready(Some(at(0, false)))), today);
-    let yesterday = Some(("Last backup: yesterday".to_owned(), true));
+    let yesterday = Some(("Last backup: yesterday at 11:59".to_owned(), true));
     assert_eq!(last(ready(Some(at(1, true)))), yesterday);
-    let long_ago = Some(("Last backup: 47 days ago".to_owned(), false));
+    let long_ago = Some((
+        "Last backup: 47 days ago (2024-08-18 at 11:59)".to_owned(),
+        false,
+    ));
     assert_eq!(last(ready(Some(at(47, false)))), long_ago);
     assert_eq!(last(checked(Status::NotSetUp)), None);
 }

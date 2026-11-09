@@ -41,6 +41,7 @@ use gtk4::{
     Label, ListBox, ListBoxRow, MenuButton, Orientation, Overlay, PolicyType, ScrolledWindow,
     SelectionMode, Separator, Spinner, Stack, gio, glib,
 };
+use gtk4::{FlowBox, FlowBoxChild};
 
 use crate::backup_page::BackupPage;
 use crate::choose_page::ChoosePage;
@@ -111,7 +112,7 @@ struct DetailsWidgets {
     skipped: Image,
     explanation: Label,
     buttons: HashMap<Action, Button>,
-    poweruser: Box,
+    poweruser: FlowBox,
     notice: Label,
     logo: Image,
 }
@@ -329,7 +330,10 @@ pub fn show(app: &Application) {
     content.append(&Separator::new(Orientation::Vertical));
     content.append(&details_view);
     let backup_page = BackupPage::new();
-    let screens = Stack::new();
+    // Each screen asks only for the width it needs itself. Otherwise the widest screen, even a
+    // hidden one, sets the window's least width, which long texts, as in German, push past
+    // what a small screen has.
+    let screens = Stack::builder().hhomogeneous(false).build();
     screens.add_named(&content, Some("start"));
     screens.add_named(&backup_page.root, Some("backup"));
     let info_page = InfoPage::new();
@@ -462,8 +466,10 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     last_backup_row.append(&skipped);
     let explanation = wrapping_label();
 
-    let actions = Box::new(Orientation::Horizontal, 8);
-    let poweruser = Box::new(Orientation::Horizontal, 8);
+    // The buttons wrap onto another line when the window is narrow, or their texts are long, as
+    // in German, so that the window needn't grow.
+    let actions = action_row();
+    let poweruser = action_row();
     let mut buttons = HashMap::new();
     for action in Action::ALL {
         let button = Button::new();
@@ -471,9 +477,9 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
             button.add_css_class("suggested-action");
         }
         if action.for_poweruser() {
-            poweruser.append(&button);
+            poweruser.append(&FlowBoxChild::builder().child(&button).build());
         } else {
-            actions.append(&button);
+            actions.append(&FlowBoxChild::builder().child(&button).build());
         }
         buttons.insert(action, button);
     }
@@ -946,8 +952,13 @@ impl Window {
             checked: checked.as_ref(),
             formattable: !self.formattable.borrow().is_empty(),
         };
-        let details =
-            start_screen::details(&shown, SystemTime::now(), language, self.advanced.get());
+        let details = start_screen::details(
+            &shown,
+            SystemTime::now(),
+            local_clock,
+            language,
+            self.advanced.get(),
+        );
         widgets.title.set_label(&details.label);
         widgets.status.set_label(&details.status);
         widgets.spinner.set_visible(details.mark.is_none());
@@ -980,12 +991,12 @@ impl Window {
         for (action, button) in &widgets.buttons {
             match details.buttons.iter().find(|shown| shown.action == *action) {
                 Some(shown) => {
-                    button.set_visible(true);
+                    show_button(button, true);
                     let busy = *action == Action::Eject && ejecting;
                     button.set_sensitive(shown.enabled && !busy);
                     button.set_tooltip_text(Some(&shown.tooltip));
                 }
-                None => button.set_visible(false),
+                None => show_button(button, false),
             }
         }
         widgets.poweruser.set_visible(self.advanced.get());
@@ -2073,6 +2084,7 @@ impl Window {
                     label: &backup.label,
                     previous: backup.previous,
                     now: backup.ended_at.unwrap_or_else(SystemTime::now),
+                    clock: local_clock,
                 };
                 let shown = verdict_screen(ended.as_ref(), &context, language);
                 let notice = self
@@ -2170,6 +2182,25 @@ impl Window {
             .iter()
             .find(|(medium, _)| &medium.volume.object_path == selected)
             .map(|(medium, _)| medium.clone())
+    }
+}
+
+/// A row of action buttons that wraps when it runs out of room.
+fn action_row() -> FlowBox {
+    FlowBox::builder()
+        .selection_mode(SelectionMode::None)
+        .column_spacing(8)
+        .row_spacing(8)
+        .homogeneous(false)
+        .max_children_per_line(10)
+        .build()
+}
+
+/// Shows or hides an action button, with the slot that holds it in its row.
+fn show_button(button: &Button, visible: bool) {
+    button.set_visible(visible);
+    if let Some(slot) = button.parent() {
+        slot.set_visible(visible);
     }
 }
 

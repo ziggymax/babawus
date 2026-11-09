@@ -10,7 +10,8 @@ use crate::log::read_runs;
 use crate::media::{Medium, Status, Viewer};
 use crate::settings::Language;
 use crate::text::{Text, size};
-use crate::time::days_since;
+use crate::time::ClockTime;
+use crate::verdict_screen::last_backup_text;
 
 /// What reading a medium found out. Reading may take a while, so it is done off the main thread.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -209,8 +210,15 @@ pub struct Shown<'a> {
     pub formattable: bool,
 }
 
-/// The details of `shown`, at the time `now`. `advanced` shows the poweruser's actions too.
-pub fn details(shown: &Shown, now: SystemTime, language: Language, advanced: bool) -> Details {
+/// The details of `shown`, at the time `now`, which `clock` turns into a date and time to
+/// show. `advanced` shows the poweruser's actions too.
+pub fn details(
+    shown: &Shown,
+    now: SystemTime,
+    clock: fn(SystemTime) -> ClockTime,
+    language: Language,
+    advanced: bool,
+) -> Details {
     let Shown {
         medium,
         checked,
@@ -231,11 +239,7 @@ pub fn details(shown: &Shown, now: SystemTime, language: Language, advanced: boo
         Some(Status::Ready { last_backup }) => Some(match last_backup {
             None => (Text::NoBackupYet.get(language).to_owned(), false),
             Some(last) => {
-                let text = match days_since(last.time, now) {
-                    0 => Text::LastBackupToday.get(language).to_owned(),
-                    1 => Text::LastBackupYesterday.get(language).to_owned(),
-                    days => Text::LastBackupDaysAgo.fill(language, &[("days", &days.to_string())]),
-                };
+                let text = last_backup_text(Some(*last), now, clock, language);
                 (text, last.skipped_files)
             }
         }),

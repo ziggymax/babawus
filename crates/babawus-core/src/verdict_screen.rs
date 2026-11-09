@@ -13,7 +13,7 @@ use crate::media::user_of;
 use crate::run::{Ended, Outcome};
 use crate::settings::Language;
 use crate::text::{Text, size};
-use crate::time::{days_since, log_timestamp};
+use crate::time::{ClockTime, log_timestamp};
 use crate::verdict::{Reason, Verdict};
 
 /// How many problems the details list. The log has them all.
@@ -70,6 +70,8 @@ pub struct Context<'a> {
     pub previous: Option<LastBackup>,
     /// When the run ended.
     pub now: SystemTime,
+    /// Turns a time into the date and time to show.
+    pub clock: fn(SystemTime) -> ClockTime,
 }
 
 /// The verdict screen for a run that ended as `ended`. Nothing means the worker stopped without
@@ -96,7 +98,12 @@ pub fn verdict_screen(
                 skipped: Vec::new(),
                 next_step: Some(Text::NextWait.get(language).to_owned()),
                 copied: None,
-                last_backup: last_backup_text(context.previous, context.now, language),
+                last_backup: last_backup_text(
+                    context.previous,
+                    context.now,
+                    context.clock,
+                    language,
+                ),
                 details: String::new(),
                 offer_eject: false,
             }
@@ -142,7 +149,7 @@ fn finished(outcome: &Outcome, context: &Context, language: Language) -> Verdict
         skipped: skipped_groups(outcome, language),
         next_step: next_step.map(|text| text.get(language).to_owned()),
         copied,
-        last_backup: last_backup_text(previous, context.now, language),
+        last_backup: last_backup_text(previous, context.now, context.clock, language),
         details: details(outcome, context, None, language),
         offer_eject: counts,
     }
@@ -239,14 +246,35 @@ fn skipped_groups(outcome: &Outcome, language: Language) -> Vec<String> {
         .collect()
 }
 
-fn last_backup_text(last: Option<LastBackup>, now: SystemTime, language: Language) -> String {
+/// "Last backup: today at 14:03", "Last backup: yesterday at 09:12" or "Last backup: 47 days
+/// ago (2026-09-23 at 17:54)", from when it finished, at the time `now`. Days are calendar days,
+/// as `clock` shows them, and a time in the future, from a wrong clock, counts as today. See
+/// Issues.md item 93.
+pub(crate) fn last_backup_text(
+    last: Option<LastBackup>,
+    now: SystemTime,
+    clock: fn(SystemTime) -> ClockTime,
+    language: Language,
+) -> String {
     let Some(last) = last else {
         return Text::NoBackupYet.get(language).to_owned();
     };
-    match days_since(last.time, now) {
-        0 => Text::LastBackupToday.get(language).to_owned(),
-        1 => Text::LastBackupYesterday.get(language).to_owned(),
-        days => Text::LastBackupDaysAgo.fill(language, &[("days", &days.to_string())]),
+    let then = clock(last.time);
+    let time = format!("{:02}:{:02}", then.hour, then.minute);
+    match then.days_until(clock(now)).max(0) {
+        0 => Text::LastBackupToday.fill(language, &[("time", &time)]),
+        1 => Text::LastBackupYesterday.fill(language, &[("time", &time)]),
+        days => {
+            let date = format!("{:04}-{:02}-{:02}", then.year, then.month, then.day);
+            Text::LastBackupDaysAgo.fill(
+                language,
+                &[
+                    ("days", &days.to_string()),
+                    ("date", &date),
+                    ("time", &time),
+                ],
+            )
+        }
     }
 }
 
