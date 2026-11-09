@@ -198,7 +198,9 @@ As a user I want to be able to see, for a Ready medium, in plain words which fil
 
 ### See when I last made a backup
 
-As a user I want the details of a Ready medium on the start screen to show how long it has been since my last backup on this computer to that medium (for example "Last backup: 47 days ago"). That way I am reminded to make a backup when it has been a while.
+As a user I want the details of a Ready medium on the start screen to show how long it has been since my last backup on this computer to that medium, and when it finished (for example "Last backup: today at 14:03", "Last backup: yesterday at 09:12" or "Last backup: 47 days ago (2026-09-23 at 17:54)"). That way I am reminded to make a backup when it has been a while, and can tell which of several backups on one day was the last.
+
+- Days are calendar days in local time, so a backup at 23:50 reads "yesterday" just after midnight. A time in the future, from a wrong clock, counts as today (see Issues.md item 93).
 
 - Only my own account on this computer counts (`username@computer folder`), not backups by other computers or accounts on a shared medium.
 - Both "All good" and "Some files were skipped" count as a backup, because the run finished. If the last backup skipped files, a small warning mark is shown next to the date.
@@ -247,7 +249,7 @@ As a poweruser I want to set, in the configuration of a medium, how many older v
 
 ### Change the language
 
-As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. That way I can use Babawus in the language I understand best.
+As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. German addresses the user as "du", and calls the poweruser "Betreuer" (see Issues.md items 90-92). Where texts are longer, as in German, the action buttons wrap onto another line, so that the window needn't grow. That way I can use Babawus in the language I understand best.
 
 ## Technical requirements
 

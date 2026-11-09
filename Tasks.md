@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-031 is waiting for review. T-020, the German texts, is next.
+T-020 and T-030 are waiting for review. The release tasks, from T-021, are next.
 
 ## First version: logic
 
@@ -32,10 +32,7 @@ Everything here is done.
 
 ## First version: user interface
 
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-020 | Translations: the German texts in the catalogue, including codes from the log | Todo | Requirements: "Change the language" |
-| T-030 | "Last backup" counts whole 24-hour periods, so a backup two calendar days ago can read "yesterday" while the history shows its date. Count calendar days, as the history does | Todo | Pull request 34 |
+Everything here is done.
 
 ## First version: release
 
@@ -84,3 +81,5 @@ Nothing is waiting for a decision.
 | T-017 | Advanced: the format view, which says when nothing was erased, and leads on to adding this computer and account | [#35](https://github.com/ziggymax/babawus/pull/35) |
 | T-018 | Advanced: the configuration editor's overview: older versions, every entry, adding, linking and removing entries, Save and Cancel, a damaged configuration, and starting a new one | [#36](https://github.com/ziggymax/babawus/pull/36) |
 | T-031 | Advanced: "Choose what to back up…": the home folder tree with tick boxes, the name patterns, and live totals | [#37](https://github.com/ziggymax/babawus/pull/37) |
+| T-020 | Translations: the German texts in the catalogue | [#38](https://github.com/ziggymax/babawus/pull/38) |
+| T-030 | "Last backup" shows when the last backup finished, and counts calendar days | [#38](https://github.com/ziggymax/babawus/pull/38) |

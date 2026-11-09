@@ -5,6 +5,7 @@ use super::*;
 use crate::lock::Holder;
 use crate::log::Stats;
 use crate::scan::Skipped;
+use crate::time::utc_clock;
 
 const EN: Language = Language::English;
 const DAY: Duration = Duration::from_secs(86_400);
@@ -22,6 +23,7 @@ fn context(previous_days_ago: Option<u32>) -> Context<'static> {
             skipped_files: false,
         }),
         now: now(),
+        clock: utc_clock,
     }
 }
 
@@ -64,7 +66,7 @@ fn all_good_needs_nothing_more() {
     assert_eq!(shown.next_step, None);
     assert_eq!(shown.copied.as_deref(), Some("Copied: 12 files (3.4 MB)"));
     // This run is the last backup now.
-    assert_eq!(shown.last_backup, "Last backup: today");
+    assert_eq!(shown.last_backup, "Last backup: today at 12:00");
     assert!(shown.offer_eject);
 }
 
@@ -99,7 +101,7 @@ fn skipped_files_are_grouped_by_reason() {
     ];
     assert_eq!(shown.skipped, groups);
     // A run that skipped files still counts as a backup.
-    assert_eq!(shown.last_backup, "Last backup: today");
+    assert_eq!(shown.last_backup, "Last backup: today at 12:00");
     assert!(shown.offer_eject);
 }
 
@@ -112,7 +114,10 @@ fn an_unfinished_run_says_to_run_it_again() {
     let next = "Run the backup again. If it happens again, contact your poweruser.";
     assert_eq!(shown.next_step.as_deref(), Some(next));
     // The last backup is still the one before.
-    assert_eq!(shown.last_backup, "Last backup: 47 days ago");
+    assert_eq!(
+        shown.last_backup,
+        "Last backup: 47 days ago (2024-08-18 at 12:00)"
+    );
     assert!(!shown.offer_eject);
 }
 
@@ -233,6 +238,49 @@ fn a_crash_leaves_the_backup_unfinished() {
         shown.reason.as_deref(),
         Some("Babawus stopped unexpectedly.")
     );
-    assert_eq!(shown.last_backup, "Last backup: 5 days ago");
+    assert_eq!(
+        shown.last_backup,
+        "Last backup: 5 days ago (2024-09-29 at 12:00)"
+    );
     assert!(shown.details.contains("Babawus stopped unexpectedly."));
+}
+
+#[test]
+fn the_last_backup_shows_when_it_finished_by_calendar_day() {
+    let midnight = SystemTime::UNIX_EPOCH + 20_000 * DAY;
+    let last = |time| {
+        Some(LastBackup {
+            time,
+            skipped_files: false,
+        })
+    };
+    let text = |time, now| last_backup_text(last(time), now, utc_clock, EN);
+
+    // 23:50, seen ten minutes after midnight, was yesterday, though it is not a day ago.
+    let late = midnight - Duration::from_secs(600);
+    let soon_after = midnight + Duration::from_secs(600);
+    assert_eq!(text(late, soon_after), "Last backup: yesterday at 23:50");
+    // Two backups on one day: the time tells them apart.
+    let morning = midnight + Duration::from_secs(9 * 3600 + 5 * 60);
+    let evening = midnight + Duration::from_secs(18 * 3600);
+    assert_eq!(text(morning, evening), "Last backup: today at 09:05");
+    // A clock that was wrong can put the backup in the future.
+    assert_eq!(text(evening, morning), "Last backup: today at 18:00");
+    assert_eq!(
+        last_backup_text(None, morning, utc_clock, EN),
+        "No backup yet"
+    );
+}
+
+#[test]
+fn the_last_backup_reads_well_in_german() {
+    let now = SystemTime::UNIX_EPOCH + 20_000 * DAY + Duration::from_secs(12 * 3600);
+    let last = Some(LastBackup {
+        time: now - 3 * DAY,
+        skipped_files: false,
+    });
+
+    let text = last_backup_text(last, now, utc_clock, Language::German);
+
+    assert_eq!(text, "Letzte Sicherung: vor 3 Tagen (2024-10-01 um 12:00)");
 }
