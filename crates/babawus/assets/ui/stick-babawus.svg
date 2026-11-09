@@ -5,12 +5,12 @@
    id="svg4451"
    sodipodi:docname="stick-babawus.svg"
    inkscape:export-filename="C:\Resources\Images\Icons\Computers\USB Thumb Drive 1.png"
-   viewBox="0 0 63.374471 43.351968"
+   viewBox="0 0 62.349782 43.351968"
    inkscape:export-xdpi="708.60999"
    version="1.1"
    inkscape:export-ydpi="708.60999"
    inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
-   width="63.37447"
+   width="62.349781"
    height="43.351967"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -62,13 +62,13 @@
        id="filter5398"
        inkscape:collect="always"
        color-interpolation-filters="sRGB"
-       x="-0.02922879"
-       y="-0.046872071"
-       width="1.0584791"
-       height="1.1122994">
+       x="-0.0087838196"
+       y="-0.046873015"
+       width="1.0175891"
+       height="1.1123013">
       <feGaussianBlur
          id="feGaussianBlur5400"
-         stdDeviation="8.5518232"
+         stdDeviation="0.001 8.552"
          inkscape:collect="always" />
     </filter>
     <filter
@@ -99,7 +99,7 @@
      showgrid="false"
      borderopacity="1.0"
      inkscape:current-layer="layer1"
-     inkscape:cx="-12.053571"
+     inkscape:cx="-12.098214"
      inkscape:cy="7.0535714"
      fit-margin-right="10"
      fit-margin-bottom="10"
