@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-032.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-033.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-020 and T-030 are waiting for review. The release tasks, from T-021, are next.
+T-032, a review of the look of the user interface, is planned for later. The release tasks, from T-021, are next.
 
 ## First version: logic
 
@@ -32,7 +32,9 @@ Everything here is done.
 
 ## First version: user interface
 
-Everything here is done.
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-032 | Review the look of the user interface as a whole. Known so far: the stick pictures and the Babawus logo should be larger. Also look at the tree in "Choose what to back up…", which scrolls inside a page that scrolls too, and at the start screen's action buttons, which stretch to fill their columns when they wrap | Todo | User, 2026-11-09; pull requests 37 and 38 |
 
 ## First version: release
 
