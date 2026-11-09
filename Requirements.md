@@ -634,7 +634,7 @@ All non-GUI logic is covered by tests, in three layers:
 
 1. **Unit tests** run with `cargo test`. All logic runs against a small file system interface, using an in-memory fake that can also inject faults (for example "fail at step 3" or "disk full after N bytes"), so that interruptions at every step of the write algorithm are tested. Name rules, verdicts, the configuration, log parsing and pruning are plain functions.
 2. **Integration tests** run real backups on real exFAT and Ext4 file systems, created in small image files and mounted through loop devices. The same tests run on both file systems. A tiny image gives a truly full medium. These tests need `sudo`, so a plain `cargo test` skips them, and `cargo test -- --include-ignored` runs them.
-3. **A manual checklist** on real USB sticks before each release covers what cannot be automated: formatting (also from an account without administrator rights, noting whether a password is asked for), pulling out a stick, eject (including powering off) and the GUI.
+3. **A manual checklist** on real USB sticks before each release covers what cannot be automated: formatting (also from an account without administrator rights, noting whether a password is asked for), pulling out a stick, eject (including powering off), installing, updating and uninstalling the package, and the GUI. It is [ReleaseChecklist.md](ReleaseChecklist.md), and each run is recorded in a GitHub issue (see Issues.md item 94).
 
 Automated tests must never be able to format anything except a loop device created by the test itself.
 

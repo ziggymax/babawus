@@ -18,6 +18,7 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 | List the USB media as Babawus sees them, and follow changes | `cargo run -p babawus-core --example media -- --follow` |
 | List the drives Babawus may format, or format one (this erases it) | `cargo run -p babawus-core --example format` |
 | List the USB media, or eject one | `cargo run -p babawus-core --example eject` |
-| Add this computer and account to a mounted Babawus medium, with what to back up (until the configuration editor exists) | `cargo run -p babawus-core --example add_account -- <medium root> Documents` |
+| Add this computer and account to a mounted Babawus medium, with what to back up, without the configuration editor | `cargo run -p babawus-core --example add_account -- <medium root> Documents` |
+| The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](ReleaseChecklist.md) |
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Build the `.deb` package | `cargo deb -p babawus` |
