@@ -14,6 +14,10 @@ use std::time::{Duration, SystemTime};
 use babawus_core::backup_screen::Tracker;
 
 use babawus_core::coverage_screen::{Gathered, coverage_screen};
+use babawus_core::format_screen::{
+    DriveChoice, Failure, can_format, drive_choices, label_problem, result_screen, suggested_label,
+    warning,
+};
 use babawus_core::fs::RealFs;
 use babawus_core::history_screen::history;
 use babawus_core::identity::{this_computer_id, this_hostname};
@@ -35,6 +39,7 @@ use gtk4::{
 };
 
 use crate::backup_page::BackupPage;
+use crate::format_page::FormatPage;
 use crate::icons;
 use crate::info_page::InfoPage;
 
@@ -88,6 +93,9 @@ struct RowWidgets {
 struct DetailsWidgets {
     pages: Stack,
     plug_in: Label,
+    /// "Prepare…" on the empty page, so that a blank stick can be formatted while Advanced is
+    /// on. See Issues.md item 78.
+    empty_prepare: Button,
     title: Label,
     mark: Image,
     spinner: Spinner,
@@ -126,6 +134,35 @@ struct BackupState {
     question: gio::Cancellable,
 }
 
+/// How far the format view has got.
+enum FormatStage {
+    /// The poweruser is choosing. What they chose is kept in the widgets.
+    Choosing,
+    /// Formatting the medium that will be labelled `label`.
+    Working {
+        label: String,
+    },
+    Done {
+        label: String,
+        root: PathBuf,
+    },
+    Failed {
+        label: String,
+        failure: Failure,
+    },
+}
+
+/// The format view, from opening it until the poweruser goes back.
+struct FormatState {
+    stage: FormatStage,
+    /// The drives that may be formatted, as last listed.
+    choices: Vec<DriveChoice>,
+    /// The udisks2 drive ID of the chosen drive.
+    drive: Option<String>,
+    /// The poweruser has typed a label, so it is no longer replaced by the suggestion.
+    label_edited: bool,
+}
+
 /// What the history or "What's backed up" screen is about. The texts are made again from it when
 /// the language changes.
 enum InfoView {
@@ -157,6 +194,11 @@ struct Window {
     info_page: InfoPage,
     info: RefCell<Option<InfoState>>,
     info_generation: Cell<u64>,
+    format_page: FormatPage,
+    format: RefCell<Option<FormatState>>,
+    /// Set while Babawus itself changes the format view's widgets, so that their signals are
+    /// ignored.
+    format_updating: Cell<bool>,
     title: Label,
     advanced_marker: Label,
     menu: MenuButton,
@@ -243,6 +285,8 @@ pub fn show(app: &Application) {
     screens.add_named(&backup_page.root, Some("backup"));
     let info_page = InfoPage::new();
     screens.add_named(&info_page.root, Some("info"));
+    let format_page = FormatPage::new();
+    screens.add_named(&format_page.root, Some("format"));
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -260,6 +304,9 @@ pub fn show(app: &Application) {
         info_page,
         info: RefCell::new(None),
         info_generation: Cell::new(0),
+        format_page,
+        format: RefCell::new(None),
+        format_updating: Cell::new(false),
         title,
         advanced_marker,
         menu,
@@ -392,9 +439,18 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         .build();
     plug_in.add_css_class("babawus-plug-in");
 
+    let empty_prepare = Button::builder().halign(Align::Center).build();
+    let empty_page = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(SPACING)
+        .valign(Align::Center)
+        .build();
+    empty_page.append(&plug_in);
+    empty_page.append(&empty_prepare);
+
     let pages = Stack::builder().vexpand(true).build();
     pages.add_named(&medium_page, Some("medium"));
-    pages.add_named(&plug_in, Some("empty"));
+    pages.add_named(&empty_page, Some("empty"));
 
     let notice = wrapping_label();
     notice.set_visible(false);
@@ -421,6 +477,7 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     let widgets = DetailsWidgets {
         pages,
         plug_in,
+        empty_prepare,
         title,
         mark,
         spinner,
@@ -482,6 +539,7 @@ impl Window {
                 window.close_info();
             }
         });
+        self.connect_format_signals();
         // Closing the window during a run asks first, like Cancel. Closing it straight away
         // would end the run without its end entry in the log.
         let weak = Rc::downgrade(self);
@@ -489,6 +547,10 @@ impl Window {
             let Some(window) = weak.upgrade() else {
                 return glib::Propagation::Proceed;
             };
+            // Formatting can't be stopped, and closing would leave the medium half done.
+            if window.formatting() {
+                return glib::Propagation::Stop;
+            }
             let running = window
                 .backup
                 .borrow()
@@ -629,10 +691,15 @@ impl Window {
         for (&action, button) in &self.details.buttons {
             button.set_label(action.label(language));
         }
+        self.details
+            .empty_prepare
+            .set_label(Action::Prepare.label(language));
+        self.format_page.set_texts(language);
         self.update_rows();
         self.show_details();
         self.show_backup();
         self.show_info();
+        self.show_format();
     }
 
     /// udisks2 reported a change, or Babawus has just started: the list is read again, and each
@@ -665,6 +732,7 @@ impl Window {
         *self.media.borrow_mut() = media;
         self.update_rows();
         self.show_details();
+        self.update_format_drives();
 
         let generation = self.generation.get() + 1;
         self.generation.set(generation);
@@ -788,6 +856,9 @@ impl Window {
                 Text::ChooseMedium
             };
             widgets.plug_in.set_label(text.get(language));
+            widgets
+                .empty_prepare
+                .set_visible(self.advanced.get() && !self.formattable.borrow().is_empty());
             widgets.pages.set_visible_child_name("empty");
             return;
         };
@@ -795,7 +866,7 @@ impl Window {
         let shown = Shown {
             medium,
             checked: checked.as_ref(),
-            formattable: self.formattable.borrow().contains(&medium.drive.id),
+            formattable: !self.formattable.borrow().is_empty(),
         };
         let details =
             start_screen::details(&shown, SystemTime::now(), language, self.advanced.get());
@@ -849,7 +920,8 @@ impl Window {
             Action::Eject => self.eject(),
             Action::ShowHistory => self.open_history(),
             Action::WhatsBackedUp => self.open_coverage(),
-            Action::Prepare | Action::ChangeSetup => {}
+            Action::Prepare => self.open_format(),
+            Action::ChangeSetup => {}
         }
     }
 
@@ -970,6 +1042,269 @@ impl Window {
                 page.show_coverage(&info.label, &shown, language);
             }
         }
+    }
+
+    fn connect_format_signals(self: &Rc<Self>) {
+        let page = &self.format_page;
+        let weak = Rc::downgrade(self);
+        page.drives.connect_row_selected(move |_, _| {
+            if let Some(window) = weak.upgrade()
+                && !window.format_updating.get()
+            {
+                window.format_drive_chosen();
+            }
+        });
+        let weak = Rc::downgrade(self);
+        page.label.connect_changed(move |_| {
+            let Some(window) = weak.upgrade() else { return };
+            if window.format_updating.get() {
+                return;
+            }
+            if let Some(format) = window.format.borrow_mut().as_mut() {
+                format.label_edited = true;
+            }
+            window.show_format();
+        });
+        for button in [&page.exfat, &page.understood] {
+            let weak = Rc::downgrade(self);
+            button.connect_toggled(move |_| {
+                if let Some(window) = weak.upgrade()
+                    && !window.format_updating.get()
+                {
+                    window.show_format();
+                }
+            });
+        }
+        let weak = Rc::downgrade(self);
+        page.erase.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.start_format();
+            }
+        });
+        let weak = Rc::downgrade(self);
+        page.try_again.connect_clicked(move |_| {
+            let Some(window) = weak.upgrade() else { return };
+            if let Some(format) = window.format.borrow_mut().as_mut() {
+                format.stage = FormatStage::Choosing;
+            }
+            window.format_page.understood.set_active(false);
+            window.update_format_drives();
+        });
+        let weak = Rc::downgrade(self);
+        page.back.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.close_format();
+            }
+        });
+        let weak = Rc::downgrade(self);
+        self.details.empty_prepare.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.open_format();
+            }
+        });
+    }
+
+    /// Opens the format view, with the selected medium's drive chosen if it may be formatted.
+    fn open_format(self: &Rc<Self>) {
+        if self.udisks.is_none() || self.format.borrow().is_some() {
+            return;
+        }
+        let drive = self
+            .selected_medium()
+            .map(|medium| medium.drive.id)
+            .filter(|id| self.formattable.borrow().contains(id));
+        *self.notice.borrow_mut() = None;
+        *self.format.borrow_mut() = Some(FormatState {
+            stage: FormatStage::Choosing,
+            choices: Vec::new(),
+            drive: None,
+            label_edited: false,
+        });
+        let page = &self.format_page;
+        self.format_updating.set(true);
+        page.exfat.set_active(true);
+        page.understood.set_active(false);
+        page.label.set_text("");
+        self.format_updating.set(false);
+        self.update_format_drives_selecting(drive.as_deref());
+        self.screens.set_visible_child_name("format");
+    }
+
+    /// Lists the drives that may be formatted again, keeping the chosen one if it is still
+    /// there.
+    fn update_format_drives(&self) {
+        let chosen = self
+            .format
+            .borrow()
+            .as_ref()
+            .and_then(|format| format.drive.clone());
+        self.update_format_drives_selecting(chosen.as_deref());
+    }
+
+    fn update_format_drives_selecting(&self, selected: Option<&str>) {
+        let choosing = self
+            .format
+            .borrow()
+            .as_ref()
+            .is_some_and(|format| matches!(format.stage, FormatStage::Choosing));
+        let Some(udisks) = &self.udisks else { return };
+        if !choosing {
+            return;
+        }
+        let babawus: HashSet<String> = self
+            .media
+            .borrow()
+            .iter()
+            .filter(|(_, checked)| {
+                checked
+                    .as_ref()
+                    .is_some_and(|checked| !matches!(checked.status, Status::NotBackupMedium))
+            })
+            .map(|(medium, _)| medium.volume.object_path.clone())
+            .collect();
+        let choices = drive_choices(&udisks.snapshot(), &babawus, self.language.get());
+        self.format_updating.set(true);
+        self.format_page.set_drives(&choices, selected);
+        self.format_updating.set(false);
+        if let Some(format) = self.format.borrow_mut().as_mut() {
+            format.choices = choices;
+        }
+        self.format_drive_chosen();
+    }
+
+    /// The chosen drive may have changed. A different drive needs confirming again, and gets
+    /// the suggested label unless the poweruser has typed one.
+    fn format_drive_chosen(&self) {
+        let chosen = self.format_page.chosen_drive();
+        let suggestion = {
+            let mut format = self.format.borrow_mut();
+            let Some(format) = format.as_mut() else {
+                return;
+            };
+            if format.drive == chosen {
+                None
+            } else {
+                format.drive = chosen.clone();
+                let suggestion = match (&self.udisks, &chosen) {
+                    (Some(udisks), Some(id)) if !format.label_edited => {
+                        Some(suggested_label(&udisks.snapshot(), id))
+                    }
+                    _ => None,
+                };
+                Some(suggestion)
+            }
+        };
+        if let Some(suggestion) = suggestion {
+            self.format_updating.set(true);
+            self.format_page.understood.set_active(false);
+            if let Some(label) = suggestion {
+                self.format_page.label.set_text(&label);
+            }
+            self.format_updating.set(false);
+        }
+        self.show_format();
+    }
+
+    fn formatting(&self) -> bool {
+        self.format
+            .borrow()
+            .as_ref()
+            .is_some_and(|format| matches!(format.stage, FormatStage::Working { .. }))
+    }
+
+    /// Formats the chosen drive, once the poweruser has confirmed.
+    fn start_format(self: &Rc<Self>) {
+        let page = &self.format_page;
+        let label = page.label.text().to_string();
+        let file_system = page.format();
+        let drive = {
+            let mut format = self.format.borrow_mut();
+            let Some(format) = format.as_mut() else {
+                return;
+            };
+            let ready = matches!(format.stage, FormatStage::Choosing)
+                && can_format(format.drive.is_some(), &label, page.understood.is_active());
+            if !ready {
+                return;
+            }
+            format.stage = FormatStage::Working {
+                label: label.clone(),
+            };
+            format.drive.clone()
+        };
+        let Some(drive) = drive else { return };
+        self.show_format();
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            let Some(window) = weak.upgrade() else { return };
+            let Some(udisks) = &window.udisks else { return };
+            let result = udisks.format(&drive, file_system, &label).await;
+            let stage = match result {
+                Ok(root) => FormatStage::Done { label, root },
+                Err(error) => {
+                    eprintln!("Babawus could not format {drive}: {error:?}");
+                    let failure = Failure::of(&error);
+                    FormatStage::Failed { label, failure }
+                }
+            };
+            if let Some(format) = window.format.borrow_mut().as_mut() {
+                format.stage = stage;
+            }
+            window.show_format();
+        });
+    }
+
+    fn show_format(&self) {
+        let language = self.language.get();
+        let format = self.format.borrow();
+        let Some(format) = format.as_ref() else {
+            return;
+        };
+        let page = &self.format_page;
+        match &format.stage {
+            FormatStage::Choosing => {
+                let label = page.label.text();
+                let choice = format
+                    .drive
+                    .as_ref()
+                    .and_then(|id| format.choices.iter().find(|choice| &choice.id == id));
+                let warning = choice.map(|choice| warning(choice, language));
+                let problem = label_problem(&label, language);
+                let can = can_format(choice.is_some(), &label, page.understood.is_active());
+                page.show_choice(problem.as_deref(), warning.as_deref(), can);
+            }
+            FormatStage::Working { label } => page.show_working(label, language),
+            FormatStage::Done { label, .. } => {
+                page.show_result(&result_screen(label, None, language));
+            }
+            FormatStage::Failed { label, failure } => {
+                page.show_result(&result_screen(label, Some(failure), language));
+            }
+        }
+    }
+
+    /// Leaves the format view, unless formatting is going on. A newly formatted medium is
+    /// selected on the start screen.
+    fn close_format(self: &Rc<Self>) {
+        if self.formatting() {
+            return;
+        }
+        let Some(format) = self.format.take() else {
+            return;
+        };
+        if let FormatStage::Done { root, .. } = &format.stage {
+            let selected = self
+                .media
+                .borrow()
+                .iter()
+                .find(|(medium, _)| &medium.root == root)
+                .map(|(medium, _)| medium.volume.object_path.clone());
+            if selected.is_some() {
+                *self.selected.borrow_mut() = selected;
+            }
+        }
+        self.screens.set_visible_child_name("start");
+        self.media_changed();
     }
 
     fn close_info(&self) {

@@ -1,4 +1,5 @@
 mod backup_page;
+mod format_page;
 mod icons;
 mod info_page;
 mod window;

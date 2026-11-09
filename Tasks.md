@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-016 is waiting for review. T-017, the format view, is next.
+T-017 is waiting for review. T-018, the configuration editor, is next.
 
 ## First version: logic
 
@@ -34,7 +34,6 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-017 | Advanced: the format view. It uses `Udisks::format`, says when nothing was erased, and leads on to adding this computer and account | Todo | Requirements: "Format USB media" |
 | T-018 | Advanced: the configuration editor, with the file explorer, live totals, read-only entries for others, and adding, linking and removing entries. It also offers checking a damaged configuration, and starting a new one | Todo | Requirements: "Configure USB media" |
 | T-020 | Translations: the German texts in the catalogue, including codes from the log | Todo | Requirements: "Change the language" |
 | T-030 | "Last backup" counts whole 24-hour periods, so a backup two calendar days ago can read "yesterday" while the history shows its date. Count calendar days, as the history does | Todo | Pull request 34 |
@@ -83,3 +82,4 @@ Nothing is waiting for a decision.
 | T-015 | Verdict screen: reason, skipped files by reason, details with Copy, offer to eject | [#33](https://github.com/ziggymax/babawus/pull/33) |
 | T-029 | Wait until the copy of the test program runs before checking it, so that `real_processes_are_told_apart` no longer fails now and then | [#33](https://github.com/ziggymax/babawus/pull/33) |
 | T-016 | History and "What's backed up" views | [#34](https://github.com/ziggymax/babawus/pull/34) |
+| T-017 | Advanced: the format view, which says when nothing was erased, and leads on to adding this computer and account | [#35](https://github.com/ziggymax/babawus/pull/35) |

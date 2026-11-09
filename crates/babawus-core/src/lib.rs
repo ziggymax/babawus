@@ -10,6 +10,7 @@ pub mod copy;
 pub mod coverage_screen;
 pub mod exclude;
 pub mod format;
+pub mod format_screen;
 pub mod fs;
 pub mod history_screen;
 pub mod identity;
