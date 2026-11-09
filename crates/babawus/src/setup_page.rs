@@ -226,10 +226,8 @@ impl SetupPage {
             .set_label(Text::SetupOlderVersionsDetail.get(language));
         self.here_heading.set_label(Text::SetupHere.get(language));
         self.choose.set_label(Text::SetupChoose.get(language));
-        // TODO(T-031): Choose what to back up, in a tree of the home folder.
-        self.choose.set_sensitive(false);
         self.choose
-            .set_tooltip_text(Some(Text::NotYetAvailable.get(language)));
+            .set_tooltip_text(Some(Text::SetupChooseTooltip.get(language)));
         self.entries_heading
             .set_label(Text::SetupEntries.get(language));
         self.save.set_label(Text::SetupSave.get(language));

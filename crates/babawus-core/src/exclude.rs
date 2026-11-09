@@ -24,6 +24,18 @@ impl Exclusions {
         };
         self.folders.iter().any(folder) || relative.iter().any(name)
     }
+
+    /// The first pattern that matches the single name `name`, if any.
+    pub fn matching_pattern(&self, name: &std::ffi::OsStr) -> Option<&str> {
+        let name: Vec<char> = name.to_string_lossy().chars().collect();
+        self.patterns
+            .iter()
+            .find(|pattern| {
+                let pattern: Vec<char> = pattern.chars().collect();
+                !pattern.contains(&'/') && matches(&pattern, &name)
+            })
+            .map(String::as_str)
+    }
 }
 
 /// Matches a pattern of `*` (any characters), `?` (one character) and `[…]` (one of the listed

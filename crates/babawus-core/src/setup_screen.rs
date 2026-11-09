@@ -7,6 +7,7 @@ use std::ffi::OsString;
 use std::io;
 use std::path::Path;
 
+use crate::choose_screen::Choice;
 use crate::config::{self, Config, EntryError, Loaded, folders_on_medium};
 use crate::fs::FileSystem;
 use crate::lock::{LockError, MediumLock, ThisProcess};
@@ -158,6 +159,27 @@ impl Editor {
         }
         self.config
             .link_computer(folder, &here.this.computer_id, here.hostname)
+    }
+
+    /// What this account backs up, if it is set up.
+    pub fn choice(&self, here: &Here) -> Option<Choice> {
+        let (_, account) = self.config.account(&here.this.computer_id, here.username)?;
+        Some(Choice::of(account))
+    }
+
+    /// Changes what this account backs up. It waits for [`save`](Self::save) like any other
+    /// change.
+    pub fn set_choice(&mut self, here: &Here, choice: &Choice) {
+        let account = self
+            .config
+            .computers
+            .iter_mut()
+            .filter(|computer| computer.id == here.this.computer_id)
+            .flat_map(|computer| computer.accounts.iter_mut())
+            .find(|account| account.username == here.username);
+        if let Some(account) = account {
+            choice.apply(account);
+        }
     }
 
     pub fn remove_computer(&mut self, id: &str) -> Result<(), EntryError> {
