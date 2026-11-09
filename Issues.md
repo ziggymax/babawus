@@ -263,3 +263,12 @@ Comparing the requirements with what the configuration and log have to do turned
 
 93. **Whether "Last backup" shows the time.** Several backups can be made in one day, and "today" doesn't say which was last.
     - **Decided (2026-11-09):** It shows when the last backup finished, after the words: "Last backup: today at 14:03", "Last backup: yesterday at 09:12", "Last backup: 47 days ago (2026-09-23 at 17:54)". The start screen and the verdict screen show it alike. Days are calendar days in local time, as in the history, so that a backup at 23:00 is never "today" the next morning. A time in the future, from a wrong clock, counts as today.
+
+## Decisions on the release checklist
+
+94. **How each release's run of the manual checklist is recorded.**
+    - **Decided (2026-11-09):** The steps live in `ReleaseChecklist.md`. Before a release, they are pasted into a GitHub issue ("Release 0.1.0 checklist"), whose tick boxes are ticked as each step passes, with notes on anything odd. The repository keeps the steps, and GitHub keeps each run.
+95. **How detailed each step is.**
+    - **Decided (2026-11-09):** Each step says what to do and what should be seen, so that anyone can run it, not only whoever wrote Babawus.
+96. **How the checklist relates to T-022, T-024 and T-025.**
+    - **Decided (2026-11-09):** The checklist has steps for pulling out a stick mid-copy, formatting without administrator rights, and installing, updating and uninstalling the package. T-021 writes the checklist only. The other three tasks stay open as running their part for the first time and fixing what it finds, because each needs someone at the computer.
