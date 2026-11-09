@@ -172,12 +172,6 @@ impl Action {
             Self::ChangeSetup => Text::ChangeSetupTooltip,
         }
     }
-
-    /// Whether the screen this action leads to has been built yet.
-    fn available(self) -> bool {
-        // TODO(T-018): Change the setup.
-        self != Self::ChangeSetup
-    }
 }
 
 /// A button for an action.
@@ -264,14 +258,12 @@ pub fn details(shown: &Shown, now: SystemTime, language: Language, advanced: boo
             let tooltip = if !can_start {
                 let reason = status_text(status, language);
                 Text::CantStart.fill(language, &[("reason", &reason)])
-            } else if !action.available() {
-                Text::NotYetAvailable.get(language).to_owned()
             } else {
                 action.tooltip().get(language).to_owned()
             };
             Button {
                 action,
-                enabled: can_start && action.available(),
+                enabled: can_start,
                 tooltip,
             }
         })

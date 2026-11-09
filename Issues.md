@@ -227,3 +227,14 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-09):** Two choices, each with a line in plain words: exFAT also works on Windows and Mac, and Ext4 works on Linux only, but allows longer names and copes better with being pulled out. exFAT is preselected.
 81. **What follows a successful format.** Adding this computer and account belongs to the configuration editor (T-018), which isn't built yet.
     - **Decided (2026-11-09):** A done screen says the stick is ready, and that it must now be set up for each computer and account. It has "Add this computer and account…", greyed out as "Not yet available" until T-018, and "Back", which returns to the start screen with the new stick selected.
+
+## Decisions on the configuration editor
+
+82. **What kind of file explorer chooses what is backed up and which folders are left out.**
+    - **Decided (2026-11-09):** A tree of the home folder that expands folder by folder. Each row has a tick box for backing it up, and a folder also has a "Leave out" choice. What is selected or left out is marked in place, and the totals update as the poweruser ticks.
+83. **How "Change setup…" is laid out.**
+    - **Decided (2026-11-09):** A full-window overview with the number of older versions to keep (N) and every computer and account on the stick. This computer's account can be changed, and the others are read-only. Each entry can be removed. Adding or linking this computer and account is done here too. "Choose what to back up…" opens a second full-window screen with the tree, the name patterns and the live totals.
+84. **When changes are written to the stick.**
+    - **Decided (2026-11-09):** Changes collect in the editor until "Save". Saving takes the medium's lock, writes the file safely and releases the lock. "Cancel" discards the changes, and leaving with unsaved changes asks first. Removing an entry and linking an account each ask for their own confirmation.
+85. **How T-018 is delivered.**
+    - **Decided (2026-11-09):** In two pull requests. T-018 covers the overview, N, adding, linking and removing entries, Save and Cancel, a damaged configuration, starting a new configuration, and the format view's "Add this computer and account…". T-031 covers the tree, the exclusions and the live totals.

@@ -26,11 +26,15 @@ use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
 use babawus_core::settings::{Language, SETTINGS_FILE, Settings};
+use babawus_core::setup_screen::{
+    self, Editor, Here, HereAction, Opened, SaveError, overview, save_error_text,
+};
 use babawus_core::start_screen::{self, Action, Checked, Shown};
 use babawus_core::text::Text;
 use babawus_core::time::local_clock;
 use babawus_core::udisks::{EjectError, Ejected, Udisks};
 use babawus_core::verdict_screen::{Context, verdict_screen};
+use babawus_core::versions::Format;
 use gtk4::prelude::*;
 use gtk4::{
     AboutDialog, AlertDialog, Align, Application, ApplicationWindow, Box, Button, HeaderBar, Image,
@@ -42,6 +46,7 @@ use crate::backup_page::BackupPage;
 use crate::format_page::FormatPage;
 use crate::icons;
 use crate::info_page::InfoPage;
+use crate::setup_page::{Instead, SetupEvent, SetupPage};
 
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
@@ -145,6 +150,7 @@ enum FormatStage {
     Done {
         label: String,
         root: PathBuf,
+        format: Format,
     },
     Failed {
         label: String,
@@ -161,6 +167,40 @@ struct FormatState {
     drive: Option<String>,
     /// The poweruser has typed a label, so it is no longer replaced by the suggestion.
     label_edited: bool,
+}
+
+/// How far the configuration editor has got.
+enum SetupStage {
+    Loading,
+    Editing(Editor),
+    /// The configuration can't be trusted, so only a new one can be started.
+    Unreadable,
+    NewerFormat,
+    NotBabawus,
+    /// The configuration couldn't be read, with what the system said.
+    Failed(String),
+}
+
+/// What the configuration editor says below its contents.
+enum SetupNotice {
+    Saved,
+    /// Already in words, because it may hold what the system said.
+    Error(String),
+}
+
+/// The configuration editor, from opening it until the poweruser goes back.
+struct SetupState {
+    /// The label of the medium.
+    label: String,
+    root: PathBuf,
+    format: Format,
+    hostname: String,
+    stage: SetupStage,
+    notice: Option<SetupNotice>,
+    /// The stick is being read or written off the main thread.
+    busy: bool,
+    /// Counts the editors opened, so that what an older one read is dropped.
+    generation: u64,
 }
 
 /// What the history or "What's backed up" screen is about. The texts are made again from it when
@@ -199,6 +239,11 @@ struct Window {
     /// Set while Babawus itself changes the format view's widgets, so that their signals are
     /// ignored.
     format_updating: Cell<bool>,
+    setup_page: SetupPage,
+    setup: RefCell<Option<SetupState>>,
+    setup_generation: Cell<u64>,
+    /// Set while Babawus itself changes the editor's widgets, so that their signals are ignored.
+    setup_updating: Cell<bool>,
     title: Label,
     advanced_marker: Label,
     menu: MenuButton,
@@ -287,6 +332,16 @@ pub fn show(app: &Application) {
     screens.add_named(&info_page.root, Some("info"));
     let format_page = FormatPage::new();
     screens.add_named(&format_page.root, Some("format"));
+    // The page passes what is pressed in its lists to the window, which only exists further
+    // down.
+    let setup_events: Rc<RefCell<Weak<Window>>> = Rc::new(RefCell::new(Weak::new()));
+    let events = setup_events.clone();
+    let setup_page = SetupPage::new(move |event| {
+        if let Some(window) = events.borrow().upgrade() {
+            window.setup_event(event);
+        }
+    });
+    screens.add_named(&setup_page.root, Some("setup"));
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -307,6 +362,10 @@ pub fn show(app: &Application) {
         format_page,
         format: RefCell::new(None),
         format_updating: Cell::new(false),
+        setup_page,
+        setup: RefCell::new(None),
+        setup_generation: Cell::new(0),
+        setup_updating: Cell::new(false),
         title,
         advanced_marker,
         menu,
@@ -327,6 +386,7 @@ pub fn show(app: &Application) {
         notice: RefCell::new(None),
         ejecting: RefCell::new(None),
     });
+    *setup_events.borrow_mut() = Rc::downgrade(&this_window);
     this_window.connect_signals();
     this_window.add_actions();
     this_window.set_texts();
@@ -540,6 +600,7 @@ impl Window {
             }
         });
         self.connect_format_signals();
+        self.connect_setup_signals();
         // Closing the window during a run asks first, like Cancel. Closing it straight away
         // would end the run without its end entry in the log.
         let weak = Rc::downgrade(self);
@@ -549,6 +610,11 @@ impl Window {
             };
             // Formatting can't be stopped, and closing would leave the medium half done.
             if window.formatting() {
+                return glib::Propagation::Stop;
+            }
+            // Leaving with unsaved changes asks first. See Issues.md item 84.
+            if window.setup_unsaved() {
+                window.ask_to_leave_setup(true);
                 return glib::Propagation::Stop;
             }
             let running = window
@@ -700,6 +766,7 @@ impl Window {
         self.show_backup();
         self.show_info();
         self.show_format();
+        self.show_setup();
     }
 
     /// udisks2 reported a change, or Babawus has just started: the list is read again, and each
@@ -921,7 +988,13 @@ impl Window {
             Action::ShowHistory => self.open_history(),
             Action::WhatsBackedUp => self.open_coverage(),
             Action::Prepare => self.open_format(),
-            Action::ChangeSetup => {}
+            Action::ChangeSetup => {
+                if let Some(medium) = self.selected_medium()
+                    && let Some(format) = medium.volume.format()
+                {
+                    self.open_setup(medium.volume.label, medium.root, format);
+                }
+            }
         }
     }
 
@@ -1042,6 +1115,453 @@ impl Window {
                 page.show_coverage(&info.label, &shown, language);
             }
         }
+    }
+
+    fn connect_setup_signals(self: &Rc<Self>) {
+        let page = &self.setup_page;
+        let weak = Rc::downgrade(self);
+        page.older_versions.connect_value_changed(move |spin| {
+            let Some(window) = weak.upgrade() else { return };
+            if window.setup_updating.get() {
+                return;
+            }
+            if let Some(setup) = window.setup.borrow_mut().as_mut()
+                && let SetupStage::Editing(editor) = &mut setup.stage
+            {
+                editor.set_older_versions(spin.value_as_int() as u32);
+                setup.notice = None;
+            }
+            window.show_setup();
+        });
+        let weak = Rc::downgrade(self);
+        page.save.connect_clicked(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.save_setup(None);
+            }
+        });
+        let weak = Rc::downgrade(self);
+        page.back.connect_clicked(move |_| {
+            let Some(window) = weak.upgrade() else { return };
+            if window.setup_unsaved() {
+                window.ask_to_leave_setup(false);
+            } else {
+                window.close_setup();
+            }
+        });
+        let weak = Rc::downgrade(self);
+        page.start_new.connect_clicked(move |_| {
+            let Some(window) = weak.upgrade() else { return };
+            let language = window.language.get();
+            let weak = Rc::downgrade(&window);
+            window.confirm(
+                Text::SetupStartNewQuestion.get(language),
+                Text::SetupStartNewDetail.get(language),
+                Text::SetupStartNew.get(language).trim_end_matches('…'),
+                move || {
+                    if let Some(window) = weak.upgrade() {
+                        window.start_new_setup();
+                    }
+                },
+            );
+        });
+        let weak = Rc::downgrade(self);
+        self.format_page.add.connect_clicked(move |_| {
+            let Some(window) = weak.upgrade() else { return };
+            let done = match window.format.borrow().as_ref().map(|format| &format.stage) {
+                Some(FormatStage::Done {
+                    label,
+                    root,
+                    format,
+                }) => Some((label.clone(), root.clone(), *format)),
+                _ => None,
+            };
+            if let Some((label, root, format)) = done {
+                window.close_format();
+                window.open_setup(label, root, format);
+            }
+        });
+    }
+
+    /// Asks `question`, with `detail`, and calls `confirmed` if the answer is `yes`.
+    fn confirm(&self, question: &str, detail: &str, yes: &str, confirmed: impl FnOnce() + 'static) {
+        let language = self.language.get();
+        let dialog = AlertDialog::builder()
+            .message(question)
+            .detail(detail)
+            .buttons([Text::Cancel.get(language), yes])
+            .cancel_button(0)
+            .default_button(0)
+            .modal(true)
+            .build();
+        dialog.choose(
+            Some(&self.window),
+            None::<&gio::Cancellable>,
+            move |answer| {
+                if answer == Ok(1) {
+                    confirmed();
+                }
+            },
+        );
+    }
+
+    fn setup_unsaved(&self) -> bool {
+        self.setup
+            .borrow()
+            .as_ref()
+            .is_some_and(|setup| match &setup.stage {
+                SetupStage::Editing(editor) => editor.unsaved(),
+                _ => false,
+            })
+    }
+
+    /// Asks whether to leave the editor without saving. `closing` closes the window too.
+    fn ask_to_leave_setup(self: &Rc<Self>, closing: bool) {
+        let language = self.language.get();
+        let dialog = AlertDialog::builder()
+            .message(Text::SetupDiscardQuestion.get(language))
+            .detail(Text::SetupDiscardDetail.get(language))
+            .buttons([
+                Text::SetupKeepEditing.get(language),
+                Text::SetupDiscard.get(language),
+            ])
+            .cancel_button(0)
+            .default_button(0)
+            .modal(true)
+            .build();
+        let weak = Rc::downgrade(self);
+        dialog.choose(
+            Some(&self.window),
+            None::<&gio::Cancellable>,
+            move |answer| {
+                let Some(window) = weak.upgrade() else { return };
+                if answer != Ok(1) {
+                    return;
+                }
+                window.close_setup();
+                if closing {
+                    window.window.close();
+                }
+            },
+        );
+    }
+
+    /// Opens the configuration editor for the medium labelled `label` at `root`, and reads its
+    /// configuration off the main thread.
+    fn open_setup(self: &Rc<Self>, label: String, root: PathBuf, format: Format) {
+        if self.setup.borrow().is_some() {
+            return;
+        }
+        let generation = self.setup_generation.get() + 1;
+        self.setup_generation.set(generation);
+        *self.notice.borrow_mut() = None;
+        // Only shown in the configuration, so a missing hostname stops nothing.
+        let hostname = this_hostname(&RealFs).unwrap_or_default();
+        *self.setup.borrow_mut() = Some(SetupState {
+            label,
+            root: root.clone(),
+            format,
+            hostname,
+            stage: SetupStage::Loading,
+            notice: None,
+            busy: true,
+            generation,
+        });
+        self.screens.set_visible_child_name("setup");
+        self.show_setup();
+        let reading = gio::spawn_blocking(move || {
+            let medium = setup_screen::Medium {
+                files: &RealFs,
+                root: &root,
+                format,
+            };
+            match Editor::open(&medium) {
+                Ok(Opened::Editing(editor)) => SetupStage::Editing(editor),
+                Ok(Opened::Unreadable) => SetupStage::Unreadable,
+                Ok(Opened::NewerFormat) => SetupStage::NewerFormat,
+                Ok(Opened::NotBabawus) => SetupStage::NotBabawus,
+                Err(error) => SetupStage::Failed(error.to_string()),
+            }
+        });
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            // Reading can only fail by panicking, which has been reported already.
+            let stage = reading
+                .await
+                .unwrap_or_else(|_| SetupStage::Failed(String::new()));
+            if let Some(window) = weak.upgrade() {
+                window.setup_read(generation, stage, None);
+            }
+        });
+    }
+
+    /// Reading or writing for the editor numbered `generation` has finished. It is dropped if
+    /// the poweruser has gone back since.
+    fn setup_read(&self, generation: u64, stage: SetupStage, notice: Option<SetupNotice>) {
+        if let Some(setup) = self.setup.borrow_mut().as_mut()
+            && setup.generation == generation
+        {
+            setup.stage = stage;
+            setup.notice = notice;
+            setup.busy = false;
+        }
+        self.show_setup();
+    }
+
+    /// Replaces a configuration that can't be trusted with a new one, once saved.
+    fn start_new_setup(self: &Rc<Self>) {
+        let (root, format, generation) = {
+            let mut setup = self.setup.borrow_mut();
+            let Some(setup) = setup.as_mut() else { return };
+            setup.busy = true;
+            (setup.root.clone(), setup.format, setup.generation)
+        };
+        self.show_setup();
+        let starting = gio::spawn_blocking(move || {
+            let medium = setup_screen::Medium {
+                files: &RealFs,
+                root: &root,
+                format,
+            };
+            match Editor::start_new(&medium) {
+                Ok(editor) => SetupStage::Editing(editor),
+                Err(error) => SetupStage::Failed(error.to_string()),
+            }
+        });
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            let stage = starting
+                .await
+                .unwrap_or_else(|_| SetupStage::Failed(String::new()));
+            if let Some(window) = weak.upgrade() {
+                window.setup_read(generation, stage, None);
+            }
+        });
+    }
+
+    /// Something was pressed in the editor's lists.
+    fn setup_event(self: &Rc<Self>, event: SetupEvent) {
+        let language = self.language.get();
+        match event {
+            SetupEvent::Here(HereAction::Add) => {
+                self.change_setup(|editor, here| editor.add_here(here).is_ok());
+            }
+            SetupEvent::Here(HereAction::LinkComputer(folder)) => {
+                let question =
+                    Text::SetupLinkComputerQuestion.fill(language, &[("folder", &folder)]);
+                let detail = Text::SetupLinkComputerDetail.fill(language, &[("folder", &folder)]);
+                let weak = Rc::downgrade(self);
+                self.confirm(
+                    &question,
+                    &detail,
+                    Text::SetupLinkConfirm.get(language),
+                    move || {
+                        if let Some(window) = weak.upgrade() {
+                            window.change_setup(|editor, here| {
+                                editor.link_computer(&folder, here).is_ok()
+                            });
+                        }
+                    },
+                );
+            }
+            SetupEvent::Here(HereAction::LinkAccount(old)) => {
+                let question = Text::SetupLinkAccountQuestion.fill(language, &[("old", &old)]);
+                let detail = Text::SetupLinkAccountDetail
+                    .fill(language, &[("old", &old), ("user", &self.username)]);
+                let weak = Rc::downgrade(self);
+                self.confirm(
+                    &question,
+                    &detail,
+                    Text::SetupLinkConfirm.get(language),
+                    move || {
+                        if let Some(window) = weak.upgrade() {
+                            window.save_setup(Some(old));
+                        }
+                    },
+                );
+            }
+            SetupEvent::RemoveComputer { id, folder } => {
+                let question =
+                    Text::SetupRemoveComputerQuestion.fill(language, &[("folder", &folder)]);
+                let weak = Rc::downgrade(self);
+                self.confirm(
+                    &question,
+                    Text::SetupRemoveDetail.get(language),
+                    Text::SetupRemoveConfirm.get(language),
+                    move || {
+                        if let Some(window) = weak.upgrade() {
+                            window.change_setup(|editor, _| editor.remove_computer(&id).is_ok());
+                        }
+                    },
+                );
+            }
+            SetupEvent::RemoveAccount {
+                id,
+                folder,
+                username,
+            } => {
+                let question = Text::SetupRemoveAccountQuestion
+                    .fill(language, &[("user", &username), ("folder", &folder)]);
+                let weak = Rc::downgrade(self);
+                self.confirm(
+                    &question,
+                    Text::SetupRemoveDetail.get(language),
+                    Text::SetupRemoveConfirm.get(language),
+                    move || {
+                        if let Some(window) = weak.upgrade() {
+                            window.change_setup(|editor, _| {
+                                editor.remove_account(&id, &username).is_ok()
+                            });
+                        }
+                    },
+                );
+            }
+        }
+    }
+
+    /// Makes a change that waits for Save. `change` says whether it could be made.
+    fn change_setup(&self, change: impl FnOnce(&mut Editor, &Here) -> bool) {
+        {
+            let mut setup = self.setup.borrow_mut();
+            let Some(setup) = setup.as_mut() else { return };
+            let SetupStage::Editing(editor) = &mut setup.stage else {
+                return;
+            };
+            let here = Here {
+                system: &RealFs,
+                this: &self.this,
+                username: &self.username,
+                hostname: &setup.hostname,
+            };
+            let changed = change(editor, &here);
+            let text = Text::SetupInvalid.get(self.language.get()).to_owned();
+            setup.notice = (!changed).then_some(SetupNotice::Error(text));
+        }
+        self.show_setup();
+    }
+
+    /// Saves the configuration off the main thread. With `link_to`, this account is first linked
+    /// to its earlier name, which saves too.
+    fn save_setup(self: &Rc<Self>, link_to: Option<String>) {
+        let (mut editor, root, format, hostname, generation) = {
+            let mut setup = self.setup.borrow_mut();
+            let Some(setup) = setup.as_mut() else { return };
+            let SetupStage::Editing(editor) = &setup.stage else {
+                return;
+            };
+            if setup.busy {
+                return;
+            }
+            setup.busy = true;
+            setup.notice = None;
+            (
+                editor.clone(),
+                setup.root.clone(),
+                setup.format,
+                setup.hostname.clone(),
+                setup.generation,
+            )
+        };
+        self.show_setup();
+        let this = self.this.clone();
+        let username = self.username.clone();
+        let saving = gio::spawn_blocking(move || {
+            let medium = setup_screen::Medium {
+                files: &RealFs,
+                root: &root,
+                format,
+            };
+            let here = Here {
+                system: &RealFs,
+                this: &this,
+                username: &username,
+                hostname: &hostname,
+            };
+            let result = match &link_to {
+                Some(old) => editor.link_account(&medium, &here, old),
+                None => editor.save(&medium, &here),
+            };
+            (editor, result)
+        });
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            let Some(window) = weak.upgrade() else { return };
+            let language = window.language.get();
+            let Ok((editor, result)) = saving.await else {
+                window.setup_failed(generation, String::new());
+                return;
+            };
+            let notice = match result {
+                Ok(()) => SetupNotice::Saved,
+                Err(error) => {
+                    if let SaveError::Io(error) = &error {
+                        eprintln!("Babawus could not save the setup: {error}");
+                    }
+                    SetupNotice::Error(save_error_text(&error, language))
+                }
+            };
+            window.setup_read(generation, SetupStage::Editing(editor), Some(notice));
+        });
+    }
+
+    fn setup_failed(&self, generation: u64, error: String) {
+        let notice = SetupNotice::Error(error.clone());
+        self.setup_read(generation, SetupStage::Failed(error), Some(notice));
+    }
+
+    fn show_setup(&self) {
+        let language = self.language.get();
+        let setup = self.setup.borrow();
+        let Some(setup) = setup.as_ref() else {
+            return;
+        };
+        let notice = setup.notice.as_ref().map(|notice| match notice {
+            SetupNotice::Saved => Text::SetupSaved.get(language).to_owned(),
+            SetupNotice::Error(text) => text.clone(),
+        });
+        let page = &self.setup_page;
+        let notice = notice.as_deref();
+        let message = |text: Text, start_new| {
+            page.show_instead(
+                &setup.label,
+                Instead::Message(text.get(language), start_new),
+                notice,
+                language,
+            );
+        };
+        match &setup.stage {
+            SetupStage::Loading => {
+                page.show_instead(&setup.label, Instead::Loading, notice, language);
+            }
+            SetupStage::Unreadable => message(Text::SetupUnreadable, !setup.busy),
+            SetupStage::NewerFormat => message(Text::SetupNewerFormat, false),
+            SetupStage::NotBabawus => message(Text::SetupNotBabawus, false),
+            SetupStage::Failed(error) => {
+                let text = Text::SetupSaveFailed.fill(language, &[("error", error)]);
+                page.show_instead(&setup.label, Instead::Message(&text, false), None, language);
+            }
+            SetupStage::Editing(editor) => {
+                let here = Here {
+                    system: &RealFs,
+                    this: &self.this,
+                    username: &self.username,
+                    hostname: &setup.hostname,
+                };
+                let shown = overview(editor, &here, language);
+                self.setup_updating.set(true);
+                page.show_overview(&setup.label, &shown, notice, setup.busy, language);
+                self.setup_updating.set(false);
+            }
+        }
+    }
+
+    /// Leaves the editor, dropping any unsaved changes. The list is checked again, because the
+    /// setup may have changed.
+    fn close_setup(self: &Rc<Self>) {
+        if self.setup.take().is_none() {
+            return;
+        }
+        self.screens.set_visible_child_name("start");
+        self.media_changed();
     }
 
     fn connect_format_signals(self: &Rc<Self>) {
@@ -1240,7 +1760,11 @@ impl Window {
             let Some(udisks) = &window.udisks else { return };
             let result = udisks.format(&drive, file_system, &label).await;
             let stage = match result {
-                Ok(root) => FormatStage::Done { label, root },
+                Ok(root) => FormatStage::Done {
+                    label,
+                    root,
+                    format: file_system,
+                },
                 Err(error) => {
                     eprintln!("Babawus could not format {drive}: {error:?}");
                     let failure = Failure::of(&error);

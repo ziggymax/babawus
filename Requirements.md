@@ -153,6 +153,10 @@ As a poweruser I want Babawus to provide me with the means of easily creating an
 
 That way I can easily create or update a configuration for a USB medium.
 
+"Change setup…" opens the overview, which fills the window. It shows the number of older versions to keep, this computer and account, and every computer and account on the medium, each with how many files or folders it has chosen. If this computer isn't in the configuration, the overview offers to add it, with the suggested folder, and the account with it. If other computers are there, it also offers to link it to one of them. If the computer is there but this account isn't, it offers to add the account, or to link it to another account on this computer whose user name it had before. Every entry, this one or another, can be removed. "Choose what to back up…" opens the tree for this account (see Issues.md item 82). Changes wait for "Save", which takes the medium's lock, writes the file and releases the lock, and says "Saved." Leaving or closing the window with unsaved changes asks first. Removing an entry and linking a computer ask for confirmation, and wait for "Save". Linking an account also asks, and saves at once, because it renames the account's folder and its name in the log. If the medium's lock is live, saving says whose backup is running and changes nothing.
+
+A damaged configuration that can be parsed opens with a warning to check it and save it, and "Save" works without a change. One that can't be parsed shows "Start a new setup…" instead, which asks first, and then opens an empty configuration that replaces the old file when saved. A configuration that needs a newer Babawus can't be changed. The format view's "Add this computer and account…" opens the overview of the new medium.
+
 ### Maintain a log
 
 As a poweruser I want Babawus to maintain a log of the runs performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text (see "Format of the log"). All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each run has these entries:
