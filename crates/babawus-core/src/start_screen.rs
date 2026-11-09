@@ -175,9 +175,8 @@ impl Action {
 
     /// Whether the screen this action leads to has been built yet.
     fn available(self) -> bool {
-        // TODO(T-017): Prepare a medium.
         // TODO(T-018): Change the setup.
-        !matches!(self, Self::Prepare | Self::ChangeSetup)
+        self != Self::ChangeSetup
     }
 }
 
@@ -211,7 +210,8 @@ pub struct Shown<'a> {
     pub medium: &'a Medium,
     /// Nothing while the medium is being checked.
     pub checked: Option<&'a Checked>,
-    /// Babawus may format its drive. See "Formatting a medium".
+    /// Babawus may format at least one drive, so "Prepare…" can open the format view, which
+    /// lists them all. See "Formatting a medium" and Issues.md item 78.
     pub formattable: bool,
 }
 

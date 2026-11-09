@@ -216,3 +216,14 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-09):** Each fills the window, like the backup screen, with "Back" to return to the start screen.
 77. **What "What's backed up" lists for my account.**
     - **Decided (2026-11-09):** The selected files and folders, the excluded folders and the excluded name patterns. Each selection is looked up on this computer when the screen opens, and one that is missing gets an amber "!" and says so. So does one that backs up nothing for another reason: excluded, outside the home folder, a link, or unreadable.
+
+## Decisions on the format view
+
+78. **How the poweruser reaches the format view.** The media list only shows mounted file systems, so a blank or unmounted stick never appears in it. But the format view must list drives whether they are mounted or not.
+    - **Decided (2026-11-09):** "Prepare…" opens a full-window view that lists every drive Babawus may format, mounted or not. The selected medium's drive is preselected if it may be formatted. While Advanced is on, "Prepare…" is shown whenever at least one drive may be formatted. That includes the empty page, so a blank stick can be reached even when the list has nothing to select.
+79. **What the explicit "yes, I really want to do this" looks like.**
+    - **Decided (2026-11-09):** The warning says what will be erased: the drive's name and size, every partition on it, and any Babawus backups on it. A checkbox, "I understand that everything on this stick will be erased", enables a red "Erase and format" button.
+80. **How exFAT and Ext4 are offered.**
+    - **Decided (2026-11-09):** Two choices, each with a line in plain words: exFAT also works on Windows and Mac, and Ext4 works on Linux only, but allows longer names and copes better with being pulled out. exFAT is preselected.
+81. **What follows a successful format.** Adding this computer and account belongs to the configuration editor (T-018), which isn't built yet.
+    - **Decided (2026-11-09):** A done screen says the stick is ready, and that it must now be set up for each computer and account. It has "Add this computer and account…", greyed out as "Not yet available" until T-018, and "Back", which returns to the start screen with the new stick selected.
