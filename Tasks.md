@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-033 is waiting for review. After it, the first version's tasks are done, apart from T-032, the review of the look, which is planned for later. T-032, a review of the look of the user interface, is planned for later.
+T-032, the review of the look, is in progress, in four steps (Issues.md item 112). Step 1, the list of items in `ui-review/UiReview.md`, is waiting for review.
 
 ## First version: logic
 
@@ -34,7 +34,7 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-032 | Review the look of the user interface as a whole. Known so far: the stick pictures and the Babawus logo should be larger. Also look at the tree in "Choose what to back up…", which scrolls inside a page that scrolls too, and at the start screen's action buttons, which stretch to fill their columns when they wrap | Todo | User, 2026-11-09; pull requests 37 and 38 |
+| T-032 | Review the look of the user interface as a whole. Known so far: the stick pictures and the Babawus logo should be larger. Also look at the tree in "Choose what to back up…", which scrolls inside a page that scrolls too, and at the start screen's action buttons, which stretch to fill their columns when they wrap | In progress | User, 2026-11-09; pull requests 37 and 38 |
 
 ## First version: release
 
