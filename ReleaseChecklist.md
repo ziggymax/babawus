@@ -22,7 +22,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 ## Installing (T-025)
 
-- [ ] Double-click the `.deb` in the file manager, and install it. → It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
+- [ ] Double-click the `.deb` in the file manager. → The installer shows "Basic Backup With Usb Storage" (it capitalises every word), and below it three short paragraphs about Babawus. Install it. → It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
 - [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see Issues.md item 101).
 - [ ] Start it from the menu. → A window titled "Backup" opens. With no stick plugged in, it says "Plug in your backup stick".
 - [ ] Start it again from the menu while it is open. → No second window: the open one comes to the front.
