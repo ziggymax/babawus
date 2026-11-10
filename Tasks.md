@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-036.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-042.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-032, the review of the look, is in progress, in four steps (Issues.md item 112). Step 2, the screenshots, is waiting for review; step 3 goes through the items one by one.
+T-032, the review of the look, is waiting for review: every item in `ui-review/UiReview.md` has a decision. Step 4, the changes, is tasks T-037 to T-041 (screen by screen), with T-035 and T-036. T-037, the window's size, comes first, because the other screens are checked at the new size.
 
 ## First version: logic
 
@@ -34,8 +34,13 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-032 | Review the look of the user interface as a whole. Known so far: the stick pictures and the Babawus logo should be larger. Also look at the tree in "Choose what to back up…", which scrolls inside a page that scrolls too, and at the start screen's action buttons, which stretch to fill their columns when they wrap | In progress | User, 2026-11-09; pull requests 37 and 38 |
+| T-037 | Open the window at 1024 × 768, and start every page that scrolls at the top whenever it opens or changes part. Check each screen at that size for scrolling, and update Requirements.md | Todo | Issues: 118; `ui-review/UiReview.md` G03, F01, F06, F07 |
+| T-038 | The start screen as G01 says: a larger stick picture and smaller label in the list; in the details the label, the stick's details, a thin line, then the status and every message in one style; a slightly larger logo; buttons at their natural width, with the poweruser's on a row of their own and Eject last after a gap; the ejected notice cleared when a stick is plugged in; and a text for a stick that is plugged in but not opened | Todo | `ui-review/UiReview.md` G01, S02, S06, S14–S17 |
+| T-039 | The verdict screen as G02 says: three text styles, no repeated reason line under "Some files were skipped", and "Run the backup again when it suits you." after the user stopped a backup | Todo | `ui-review/UiReview.md` G02, V03, V05 |
+| T-040 | Setup of this stick: "Add this computer and your account", with the folder name in the line above; the unreadable-setup text in the normal style; and entries called "backup profiles", with their names always marked as names ("the backup profile called “laptop”"), with the same words on the page and in the questions. Make the term official: "Backup profile" in the glossary of Requirements.md, and in Concept.md | Todo | Issues: 119; `ui-review/UiReview.md` C01, C06, C10 |
+| T-041 | Choose what to back up: the heading "Choose what to back up for …"; only the tree scrolls, with the name patterns in a section that starts closed; open folders stay open when the language changes; a partly ticked box for a folder with something left out; and a pattern's message cleared when the field changes. Also About without the name selected, and "already open" as a proper message dialog | Todo | `ui-review/UiReview.md` T01, T02, T04, W05, W06 |
 | T-035 | Show "Ext4 asks for your password while formatting." as soon as Ext4 is chosen. The format page only refreshes when exFAT is toggled, and at that moment Ext4 isn't active yet, so the line only appears after something else changes | Todo | Pull request 49; UiReview.md item F03 |
+| T-036 | Remove "Details for your poweruser" and Copy from the verdict screen, and make the log enough for diagnosing on its own: Babawus's version and the hostname at each start, and every skipped file and error. Update Requirements.md, the checklist's Copy step, and say in the README where the log is | Todo | Issues: 117 |
 
 ## First version: release
 
@@ -87,3 +92,4 @@ Nothing is waiting for a decision.
 | T-034 | Wait until udisks2 has read the label before checking it, so that `exfat_is_reported` no longer fails now and then | [#45](https://github.com/ziggymax/babawus/pull/45) |
 | T-024 | Test formatting from an account without administrator rights, for the first time. Ext4 can now only be chosen by an administrator, and a stick open for another account says so | [#46](https://github.com/ziggymax/babawus/pull/46) |
 | T-033 | Give the package a longer description, for the installer to show | [#47](https://github.com/ziggymax/babawus/pull/47) |
+| T-032 | Review the look of the user interface as a whole: every screen listed, screenshotted and decided in `ui-review/UiReview.md`. The changes are tasks T-035 to T-041 | [#50](https://github.com/ziggymax/babawus/pull/50) |
