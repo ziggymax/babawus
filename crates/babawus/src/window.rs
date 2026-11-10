@@ -788,7 +788,7 @@ impl Window {
 
     fn show_about(&self) {
         let language = self.language.get();
-        AboutDialog::builder()
+        let dialog = AboutDialog::builder()
             .transient_for(&self.window)
             .modal(true)
             .program_name("Babawus")
@@ -796,8 +796,11 @@ impl Window {
             .comments(Text::AboutComments.get(language))
             .logo(&icons::logo())
             .website("https://github.com/ziggymax/babawus")
-            .build()
-            .present();
+            .build();
+        // GTK gives the first selectable text the focus, which selects all of it: the name.
+        // Nothing in the dialog needs copying (`ui-review/UiReview.md` W05).
+        unselectable(dialog.upcast_ref());
+        dialog.present();
     }
 
     /// Sets every text again, for example after the language changed.
@@ -2258,6 +2261,18 @@ impl Window {
             .iter()
             .find(|(medium, _)| &medium.volume.object_path == selected)
             .map(|(medium, _)| medium.clone())
+    }
+}
+
+/// Makes every label inside `widget` unselectable.
+fn unselectable(widget: &gtk4::Widget) {
+    if let Some(label) = widget.downcast_ref::<Label>() {
+        label.set_selectable(false);
+    }
+    let mut child = widget.first_child();
+    while let Some(current) = child {
+        unselectable(&current);
+        child = current.next_sibling();
     }
 }
 

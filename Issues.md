@@ -358,3 +358,8 @@ Comparing the requirements with what the configuration and log have to do turned
         - The button that adds this computer says "Add this computer and your account", and the line above it gives the folder name it will be added as.
         - Linking a computer asks "Link this computer to the computer called “laptop”?"; linking an account asks "Link your account to the backup profile for “anna”?". Removing asks "Remove the computer called “laptop” and its backup profiles from the setup?" or "Remove the backup profile for “anna” on “laptop” from the setup?".
         - The glossary in Requirements.md gets "Backup profile", and Concept.md says what it is.
+
+## Decisions on choosing what to back up (T-041)
+
+123. **When a folder's tick box is partly ticked.** `ui-review/UiReview.md` T02 decided that a ticked folder with something left out inside it shows a partly ticked box.
+    - **Decided (2026-11-10):** A folder's box is partly ticked when the folder is backed up but a file or folder inside it has been unticked by hand, or when it isn't backed up but a file or folder inside it has been ticked. What a name pattern leaves out doesn't count, or almost every folder would look partly ticked. Clicking the box does what it did before: it ticks or unticks the folder.

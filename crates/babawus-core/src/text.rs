@@ -47,7 +47,9 @@ texts! {
     StickNotOpenedAdvice: "Pull it out and plug it back in.", "Zieh ihn ab und steck ihn wieder ein.";
     StickCantBeUsed: "The stick that is plugged in can't be used yet", "Der eingesteckte Stick kann noch nicht benutzt werden";
     StickCantBeUsedAdvice: "Your poweruser can prepare it.", "Dein Betreuer kann ihn vorbereiten.";
-    AlreadyOpen: "Babawus is already open for {user} on this computer", "Babawus ist auf diesem Computer schon für {user} geöffnet";
+    AlreadyOpenDetail: "Ask them to close it, or switch to their account.", "Bitte die Person, Babawus zu schließen, oder wechsle zu ihrem Konto.";
+    AlreadyOpenOk: "OK", "OK";
+    AlreadyOpen: "Babawus is already open for {user} on this computer.", "Babawus ist auf diesem Computer schon für {user} geöffnet.";
     NoUdisks: "Babawus can't see the USB sticks, because the udisks2 service isn't running. Contact your poweruser.", "Babawus kann die USB-Sticks nicht sehen, weil der Dienst udisks2 nicht läuft. Wende dich an deinen Betreuer.";
 
     Checking: "Checking…", "Wird geprüft …";
@@ -288,7 +290,7 @@ texts! {
     SetupBothFolders: "Both your earlier and your new name have a folder on the stick, so Babawus can't link them. Your poweruser has to sort this out by hand.", "Sowohl dein früherer als auch dein neuer Name haben einen Ordner auf dem Stick, deshalb kann Babawus sie nicht verknüpfen. Dein Betreuer muss das von Hand klären.";
     SetupSaveFailed: "The setup couldn't be saved: {error}", "Die Einrichtung konnte nicht gespeichert werden: {error}";
 
-    ChooseHeading: "What's backed up for {user}", "Was für {user} gesichert wird";
+    ChooseHeading: "Choose what to back up for {user}", "Auswählen, was für {user} gesichert wird";
     ChooseIntro: "Tick the files and folders to back up. A ticked folder is backed up with everything in it. To leave out a folder inside it, untick that folder.", "Setz einen Haken bei den Dateien und Ordnern, die gesichert werden sollen. Ein Ordner mit Haken wird mit allem darin gesichert. Um einen Ordner darin auszulassen, entferne seinen Haken.";
     ChooseShowHidden: "Show hidden files", "Versteckte Dateien anzeigen";
     ChooseNoteLeftOut: "Left out", "Ausgelassen";
@@ -298,7 +300,7 @@ texts! {
     ChooseNoteLink: "A link, which Babawus doesn't follow", "Eine Verknüpfung, der Babawus nicht folgt";
     ChooseNoteNotText: "Its name isn't valid text, so it can't be chosen on its own", "Sein Name ist kein gültiger Text, deshalb kann es nicht einzeln ausgewählt werden";
     ChooseUnreadable: "This folder can't be read.", "Dieser Ordner kann nicht gelesen werden.";
-    ChoosePatterns: "Leave out anything named:", "Alles mit diesem Namen auslassen:";
+    ChoosePatternsSection: "Leave out by name", "Nach Namen auslassen";
     ChoosePatternsDetail: "In any folder. * stands for any characters, and ? for one character.", "In jedem Ordner. * steht für beliebige Zeichen und ? für ein einzelnes Zeichen.";
     ChoosePatternAdd: "Add", "Hinzufügen";
     ChoosePatternRemove: "Remove", "Entfernen";
