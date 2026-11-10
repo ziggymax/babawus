@@ -256,10 +256,12 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 - **GTK:** Mint 22.3 has GTK 4.14.5, so the `gtk4` crate uses the `v4_14` feature. Don't raise it above the supported platform.
 - **Build times:** about 45 seconds for a first debug build and about a minute for a release build.
 - **Disk use:** `target/` reaches 1.1 GB even for the skeleton.
-- **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace. The package has been inspected, but not installed yet.
+- **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace. Installing, updating and uninstalling it were first run on 2026-11-10 (T-025).
 - **Test images:** these go in the system's temporary folder, as `babawus-medium-*`, so that the desktop ignores them (see "Cinnamon and loop devices").
 
 ### System quirks
+
+- **Restarting Cinnamon over SSH:** `cinnamon --replace`, run from an SSH session, leaves Cinnamon running in that session. Afterwards, popovers didn't show on the first try, new windows opened behind others, and Captain's "Install Package" did nothing. Logging out and in again put it right. Restart Cinnamon at the computer instead, or log out.
 
 - **GUI runs over SSH have no session bus:** a second start then can't find the first, so it shows "Babawus is already open" instead of raising the window. To test that, run both inside `dbus-run-session`.
 - **Package flags:** after the original setup, `build-essential`, `g++` and `g++-x86-64-linux-gnu` were installed but marked for removal (`ri` in `dpkg -l`). The cause wasn't found. If it happens again, run `printf 'build-essential install\ng++ install\ng++-x86-64-linux-gnu install\n' | sudo dpkg --set-selections`.

@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-033.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-034.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-021 is waiting for review. Next, the checklist's parts for T-022, T-024 and T-025 are run for the first time. T-032, a review of the look of the user interface, is planned for later.
+T-025 is waiting for review. Next, the checklist's parts for T-022 and T-024 are run for the first time. T-032, a review of the look of the user interface, is planned for later.
 
 ## First version: logic
 
@@ -42,7 +42,7 @@ Everything here is done.
 | --- | --- | --- | --- |
 | T-022 | Pull a real stick during a copy, and check that its errors count as "medium gone": the checklist's "Pulling out a stick", for the first time | Todo | Pull request 14; Issues: 96 |
 | T-024 | Test formatting from an account without administrator rights: the checklist's step for it, for the first time | Todo | Issues: 38, 96 |
-| T-025 | Install, update and uninstall the `.deb` for real (the checklist's "Installing", "Updating" and "Uninstalling", for the first time), and write the uninstall notes | Todo | Requirements: "Packaging"; Issues: 96 |
+| T-033 | Give the package a longer description, for the installer to show. Mint's installer Captain shows only the one-line summary, title-cased as "Basic Backup With Usb Storage", with nothing below it | Todo | Pull request 44 |
 
 ## Needs a decision
 
@@ -85,3 +85,4 @@ Nothing is waiting for a decision.
 | T-020 | Translations: the German texts in the catalogue | [#38](https://github.com/ziggymax/babawus/pull/38) |
 | T-030 | "Last backup" shows when the last backup finished, and counts calendar days | [#38](https://github.com/ziggymax/babawus/pull/38) |
 | T-021 | Write the manual release checklist | [#43](https://github.com/ziggymax/babawus/pull/43) |
+| T-025 | Install, update and uninstall the `.deb` for real, for the first time, and write the uninstall notes. The menu icon now names its file by full path | [#44](https://github.com/ziggymax/babawus/pull/44) |

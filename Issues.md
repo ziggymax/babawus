@@ -272,3 +272,16 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-09):** Each step says what to do and what should be seen, so that anyone can run it, not only whoever wrote Babawus.
 96. **How the checklist relates to T-022, T-024 and T-025.**
     - **Decided (2026-11-09):** The checklist has steps for pulling out a stick mid-copy, formatting without administrator rights, and installing, updating and uninstalling the package. T-021 writes the checklist only. The other three tasks stay open as running their part for the first time and fixing what it finds, because each needs someone at the computer.
+
+## Decisions on installing (T-025)
+
+97. **Which icon the menu entry uses.** The package shipped a placeholder icon of a stick with an arrow, but the checklist expects the Babawus elephant.
+    - **Decided (2026-11-10):** The elephant logo, `assets/BabawusLogo-plain.svg`, the same one the app shows inside its window. The placeholder goes.
+98. **Where the uninstall notes go.**
+    - **Decided (2026-11-10):** In an "Uninstalling" section of `README.md`. They are not shipped in the package.
+99. **How the package is installed in the checklist's first run.**
+    - **Decided (2026-11-10):** By double-clicking the `.deb` at the computer and entering the password, as the checklist says, so that the path a poweruser takes is the one tested.
+100. **How the first run of the Installing, Updating and Uninstalling steps is recorded.** Item 94 calls for one issue per release, but this run is not a release.
+    - **Decided (2026-11-10):** In the description of the pull request for T-025. The "Release 0.1.0 checklist" issue is kept for the release itself.
+101. **Why the menu entry showed a gear instead of the elephant.** Installed by double-clicking, with Mint's package installer Captain, the "Backup" entry in Cinnamon's menu showed a generic gear until the next login or a restart of Cinnamon. It happened on both installs that way, but on none of five installs with `apt` over SSH. The cause wasn't found: Cinnamon finds the icon by name afterwards, but its menu keeps the first miss for the rest of the session.
+    - **Decided (2026-11-10):** The desktop entry names the icon file by its full path, `/usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg`, instead of by the icon name, so that the menu loads the file without asking the icon theme. Tested through Captain against a package that used the icon name: that one showed the gear, and the full path showed the elephant. The cost, that an icon theme can't replace the icon, doesn't matter for Babawus.

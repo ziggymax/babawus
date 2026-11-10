@@ -22,3 +22,12 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 | The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](ReleaseChecklist.md) |
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Build the `.deb` package | `cargo deb -p babawus` |
+
+## Installing and uninstalling
+
+Install Babawus by double-clicking the `.deb` package and choosing "Install Package". Install a newer version the same way: it replaces the old one, and keeps the chosen language and everything on the sticks.
+
+To uninstall Babawus, run `sudo apt remove babawus`, or remove it in the Software Manager. This removes the program and its "Backup" entry in the menu, and nothing else:
+
+- **Nothing on any stick is changed.** Backups, their history and the stick's configuration stay as they are, and a later install of Babawus finds them again.
+- **The settings file stays behind.** Babawus keeps the chosen language in `~/.config/babawus/settings.toml`, in the home folder of each user who chose one. Uninstalling can't reach into home folders, so delete that file by hand if it is no longer wanted: `rm -r ~/.config/babawus`.
