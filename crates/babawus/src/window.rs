@@ -358,8 +358,9 @@ pub fn show(app: &Application) {
 
     let window = ApplicationWindow::builder()
         .application(app)
-        .default_width(820)
-        .default_height(500)
+        // Opens at 1024 × 768 with its title bar, assuming Full HD screens (Issues.md item 118).
+        .default_width(1024)
+        .default_height(768)
         .titlebar(&header)
         .child(&screens)
         .build();
@@ -1095,7 +1096,7 @@ impl Window {
             view,
             generation,
         });
-        self.screens.set_visible_child_name("info");
+        self.show_screen("info");
         self.show_info();
         generation
     }
@@ -1312,7 +1313,7 @@ impl Window {
             busy: true,
             generation,
         });
-        self.screens.set_visible_child_name("setup");
+        self.show_screen("setup");
         self.show_setup();
         let reading = gio::spawn_blocking(move || {
             let medium = setup_screen::Medium {
@@ -1621,7 +1622,7 @@ impl Window {
         self.choosing.set(true);
         self.choose_page
             .open(&self.username, choice, free, self.language.get());
-        self.screens.set_visible_child_name("choose");
+        self.show_screen("choose");
     }
 
     /// Leaves "Choose what to back up…". With `keep`, the choice goes into the editor, and waits
@@ -1647,7 +1648,7 @@ impl Window {
             }
         }
         self.choose_page.close();
-        self.screens.set_visible_child_name("setup");
+        self.show_screen("setup");
         self.show_setup();
     }
 
@@ -1660,7 +1661,7 @@ impl Window {
         if self.setup.take().is_none() {
             return;
         }
-        self.screens.set_visible_child_name("start");
+        self.show_screen("start");
         self.media_changed();
     }
 
@@ -1747,7 +1748,7 @@ impl Window {
         page.label.set_text("");
         self.format_updating.set(false);
         self.update_format_drives_selecting(drive.as_deref());
-        self.screens.set_visible_child_name("format");
+        self.show_screen("format");
     }
 
     /// Lists the drives that may be formatted again, keeping the chosen one if it is still
@@ -1928,13 +1929,21 @@ impl Window {
                 *self.selected.borrow_mut() = selected;
             }
         }
-        self.screens.set_visible_child_name("start");
+        self.show_screen("start");
         self.media_changed();
+    }
+
+    /// Shows the screen called `name`, starting at the top (Issues.md item 118).
+    fn show_screen(&self, name: &str) {
+        if let Some(screen) = self.screens.child_by_name(name) {
+            crate::scroll::to_top(&screen);
+        }
+        self.screens.set_visible_child_name(name);
     }
 
     fn close_info(&self) {
         *self.info.borrow_mut() = None;
-        self.screens.set_visible_child_name("start");
+        self.show_screen("start");
     }
 
     fn eject(self: &Rc<Self>) {
@@ -2027,7 +2036,7 @@ impl Window {
             close_when_done: false,
             question: gio::Cancellable::new(),
         });
-        self.screens.set_visible_child_name("backup");
+        self.show_screen("backup");
         self.show_backup();
         let weak = Rc::downgrade(self);
         glib::timeout_add_local(BACKUP_UPDATES, move || {
@@ -2174,7 +2183,7 @@ impl Window {
             return;
         }
         *self.backup.borrow_mut() = None;
-        self.screens.set_visible_child_name("start");
+        self.show_screen("start");
         self.media_changed();
     }
 

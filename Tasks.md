@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-032, the review of the look, is waiting for review: every item in `ui-review/UiReview.md` has a decision. Step 4, the changes, is tasks T-037 to T-041 (screen by screen), with T-035 and T-036. T-037, the window's size, comes first, because the other screens are checked at the new size.
+T-037, the window's size, is waiting for review. Next are the other changes from the review of the look (T-032): T-038 to T-041, screen by screen, and T-035 and T-036.
 
 ## First version: logic
 
@@ -34,7 +34,6 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-037 | Open the window at 1024 × 768, and start every page that scrolls at the top whenever it opens or changes part. Check each screen at that size for scrolling, and update Requirements.md | Todo | Issues: 118; `ui-review/UiReview.md` G03, F01, F06, F07 |
 | T-038 | The start screen as G01 says: a larger stick picture and smaller label in the list; in the details the label, the stick's details, a thin line, then the status and every message in one style; a slightly larger logo; buttons at their natural width, with the poweruser's on a row of their own and Eject last after a gap; the ejected notice cleared when a stick is plugged in; and a text for a stick that is plugged in but not opened | Todo | `ui-review/UiReview.md` G01, S02, S06, S14–S17 |
 | T-039 | The verdict screen as G02 says: three text styles, no repeated reason line under "Some files were skipped", and "Run the backup again when it suits you." after the user stopped a backup | Todo | `ui-review/UiReview.md` G02, V03, V05 |
 | T-040 | Setup of this stick: "Add this computer and your account", with the folder name in the line above; the unreadable-setup text in the normal style; and entries called "backup profiles", with their names always marked as names ("the backup profile called “laptop”"), with the same words on the page and in the questions. Make the term official: "Backup profile" in the glossary of Requirements.md, and in Concept.md | Todo | Issues: 119; `ui-review/UiReview.md` C01, C06, C10 |
@@ -93,3 +92,4 @@ Nothing is waiting for a decision.
 | T-024 | Test formatting from an account without administrator rights, for the first time. Ext4 can now only be chosen by an administrator, and a stick open for another account says so | [#46](https://github.com/ziggymax/babawus/pull/46) |
 | T-033 | Give the package a longer description, for the installer to show | [#47](https://github.com/ziggymax/babawus/pull/47) |
 | T-032 | Review the look of the user interface as a whole: every screen listed, screenshotted and decided in `ui-review/UiReview.md`. The changes are tasks T-035 to T-041 | [#50](https://github.com/ziggymax/babawus/pull/50) |
+| T-037 | Open the window at 1024 × 768, and start every page that scrolls at the top whenever it opens or changes part | [#51](https://github.com/ziggymax/babawus/pull/51) |

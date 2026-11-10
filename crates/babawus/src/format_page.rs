@@ -375,7 +375,11 @@ impl FormatPage {
             Part::Working => "working",
             Part::Result => "result",
         };
-        self.parts.set_visible_child_name(name);
+        // Only a change of part starts at the top: this runs on every keystroke too.
+        if self.parts.visible_child_name().as_deref() != Some(name) {
+            crate::scroll::to_top(&self.root);
+            self.parts.set_visible_child_name(name);
+        }
         self.erase.set_visible(part == Part::Choose);
         self.add.set_visible(false);
         self.try_again.set_visible(false);
