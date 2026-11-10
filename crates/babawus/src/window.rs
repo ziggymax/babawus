@@ -43,7 +43,6 @@ use gtk4::{
     Label, ListBox, ListBoxRow, MenuButton, Orientation, Overlay, PolicyType, ScrolledWindow,
     SelectionMode, Separator, Spinner, Stack, gio, glib,
 };
-use gtk4::{FlowBox, FlowBoxChild};
 
 use crate::backup_page::BackupPage;
 use crate::choose_page::ChoosePage;
@@ -54,7 +53,9 @@ use crate::setup_page::{Instead, SetupEvent, SetupPage};
 
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
-const LIST_WIDTH: i32 = 260;
+/// Narrow enough that the user's four buttons fit on one line at 1024 × 768, in German too
+/// (Issues.md item 125).
+const LIST_WIDTH: i32 = 240;
 /// How often the backup screen is updated: at most about 10 times a second. See
 /// "Responsiveness" in Requirements.md.
 const BACKUP_UPDATES: Duration = Duration::from_millis(100);
@@ -502,11 +503,10 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     explained.append(&explanation);
     explained.append(&notice);
 
-    // The user's buttons keep their own width, and wrap onto another line when the window is
-    // narrow, or their texts are long, as in German, so that the window needn't grow. The
-    // poweruser's two fit side by side at any width, and a plain row keeps them together.
+    // Both rows wrap like words when the window is narrow, or the texts are long, as in German,
+    // so that the window needn't grow.
     let actions = action_row();
-    let poweruser = Box::new(Orientation::Horizontal, 8);
+    let poweruser = action_row();
     let mut buttons = HashMap::new();
     for action in Action::ALL {
         let button = Button::builder().halign(Align::Start).build();
@@ -516,11 +516,10 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         if action.for_poweruser() {
             poweruser.append(&button);
         } else {
-            let slot = FlowBoxChild::builder().child(&button).build();
             if action == Action::Eject {
-                slot.set_margin_start(EJECT_GAP);
+                button.set_margin_start(EJECT_GAP);
             }
-            actions.append(&slot);
+            actions.append(&button);
         }
         buttons.insert(action, button);
     }
@@ -1044,12 +1043,12 @@ impl Window {
         for (action, button) in &widgets.buttons {
             match details.buttons.iter().find(|shown| shown.action == *action) {
                 Some(shown) => {
-                    show_button(button, true);
+                    button.set_visible(true);
                     let busy = *action == Action::Eject && ejecting;
                     button.set_sensitive(shown.enabled && !busy);
                     button.set_tooltip_text(Some(&shown.tooltip));
                 }
-                None => show_button(button, false),
+                None => button.set_visible(false),
             }
         }
         widgets.poweruser.set_visible(self.advanced.get());
@@ -2260,23 +2259,11 @@ fn unselectable(widget: &gtk4::Widget) {
     }
 }
 
-/// A row of action buttons that wraps when it runs out of room.
-fn action_row() -> FlowBox {
-    FlowBox::builder()
-        .selection_mode(SelectionMode::None)
-        .column_spacing(8)
-        .row_spacing(8)
-        .homogeneous(false)
-        .max_children_per_line(10)
-        .build()
-}
-
-/// Shows or hides an action button, with the slot that holds it in a wrapping row.
-fn show_button(button: &Button, visible: bool) {
-    button.set_visible(visible);
-    if let Some(slot) = button.parent().and_downcast::<FlowBoxChild>() {
-        slot.set_visible(visible);
-    }
+/// A row of action buttons that wraps like words when it runs out of room.
+fn action_row() -> Box {
+    let row = Box::new(Orientation::Horizontal, 0);
+    row.set_layout_manager(Some(crate::wrap::WrapLayout::new(8)));
+    row
 }
 
 /// A new row of the media list, named by the udisks2 object path of the medium's file system.

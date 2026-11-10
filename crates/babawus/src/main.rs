@@ -6,6 +6,7 @@ mod info_page;
 mod scroll;
 mod setup_page;
 mod window;
+mod wrap;
 
 use std::cell::RefCell;
 use std::path::Path;
