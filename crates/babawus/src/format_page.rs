@@ -3,7 +3,7 @@
 //! 78-81. What to show comes from [`babawus_core::format_screen`]; this module only puts it on
 //! the screen. The window keeps what the poweruser has chosen in the widgets themselves.
 
-use babawus_core::format_screen::{DriveChoice, ResultShown};
+use babawus_core::format_screen::{DriveChoice, ResultShown, ext4_allowed, ext4_note};
 use babawus_core::settings::Language;
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
@@ -45,6 +45,10 @@ pub struct FormatPage {
     exfat_detail: Label,
     pub ext4: CheckButton,
     ext4_detail: Label,
+    /// Why Ext4 can't be chosen, or that it asks for a password.
+    ext4_note: Label,
+    /// Whether this account is an administrator, who may choose Ext4 (Issues.md item 108).
+    administrator: bool,
     warning: Label,
     warning_row: Box,
     pub understood: CheckButton,
@@ -91,7 +95,8 @@ fn choice(button: &CheckButton, detail: &Label) -> Box {
 }
 
 impl FormatPage {
-    pub fn new() -> Self {
+    /// `administrator` says whether this account may choose Ext4.
+    pub fn new(administrator: bool) -> Self {
         let title = label(Some("babawus-title"));
 
         let intro = label(None);
@@ -115,6 +120,10 @@ impl FormatPage {
         exfat.set_active(true);
         let exfat_detail = label(None);
         let ext4_detail = label(None);
+        let ext4_note = label(None);
+        ext4_note.set_margin_start(28);
+        ext4_note.set_visible(false);
+        ext4.set_sensitive(ext4_allowed(administrator));
         let warning = label(Some("babawus-next-step"));
         warning.set_hexpand(true);
         let warning_mark = icons::image(&icons::mark(Mark::Attention), 24);
@@ -132,7 +141,9 @@ impl FormatPage {
         choose.append(&label_problem);
         choose.append(&file_system_heading);
         choose.append(&choice(&exfat, &exfat_detail));
-        choose.append(&choice(&ext4, &ext4_detail));
+        let ext4_choice = choice(&ext4, &ext4_detail);
+        ext4_choice.append(&ext4_note);
+        choose.append(&ext4_choice);
         choose.append(&warning_row);
         choose.append(&understood);
 
@@ -214,6 +225,8 @@ impl FormatPage {
             exfat_detail,
             ext4,
             ext4_detail,
+            ext4_note,
+            administrator,
             warning,
             warning_row,
             understood,
@@ -310,6 +323,12 @@ impl FormatPage {
         } else {
             Format::ExFat
         }
+    }
+
+    /// Shows the line under the Ext4 choice that goes with this account and what is chosen.
+    pub fn show_ext4_note(&self, language: Language) {
+        let note = ext4_note(self.administrator, self.ext4.is_active(), language);
+        set_optional(&self.ext4_note, note);
     }
 
     /// Shows what goes with the current choice: the problem with the label, the warning, and

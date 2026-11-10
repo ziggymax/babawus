@@ -185,7 +185,17 @@ pub enum Status {
     NeedsAttention,
     /// A Babawus medium that is mounted read-only.
     WriteProtected,
+    /// Mounted for another account, where this account can't reach it, for example at
+    /// `/media/anna/BACKUP-A`. What is on it is unknown. See Issues.md item 110.
+    OtherAccount,
     NotBackupMedium,
+}
+
+impl Status {
+    /// Whether the medium is known to be a Babawus medium.
+    pub fn is_babawus(&self) -> bool {
+        !matches!(self, Self::NotBackupMedium | Self::OtherAccount)
+    }
 }
 
 /// Who is looking at the list: this computer, and the account running Babawus.
@@ -205,6 +215,12 @@ impl Viewer<'_> {
             return Status::NotBackupMedium;
         }
         let root = &medium.root;
+        // A mount stays after its account logs out, and only that account can reach it.
+        if let Err(error) = files.metadata(root)
+            && error.kind() == ErrorKind::PermissionDenied
+        {
+            return Status::OtherAccount;
+        }
         let config = match config::load(files, root) {
             Ok(Loaded::Ready(config)) => config,
             Ok(Loaded::Missing) => return Status::NotBackupMedium,

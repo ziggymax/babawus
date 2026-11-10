@@ -43,8 +43,13 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Tick "I understand that everything on this stick will be erased". → "Erase and format" turns red, and can be pressed.
 - [ ] Press "Erase and format". → "Formatting BACKUP-A…", with no way back and the window can't be closed. After a few seconds: "BACKUP-A is ready", with a green tick.
 - [ ] Press "Back". → The start screen, with stick A selected, showing "Not set up for you" and an amber "!".
-- [ ] Format stick B the same way, but choose Ext4. → It takes longer (about a minute for 16 GB), then "… is ready".
-- [ ] Without administrator rights (T-024): close Babawus, because only one runs per computer, log out, log in to the second account, and format stick B again from there. → Note in the issue whether a password was asked for, and whose. Formatting either works, or says why not, with "Nothing on the stick was changed." if it didn't start. Log back in to your own account.
+- [ ] Format stick B the same way, but choose Ext4. → "Ext4 asks for your password while formatting." shows below Ext4. It asks for your password, takes longer (about a minute for 16 GB), then "… is ready". (On the development VM it doesn't ask: see "Polkit" in DevEnvSetup.md.)
+- [ ] Without administrator rights (T-024): close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only "Start backup" (greyed out) and "Eject", also with Advanced on.
+- [ ] Pull out both sticks and plug them back in. → Both show "Not set up for you".
+- [ ] Turn Advanced on, and press "Prepare…". → Ext4 is greyed out, with "Only an administrator can choose Ext4, …" below it.
+- [ ] Format stick A with exFAT. → No password is asked for, and "BACKUP-A is ready".
+- [ ] Select stick B, which your account formatted with Ext4. Press "Change setup…", "Add this computer as …", and "Choose what to back up…", tick a folder with a file in it, then "Done" and "Save", and "Start backup". → "All good". Note in the issue any password that was asked for, and whose.
+- [ ] Close Babawus, and log back in to your own account. Pull out both sticks and plug them back in.
 - [ ] Turn Advanced off in the menu. → The marker and the poweruser's buttons go away. Close and start Babawus. → Advanced is off.
 
 ## Setting up

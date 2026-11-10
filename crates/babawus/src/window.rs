@@ -20,7 +20,9 @@ use babawus_core::format_screen::{
 };
 use babawus_core::fs::{FileSystem, RealFs};
 use babawus_core::history_screen::history;
-use babawus_core::identity::{this_computer_id, this_hostname};
+use babawus_core::identity::{
+    is_administrator, this_computer_id, this_hostname, this_users_groups,
+};
 use babawus_core::lock::ThisProcess;
 use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
@@ -338,7 +340,8 @@ pub fn show(app: &Application) {
     screens.add_named(&backup_page.root, Some("backup"));
     let info_page = InfoPage::new();
     screens.add_named(&info_page.root, Some("info"));
-    let format_page = FormatPage::new();
+    let groups = this_users_groups().unwrap_or_default();
+    let format_page = FormatPage::new(is_administrator(groups.iter().map(String::as_str)));
     screens.add_named(&format_page.root, Some("format"));
     // The page passes what is pressed in its lists to the window, which only exists further
     // down.
@@ -1775,7 +1778,7 @@ impl Window {
             .filter(|(_, checked)| {
                 checked
                     .as_ref()
-                    .is_some_and(|checked| !matches!(checked.status, Status::NotBackupMedium))
+                    .is_some_and(|checked| checked.status.is_babawus())
             })
             .map(|(medium, _)| medium.volume.object_path.clone())
             .collect();
@@ -1893,6 +1896,7 @@ impl Window {
                 let problem = label_problem(&label, language);
                 let can = can_format(choice.is_some(), &label, page.understood.is_active());
                 page.show_choice(problem.as_deref(), warning.as_deref(), can);
+                page.show_ext4_note(language);
             }
             FormatStage::Working { label } => page.show_working(label, language),
             FormatStage::Done { label, .. } => {

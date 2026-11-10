@@ -269,7 +269,17 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 - **Guest Additions:** the Guest Additions packages aren't installed. The kernel's own `vboxguest` module is loaded, and nothing so far has needed more.
 - **Slow package mirror in CI:** Ubuntu's mirror once delivered at 24 kB/s, which took a run from one minute to nearly thirteen. CI now caches the downloaded packages and uses a short `apt` timeout. `apt-get update` still needs the mirror.
 - **Graphics warnings:** the app prints `libEGL warning: DRI3 error` on this VM, and its window still works. This is probably because the VM has no accelerated graphics, but that hasn't been confirmed.
-- **Polkit over SSH:** `udisksctl` commands, and partitioning and formatting the real stick, worked from an SSH session without a password, because that session counts as active. Requirements.md allows for udisks2 asking for nothing. The behaviour on the desktop, and from an account without administrator rights, is on the manual checklist.
+- **Polkit:** the VM has a rule, `/etc/polkit-1/rules.d/49-babawus-dev.rules`, that lets `steen` use every udisks2 action without a password, so that tests and Claude's sessions over SSH can format and unmount. That, not SSH, is why formatting the real stick never asked for a password here, Ext4 included. Without the rule, Mint asks the desktop user for nothing on exFAT, and asks for an administrator's password on Ext4 and for unmounting another account's stick (T-024, Issues.md items 108 to 110). To see what an ordinary computer would ask, move the rule away for a moment, ask `pkcheck --action-id <action> --process <pid>` about a Babawus started from the desktop menu (one started over SSH belongs to the SSH session), and put the rule back. The rule:
+
+  ```js
+  // Development VM only: let the dev account use udisks2 from SSH sessions.
+  polkit.addRule(function(action, subject) {
+      if (action.id.indexOf("org.freedesktop.udisks2.") == 0 && subject.user == "steen") {
+          return polkit.Result.YES;
+      }
+  });
+  ```
+- **A second account:** `testuser`, a Standard account made in Users and Groups on 2026-11-10 for T-024. A mount stays after its account logs out, under `/media/<that account>/`, which no other account can open, so pull the stick out and plug it back in after changing accounts.
 
 ## Security notes
 

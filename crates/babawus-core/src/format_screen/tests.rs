@@ -204,3 +204,25 @@ fn a_failure_while_setting_up_says_the_stick_is_not_ready() {
 
     assert!(shown.detail.starts_with("The stick was formatted, but"));
 }
+
+#[test]
+fn only_an_administrator_can_choose_ext4() {
+    assert!(ext4_allowed(true));
+    assert!(!ext4_allowed(false));
+}
+
+#[test]
+fn anyone_else_is_told_why_ext4_cannot_be_chosen() {
+    let note = ext4_note(false, false, EN).unwrap();
+    assert!(note.starts_with("Only an administrator can choose Ext4"));
+    assert_eq!(ext4_note(false, true, EN), Some(note));
+}
+
+#[test]
+fn an_administrator_who_chooses_ext4_is_told_about_the_password() {
+    assert_eq!(ext4_note(true, false, EN), None);
+    assert_eq!(
+        ext4_note(true, true, EN),
+        Some("Ext4 asks for your password while formatting.")
+    );
+}

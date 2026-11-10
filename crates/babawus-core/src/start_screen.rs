@@ -27,7 +27,7 @@ impl Viewer<'_> {
     /// Reads `medium`, whose file system is reached through `files`, for the start screen.
     pub fn check(&self, files: &dyn FileSystem, medium: &Medium) -> Checked {
         let status = self.status(files, medium);
-        let babawus = !matches!(status, Status::NotBackupMedium);
+        let babawus = status.is_babawus();
         let has_history =
             babawus && read_runs(files, &medium.root).is_ok_and(|runs| !runs.is_empty());
         Checked {
@@ -66,9 +66,10 @@ impl Mark {
     pub fn of(status: &Status) -> Self {
         match status {
             Status::Ready { .. } => Self::Ready,
-            Status::NotSetUp | Status::InProgress { .. } | Status::NeedsAttention => {
-                Self::Attention
-            }
+            Status::NotSetUp
+            | Status::InProgress { .. }
+            | Status::NeedsAttention
+            | Status::OtherAccount => Self::Attention,
             Status::WriteProtected | Status::NotBackupMedium => Self::Unusable,
         }
     }
@@ -97,6 +98,7 @@ pub fn status_text(status: Option<&Status>, language: Language) -> String {
         Status::InProgress { user } => Text::InProgress.fill(language, &[("user", user)]),
         Status::NeedsAttention => Text::NeedsAttention.get(language).to_owned(),
         Status::WriteProtected => Text::WriteProtected.get(language).to_owned(),
+        Status::OtherAccount => Text::OtherAccount.get(language).to_owned(),
         Status::NotBackupMedium => Text::NotBackupMedium.get(language).to_owned(),
     }
 }
@@ -109,6 +111,7 @@ fn explanation(status: &Status, language: Language) -> Option<String> {
         Status::InProgress { user } => Text::ExplainInProgress.fill(language, &[("user", user)]),
         Status::NeedsAttention => Text::ExplainNeedsAttention.get(language).to_owned(),
         Status::WriteProtected => Text::ExplainWriteProtected.get(language).to_owned(),
+        Status::OtherAccount => Text::ExplainOtherAccount.get(language).to_owned(),
         Status::NotBackupMedium => Text::ExplainNotBackupMedium.get(language).to_owned(),
     })
 }
@@ -118,7 +121,7 @@ pub fn row(medium: &Medium, checked: Option<&Checked>, language: Language) -> Ro
     let status = checked.map(|checked| &checked.status);
     Row {
         label: medium.volume.label.clone(),
-        babawus: status.is_some_and(|status| !matches!(status, Status::NotBackupMedium)),
+        babawus: status.is_some_and(Status::is_babawus),
         mark: status.map(Mark::of),
         tooltip: status_text(status, language),
     }
@@ -246,7 +249,7 @@ pub fn details(
         _ => None,
     };
     let ready = matches!(status, Some(Status::Ready { .. }));
-    let babawus = status.is_some_and(|status| !matches!(status, Status::NotBackupMedium));
+    let babawus = status.is_some_and(Status::is_babawus);
     let buttons = Action::ALL
         .into_iter()
         .filter(|action| advanced || !action.for_poweruser())
@@ -254,7 +257,9 @@ pub fn details(
             Action::StartBackup | Action::Eject => true,
             Action::ShowHistory => checked.is_some_and(|checked| checked.has_history),
             Action::WhatsBackedUp => ready,
-            Action::Prepare => formattable,
+            // What is on a stick open for another account is unknown, so it isn't offered
+            // for erasing (Issues.md item 110).
+            Action::Prepare => formattable && !matches!(status, Some(Status::OtherAccount)),
             Action::ChangeSetup => babawus,
         })
         .map(|action| {
