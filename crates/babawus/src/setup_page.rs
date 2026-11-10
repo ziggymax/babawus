@@ -98,7 +98,8 @@ impl SetupPage {
         let loading = Box::new(Orientation::Horizontal, 8);
         loading.append(&spinner);
         loading.append(&loading_text);
-        let message = label(Some("babawus-status"));
+        // In the normal style, like the rest of the page's text (`ui-review/UiReview.md` C06).
+        let message = label(None);
         let start_new = Button::builder().halign(Align::Start).build();
 
         let banner = label(Some("babawus-next-step"));
