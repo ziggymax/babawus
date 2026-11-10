@@ -1752,7 +1752,9 @@ impl Window {
             }
             window.show_format();
         });
-        for button in [&page.exfat, &page.understood] {
+        // Choosing Ext4 turns exFAT off before it turns Ext4 on, so the page is shown again for
+        // Ext4 too, or its note would wait for the next change (T-035).
+        for button in [&page.exfat, &page.ext4, &page.understood] {
             let weak = Rc::downgrade(self);
             button.connect_toggled(move |_| {
                 if let Some(window) = weak.upgrade()
