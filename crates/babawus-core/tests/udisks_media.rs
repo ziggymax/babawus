@@ -137,10 +137,11 @@ fn a_real_babawus_medium_is_ready() {
             config.add_account(&computer_id, &username).unwrap();
             save(&RealFs, root, real_format, &config).unwrap();
 
+            // The status depends on the file system, which udisks2 can report after the mount.
             let mut snapshot = Snapshot::default();
             wait_until(context, || {
                 snapshot = udisks.snapshot();
-                volume_at(&snapshot, root).is_some()
+                volume_at(&snapshot, root).is_some_and(|volume| !volume.file_system.is_empty())
             });
             let medium = Medium {
                 drive: Drive::default(),

@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-042.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-043.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-038, the start screen, is waiting for review. Next are the other changes from the review of the look (T-032): T-039 to T-041, screen by screen, and T-035 and T-036.
+T-038 is merged, and T-042, a fix for a test that failed now and then, is waiting for review. Next are the other changes from the review of the look (T-032): T-039 to T-041, screen by screen, and T-035 and T-036.
 
 ## First version: logic
 
@@ -93,3 +93,4 @@ Nothing is waiting for a decision.
 | T-032 | Review the look of the user interface as a whole: every screen listed, screenshotted and decided in `ui-review/UiReview.md`. The changes are tasks T-035 to T-041 | [#50](https://github.com/ziggymax/babawus/pull/50) |
 | T-037 | Open the window at 1024 × 768, and start every page that scrolls at the top whenever it opens or changes part | [#51](https://github.com/ziggymax/babawus/pull/51) |
 | T-038 | The start screen as the review decided: a larger stick picture and a bold label in the list; in the details the label, the stick's details, a thin line, then the status and every message in one style; a larger logo; buttons at their own width, Eject apart, the poweruser's on a row of their own; and texts for a stick that is plugged in but not listed (Issues.md items 120 and 121) | [#52](https://github.com/ziggymax/babawus/pull/52) |
+| T-042 | Wait until udisks2 has read the file system before checking a real medium's status, so that `a_real_babawus_medium_is_ready` no longer fails now and then, as T-034 did for `exfat_is_reported` | [#53](https://github.com/ziggymax/babawus/pull/53) |
