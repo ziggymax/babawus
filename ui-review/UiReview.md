@@ -18,7 +18,7 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 | T-039 | The verdict screen: fewer text styles, no repeated reason, a fitting text after a stopped backup. *Done in PR #54.* | G02, V03, V05 |
 | T-040 | Setup of this stick: clearer adding and linking texts. *Done in PR #55: a backup profile is one account on one computer, and a computer is "the computer called “laptop”" (Issues.md item 122).* | C01, C06, C10 |
 | T-041 | Choose what to back up, plus About and "already open". *Done in PR #56.* | T01, T02, T04, W05, W06 |
-| T-035 | Bug: the Ext4 note only appears after another change | F03 |
+| T-035 | Bug: the Ext4 note only appears after another change. *Done in PR #57.* | F03 |
 | T-036 | No copied details: the log is the one place for diagnosing (Issues.md item 117) | V04 |
 
 **Numbers.** A letter for the screen, and a number for the state: G for general decisions that apply to several screens, W for the window and its menu, S for the start screen, B for a running backup, V for the verdict, H for history and "What's backed up", F for preparing a stick, C for "Setup of this stick", T for "Choose what to back up…". Numbers never change once screenshots exist. A new item gets the next free number in its group.
