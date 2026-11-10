@@ -181,13 +181,18 @@ fn a_missing_computer_can_be_added_or_linked() {
             .starts_with("This computer (Laptop) isn't set up")
     );
     assert!(shown.here.text.contains("link it"));
+    // The button doesn't name the folder, so the line above does.
+    assert!(shown.here.text.contains("Add it as “laptop”"));
     assert_eq!(
         shown.here.actions,
         [
-            (HereAction::Add, "Add this computer as laptop".to_owned()),
+            (
+                HereAction::Add,
+                "Add this computer and your account".to_owned()
+            ),
             (
                 HereAction::LinkComputer("desktop".to_owned()),
-                "Link to desktop…".to_owned()
+                "Link to “desktop”…".to_owned()
             ),
         ]
     );
@@ -210,7 +215,7 @@ fn adding_here_adds_the_computer_and_the_account_until_saved() {
     let shown = overview(&editor, &setup.here(), EN);
     assert_eq!(
         shown.here.text,
-        "Your account, anna, is set up on this computer (laptop)."
+        "Your backup profile, “anna”, is set up on this computer (“laptop”)."
     );
     assert!(shown.here.can_choose);
 }
@@ -279,10 +284,10 @@ fn a_missing_account_can_be_added_or_linked_to_an_earlier_name() {
     assert_eq!(
         shown.here.actions,
         [
-            (HereAction::Add, "Add anna".to_owned()),
+            (HereAction::Add, "Add “anna”".to_owned()),
             (
                 HereAction::LinkAccount("anne".to_owned()),
-                "Link to anne…".to_owned()
+                "Link to “anne”…".to_owned()
             ),
         ]
     );

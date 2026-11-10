@@ -348,3 +348,13 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-10):** The stick picture grows from 32 to 48 pixels. The label shrinks from 15 pt to the normal text size, still bold. The logo grows from 64 to 80 pixels.
 121. **What the empty page says while a stick is plugged in but not listed.** `ui-review/UiReview.md` S02 decided on "The stick isn't opened. Pull it out and plug it back in." for a stick that may be formatted but isn't opened. A blank stick, with no file system on it, isn't listed either, and plugging it back in doesn't help.
     - **Decided (2026-11-10):** A stick that has a file system that isn't opened gets the S02 text. A stick with no file system Babawus can open gets its own text: "The stick that is plugged in can't be used yet. Your poweruser can prepare it." Both show whether Advanced is on or off; "Prepare…" still shows only with Advanced on. On the screen, the first sentence is the large heading and the second, what to do, sits below it in the normal text style, so that a word isn't left alone on a line of the large text.
+
+## Decisions on the setup texts (T-040)
+
+122. **What a backup profile is, and how the setup page names things.** Item 119 introduced the term, and left open whether computers and accounts are both called that.
+    - **Decided (2026-11-10):** A **backup profile** is the settings and backups of one account on one computer: an account's entry in the configuration, inside its computer's entry. A computer is not a backup profile; it holds them. In German, "Sicherungsprofil". On screen:
+        - Names of computers and backup profiles are quoted in sentences, questions and buttons: "the computer called “laptop”", "the backup profile for “anna”", "Link to “laptop”…". The list rows stay unquoted, because there a name stands on its own.
+        - The setup page's list is headed "Backup profiles on this stick".
+        - The button that adds this computer says "Add this computer and your account", and the line above it gives the folder name it will be added as.
+        - Linking a computer asks "Link this computer to the computer called “laptop”?"; linking an account asks "Link your account to the backup profile for “anna”?". Removing asks "Remove the computer called “laptop” and its backup profiles from the setup?" or "Remove the backup profile for “anna” on “laptop” from the setup?".
+        - The glossary in Requirements.md gets "Backup profile", and Concept.md says what it is.

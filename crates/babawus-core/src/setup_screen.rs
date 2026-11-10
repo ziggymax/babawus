@@ -336,7 +336,10 @@ pub fn overview(editor: &Editor, here: &Here, language: Language) -> OverviewSho
                     Text::SetupComputerMissingLink
                 };
                 HereShown {
-                    text: text.fill(language, &[("hostname", here.hostname)]),
+                    text: text.fill(
+                        language,
+                        &[("hostname", here.hostname), ("folder", &folder)],
+                    ),
                     actions,
                     can_choose: false,
                 }
