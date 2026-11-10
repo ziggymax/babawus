@@ -474,3 +474,22 @@ fn the_user_is_the_part_of_the_account_before_the_at_sign() {
     assert_eq!(user_of("usera@pc"), "usera");
     assert_eq!(user_of("usera"), "usera");
 }
+
+#[test]
+fn a_medium_this_account_cannot_reach_is_open_for_another_account() {
+    let setup = Setup::new();
+    setup.files.fail_path(root(), ErrorKind::PermissionDenied);
+
+    let status = setup.status();
+
+    assert_eq!(status, Status::OtherAccount);
+    assert!(!status.is_babawus());
+}
+
+#[test]
+fn only_known_babawus_media_count_as_babawus_media() {
+    assert!(Status::NotSetUp.is_babawus());
+    assert!(Status::WriteProtected.is_babawus());
+    assert!(!Status::NotBackupMedium.is_babawus());
+    assert!(!Status::OtherAccount.is_babawus());
+}

@@ -248,3 +248,29 @@ fn nothing_is_selected_when_the_choice_is_not_clear() {
     assert_eq!(selection(&unchecked, None), None);
     assert_eq!(selection(&[], None), None);
 }
+
+#[test]
+fn a_stick_open_for_another_account_says_so_and_offers_nothing_to_change_it() {
+    let other = Checked {
+        has_history: false,
+        ..checked(Status::OtherAccount)
+    };
+    let details = details_of(Some(&other), true);
+
+    assert_eq!(details.mark, Some(Mark::Attention));
+    assert_eq!(details.status, "Open for another account");
+    assert!(
+        details
+            .explanation
+            .as_deref()
+            .unwrap()
+            .contains("pull it out and plug it back in")
+    );
+    assert_eq!(actions(&details), [Action::StartBackup, Action::Eject]);
+    assert!(!button(&details, Action::StartBackup).enabled);
+
+    let medium = medium("sdb", "BACKUP-A");
+    let row = row(&medium, Some(&other), EN);
+    assert!(!row.babawus, "what is on it is unknown");
+    assert_eq!(row.mark, Some(Mark::Attention));
+}

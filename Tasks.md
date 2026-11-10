@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-022 is waiting for review. Next, the checklist's part for T-024 is run for the first time. T-032, a review of the look of the user interface, is planned for later.
+T-024 is waiting for review. Every part of the checklist has now been run once. T-032, a review of the look of the user interface, is planned for later.
 
 ## First version: logic
 
@@ -40,7 +40,6 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-024 | Test formatting from an account without administrator rights: the checklist's step for it, for the first time | Todo | Issues: 38, 96 |
 | T-033 | Give the package a longer description, for the installer to show. Mint's installer Captain shows only the one-line summary, title-cased as "Basic Backup With Usb Storage", with nothing below it | Todo | Pull request 44 |
 
 ## Needs a decision
@@ -87,3 +86,4 @@ Nothing is waiting for a decision.
 | T-025 | Install, update and uninstall the `.deb` for real, for the first time, and write the uninstall notes. The menu icon now names its file by full path | [#44](https://github.com/ziggymax/babawus/pull/44) |
 | T-022 | Pull a real stick during a copy, and check that its errors count as "medium gone": the checklist's "Pulling out a stick", for the first time | [#45](https://github.com/ziggymax/babawus/pull/45) |
 | T-034 | Wait until udisks2 has read the label before checking it, so that `exfat_is_reported` no longer fails now and then | [#45](https://github.com/ziggymax/babawus/pull/45) |
+| T-024 | Test formatting from an account without administrator rights, for the first time. Ext4 can now only be chosen by an administrator, and a stick open for another account says so | [#46](https://github.com/ziggymax/babawus/pull/46) |

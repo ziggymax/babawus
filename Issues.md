@@ -293,3 +293,22 @@ Comparing the requirements with what the configuration and log have to do turned
 103. **Whether the stick is also pulled out during "Finishing…".** The checklist pulls it while it says "Backing up…", but the final flush is a separate path in the code.
     - **Decided (2026-11-10):** Yes, once at each moment. If "Finishing…" is too short to hit, the run notes that. As for T-025 (item 100), the run is recorded in the description of the pull request.
     - **Found (2026-11-10):** "Finishing…" can't be hit by hand. Copying the 2 GB `big.bin` to the Kingston stick took about 80 seconds, but "Finishing…" didn't show in screenshots taken every third of a second, because each file is already flushed as soon as it is copied. So the checklist has no step for it. The automated tests cover it: `check_pulling_at_every_step` pulls the medium at every step of a run, the final flush included, and a medium that can't be flushed gives "Backup not finished" with `FLUSH_FAILED`, as "Finishing a run" in Requirements.md says.
+
+## Decisions on formatting without administrator rights (T-024)
+
+104. **What the second account formats, with only one disposable stick.** The checklist formats a second stick as Ext4 from that account.
+    - **Decided (2026-11-10):** The second account formats stick A as Ext4, which also tests the owner and default ACL that Babawus sets on an Ext4 medium (item 16). Afterwards stick A is formatted back to exFAT from the administrator's account, so that later runs find it as the checklist expects.
+    - **Done (2026-11-10):** Stick A was formatted back to exFAT as `BACKUP-A`, from the administrator's account, after the test in item 106.
+105. **How the second account is created.**
+    - **Decided (2026-11-10):** As the checklist says: by the user, in Users and Groups, as a "Standard" account.
+106. **Whether the first account also uses the stick that the second account formatted.**
+    - **Decided (2026-11-10):** Yes. Before reformatting, the administrator's account adds itself to the stick and backs up once, to check that an Ext4 medium formatted by one account can be used by another (item 16).
+    - **Changed (2026-11-10):** After item 108, only an administrator can format Ext4, so the test is turned round: the administrator's account formats stick A as Ext4, and the second account adds itself and backs up once. Stick A is then formatted back to exFAT, as item 104 says.
+107. **How this first run is recorded.**
+    - **Decided (2026-11-10):** In the description of the pull request, as for T-025 and T-022 (items 100 and 103).
+108. **Ext4 from an account without administrator rights.** In the first run, the second account's Ext4 format replaced the partition table without a password, and then needed an administrator's password to create the file system, so the stick was left erased but not formatted. udisks2 asks for `modify-device-system` both for extra `mkfs` arguments (Babawus passes `-m 0` and the `lazy_*_init` options) and for `take-ownership`, and Babawus needs one of the two so that the root folder doesn't belong to root. exFAT needs neither, and worked without a password.
+    - **Decided (2026-11-10):** In "Prepare a stick", Ext4 can only be chosen by an administrator, meaning an account in the `sudo` or `admin` group, the groups that polkit asks for on Mint. For anyone else it is greyed out, with a line saying why, so that formatting never starts what it can't finish.
+109. **Whether an administrator is told about the password.** polkit asks administrators for their password too (`auth_admin_keep`), except over SSH.
+    - **Decided (2026-11-10):** Yes: when an administrator chooses Ext4, a short line says that it asks for their password while formatting.
+110. **A stick that is still open for another account.** A mount stays after its account logs out. In the first run, stick A was mounted at `/media/steen/BACKUP-A` when the second account logged in, and `/media/steen` can only be opened by `steen`. Babawus took the "Permission denied" to mean that the stick isn't a Babawus medium, and offered only "Prepare…", which would erase it.
+    - **Decided (2026-11-10):** A stick whose root folder this account can't open gets its own status, "Open for another account", with an amber "!" and the advice to pull out the stick and plug it back in, which mounts it for this account. Babawus doesn't guess what is on it, and offers neither a backup nor "Prepare…" for it. The fix goes into the pull request for T-024.

@@ -114,6 +114,30 @@ pub fn warning(choice: &DriveChoice, language: Language) -> String {
     )
 }
 
+/// Whether Ext4 can be chosen. Formatting Ext4 needs an administrator's password, so anyone
+/// else gets exFAT only, and formatting never starts what it can't finish. See Issues.md item
+/// 108.
+pub fn ext4_allowed(administrator: bool) -> bool {
+    administrator
+}
+
+/// The line under the Ext4 choice, if any: for an administrator who has chosen it, that it
+/// asks for their password, and for anyone else, why it can't be chosen. See Issues.md items
+/// 108 and 109.
+pub fn ext4_note(
+    administrator: bool,
+    ext4_chosen: bool,
+    language: Language,
+) -> Option<&'static str> {
+    if !administrator {
+        Some(Text::FormatExt4NeedsAdministrator.get(language))
+    } else if ext4_chosen {
+        Some(Text::FormatExt4AsksPassword.get(language))
+    } else {
+        None
+    }
+}
+
 /// Whether "Erase and format" can be pressed.
 pub fn can_format(drive_chosen: bool, label: &str, understood: bool) -> bool {
     drive_chosen && label_is_valid(label) && understood

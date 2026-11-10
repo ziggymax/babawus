@@ -53,11 +53,13 @@ texts! {
     NeedsAttention: "Needs attention", "Braucht Aufmerksamkeit";
     WriteProtected: "Write-protected", "Schreibgeschützt";
     NotBackupMedium: "Not a backup medium", "Kein Sicherungs-Stick";
+    OtherAccount: "Open for another account", "Für ein anderes Konto geöffnet";
 
     ExplainNotSetUp: "This stick hasn't been set up for you on this computer. Contact your poweruser.", "Dieser Stick ist auf diesem Computer nicht für dich eingerichtet. Wende dich an deinen Betreuer.";
     ExplainInProgress: "A backup to this stick is running for {user}. Wait until it has finished.", "Auf diesen Stick läuft gerade eine Sicherung für {user}. Warte, bis sie fertig ist.";
     ExplainNeedsAttention: "The setup on this stick is damaged, or needs a newer Babawus. Contact your poweruser.", "Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus. Wende dich an deinen Betreuer.";
     ExplainWriteProtected: "This stick can only be read, so no backup can be written to it. If it has a lock switch, slide it to unlocked. Otherwise contact your poweruser.", "Dieser Stick kann nur gelesen werden, deshalb kann keine Sicherung darauf geschrieben werden. Wenn er einen Schiebeschalter hat, schieb ihn auf „offen“. Sonst wende dich an deinen Betreuer.";
+    ExplainOtherAccount: "This stick is still open for another account on this computer, so Babawus can't look at it. If nobody else is using it, pull it out and plug it back in.", "Dieser Stick ist noch für ein anderes Konto auf diesem Computer geöffnet, deshalb kann Babawus ihn nicht ansehen. Wenn ihn sonst niemand benutzt, zieh ihn ab und steck ihn wieder ein.";
     ExplainNotBackupMedium: "This stick isn't set up for backups with Babawus. Your poweruser can prepare it.", "Dieser Stick ist nicht für Sicherungen mit Babawus eingerichtet. Dein Betreuer kann ihn vorbereiten.";
 
     LastBackupToday: "Last backup: today at {time}", "Letzte Sicherung: heute um {time}";
@@ -201,6 +203,8 @@ texts! {
     FormatExFatDetail: "Also works on Windows and Mac", "Funktioniert auch unter Windows und auf dem Mac";
     FormatExt4: "Ext4", "Ext4";
     FormatExt4Detail: "Works on Linux only, but allows longer names and copes better with being pulled out", "Funktioniert nur unter Linux, erlaubt aber längere Namen und verträgt das Abziehen besser";
+    FormatExt4AsksPassword: "Ext4 asks for your password while formatting.", "Bei Ext4 wird beim Formatieren nach deinem Passwort gefragt.";
+    FormatExt4NeedsAdministrator: "Only an administrator can choose Ext4, because formatting it needs an administrator's password. Choose exFAT, or ask an administrator to prepare the stick.", "Ext4 kann nur ein Administrator wählen, weil das Formatieren damit das Passwort eines Administrators braucht. Wähle exFAT, oder bitte einen Administrator, den Stick vorzubereiten.";
     FormatWarning: "Everything on {drive} will be erased: {contents}. This includes every partition on it. Formatting can't be stopped once it has started.", "Alles auf {drive} wird gelöscht: {contents}. Das gilt für jede Partition darauf. Das Formatieren kann nicht angehalten werden, wenn es einmal begonnen hat.";
     FormatUnderstood: "I understand that everything on this stick will be erased", "Mir ist klar, dass alles auf diesem Stick gelöscht wird";
     FormatErase: "Erase and format", "Löschen und formatieren";
