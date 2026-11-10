@@ -317,3 +317,20 @@ Comparing the requirements with what the configuration and log have to do turned
 
 111. **What the installer shows about Babawus.** Mint's installer Captain showed only the summary, title-cased by Python's `str.title()` as "Basic Backup With Usb Storage", with nothing below it.
     - **Decided (2026-11-10):** The summary stays "Basic backup with USB storage", which spells out the name, even though Captain shows "Usb". Below it comes a longer description for whoever installs Babawus: what it does, in plain words, and that the person who looks after the computer prepares the stick under Advanced. It is in English only, because a `.deb` package has one description.
+
+## Decisions on the review of the look (T-032)
+
+112. **How the user interface is reviewed.**
+    - **Decided (2026-11-10):** In four steps, each a pull request of its own:
+        1. `ui-review/UiReview.md` numbers every screen, state, dialog and menu a user can see.
+        2. Babawus is run on the VM, and each item is screenshotted as `ui-review/<number>-<name>.png`. Claude drives the window, and the user does what needs hands: the stick, and the second account.
+        3. The items are gone through one by one, and each one's comments and decision are written next to it in `UiReview.md`.
+        4. The user interface is changed accordingly, in one or more pull requests, with new screenshots to compare.
+113. **Where the review keeps its decisions.**
+    - **Decided (2026-11-10):** In `ui-review/UiReview.md`, next to each item, rather than one by one in this file. This item points there. Changes still to make become tasks in Tasks.md.
+114. **Whether the screenshots are committed.**
+    - **Decided (2026-11-10):** No. `UiReview.md` is committed, and the screenshots stay on the VM (`ui-review/*.png` is in `.gitignore`). The document refers to each screenshot by its number, and says enough in words that a decision can be understood without the picture.
+115. **Which languages are screenshotted.**
+    - **Decided (2026-11-10):** Every item in English. German too for the screens with the longest texts, where cut-off text or wrapping is likeliest.
+116. **Which window size the screenshots use.**
+    - **Decided (2026-11-10):** The size Babawus opens with. A few key screens are also taken with the window as small as it goes, to check the 1366 × 768 limit.
