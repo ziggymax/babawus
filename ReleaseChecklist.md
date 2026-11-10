@@ -23,7 +23,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 ## Installing (T-025)
 
 - [ ] Double-click the `.deb` in the file manager, and install it. → It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
-- [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there.
+- [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see Issues.md item 101).
 - [ ] Start it from the menu. → A window titled "Backup" opens. With no stick plugged in, it says "Plug in your backup stick".
 - [ ] Start it again from the menu while it is open. → No second window: the open one comes to the front.
 
@@ -94,7 +94,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 - [ ] Uninstall with `sudo apt remove babawus`. → The "Backup" entry leaves the menu.
 - [ ] Look at stick A. → Nothing changed on it: `.babawus` and `backup` are as before.
-- [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes say.
+- [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes in [README.md](README.md) say.
 
 ## Afterwards
 

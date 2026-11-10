@@ -644,9 +644,9 @@ CI runs the formatting and lint checks and all automated tests, including the in
 
 Babawus is delivered as a `.deb` package, built with `cargo-deb`. The poweruser installs it by double-clicking it, updates by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
 
-- The package adds a desktop entry titled "Backup", with a Babawus icon, to the application menu. The application ID is `io.github.ziggymax.Babawus`.
+- The package adds a desktop entry titled "Backup", with the Babawus elephant as its icon, to the application menu. The application ID is `io.github.ziggymax.Babawus`. The desktop entry names the icon file by its full path, so that the menu shows it straight after installing (Issues.md item 101).
 - It declares its dependencies: the GTK 4 libraries, `udisks2`, `exfatprogs`, `e2fsprogs` and `acl`.
-- Uninstalling never touches any medium. The small settings file in each user's home folder stays behind, and the uninstall notes mention it.
+- Uninstalling never touches any medium. The small settings file in each user's home folder stays behind, and the uninstall notes in `README.md` mention it.
 
 ### Supported platform
 
