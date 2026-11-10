@@ -368,3 +368,8 @@ Comparing the requirements with what the configuration and log have to do turned
 
 124. **How many errors a run logs one by one.** Item 117 said every skipped file and error is logged, relying on trimming to bound the log. But trimming happens at the next run's start and always keeps each account's last backup, so one run with, say, 100,000 unreadable files would leave a log of several megabytes that never shrinks.
     - **Decided (2026-11-10):** The first 100 skipped files and errors of a run are logged one by one, instead of the first 20; then one `MULTIPLE_ERRORS` entry, and the rest are only counted. Many errors are most likely caused by the same problem, and if they have different causes, the poweruser fixes what caused the first 100 and runs the backup again. Each start entry also records Babawus's version and the computer's hostname, as item 117 decided.
+
+## Decisions on the start screen's buttons (T-045)
+
+125. **How the user's buttons fit and wrap.** In German, the four buttons need about 722 pixels, and the details pane had about 712 at 1024 × 768. So Eject wrapped onto a line of its own, and GTK's wrapping row lined the other three up in wide columns.
+    - **Decided (2026-11-10):** Both: the stick list narrows from 260 to 240 pixels, so that all four fit on one line at 1024 × 768 in German too, and the buttons wrap like words in a narrower window, each at its own width and close to the one before, instead of in columns.

@@ -101,7 +101,7 @@ Working out a status reads the medium, so it happens off the main thread. Until 
 | Prepare… | A medium that may be formatted (see "Format USB media") | Poweruser |
 | Change setup… | A Babawus medium (see "Configure USB media") | Poweruser |
 
-The buttons keep their own width, and wrap onto another line when there isn't room. Eject comes last among the user's buttons, after a small gap. The poweruser's buttons sit on a row of their own, below a thin line.
+The buttons keep their own width. At 1024 × 768 the user's four fit on one line, in German too; when there isn't room, they wrap like words, each close to the one before (Issues.md item 125). Eject comes last among the user's buttons, after a small gap. The poweruser's buttons sit on a row of their own, below a thin line.
 
 **Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 
