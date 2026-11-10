@@ -40,6 +40,9 @@ pub struct Entry {
 pub struct Row {
     pub ticked: bool,
     pub can_toggle: bool,
+    /// A folder whose tick box is partly ticked: it is ticked with something inside it
+    /// unticked by hand, or unticked with something inside it ticked. See Issues.md item 123.
+    pub partly: bool,
     /// It is left out, so its name is crossed out.
     pub crossed: bool,
     /// Why it is as it is, if that isn't plain.
@@ -122,6 +125,14 @@ impl Choice {
             .any(|path| plain(path) == relative)
     }
 
+    /// Whether one of `paths` lies strictly inside the folder `relative`.
+    fn has_inside(&self, paths: &[String], relative: &Path) -> bool {
+        paths
+            .iter()
+            .map(|path| plain(path))
+            .any(|path| inside_home(&path) && path != relative && path.starts_with(relative))
+    }
+
     /// The deepest selected folder strictly above `relative`.
     fn selected_above(&self, relative: &Path) -> Option<PathBuf> {
         self.selected
@@ -157,11 +168,13 @@ impl Choice {
         language: Language,
     ) -> Row {
         let relative = entry.relative.as_path();
+        let is_dir = entry.kind == FileKind::Dir;
         let note = |text: Text| Some(text.get(language).to_owned());
         if entry.kind == FileKind::Other {
             return Row {
                 ticked: false,
                 can_toggle: false,
+                partly: false,
                 crossed: false,
                 note: note(Text::ChooseNoteLink),
             };
@@ -171,6 +184,7 @@ impl Choice {
             return Row {
                 ticked: false,
                 can_toggle: entry.text,
+                partly: is_dir && self.has_inside(&self.selected, relative),
                 crossed: true,
                 note: note(Text::ChooseNoteLeftOut),
             };
@@ -183,6 +197,7 @@ impl Choice {
             return Row {
                 ticked: false,
                 can_toggle: false,
+                partly: false,
                 crossed: true,
                 note: note(Text::ChooseNoteLeftOutAbove),
             };
@@ -194,6 +209,7 @@ impl Choice {
             return Row {
                 ticked: false,
                 can_toggle: false,
+                partly: false,
                 crossed: true,
                 note: Some(Text::ChooseNotePattern.fill(language, &[("pattern", pattern)])),
             };
@@ -203,6 +219,7 @@ impl Choice {
             return Row {
                 ticked: true,
                 can_toggle: true,
+                partly: is_dir && self.has_inside(&self.exclude_folders, relative),
                 crossed: false,
                 note: None,
             };
@@ -212,6 +229,7 @@ impl Choice {
                 return Row {
                     ticked: false,
                     can_toggle: entry.text,
+                    partly: is_dir && self.has_inside(&self.selected, relative),
                     crossed: false,
                     note: not_text.or_else(|| note(Text::ChooseNoteOtherDrive)),
                 };
@@ -220,6 +238,7 @@ impl Choice {
                 ticked: true,
                 // A file inside a ticked folder can't be left out on its own.
                 can_toggle: entry.text && entry.kind == FileKind::Dir,
+                partly: is_dir && self.has_inside(&self.exclude_folders, relative),
                 crossed: false,
                 note: not_text,
             };
@@ -227,6 +246,7 @@ impl Choice {
         Row {
             ticked: false,
             can_toggle: entry.text,
+            partly: is_dir && self.has_inside(&self.selected, relative),
             crossed: false,
             note: not_text,
         }

@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-045.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-046.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-040, the setup texts, is waiting for review. Next are the last changes from the review of the look (T-032): T-041, T-035 and T-036. T-043 and T-044 wait for their problems to show again.
+T-041, choosing what to back up, is waiting for review. Next are the last changes from the review of the look (T-032): T-035 and T-036, and then T-045. T-043 and T-044 wait for their problems to show again.
 
 ## First version: logic
 
@@ -36,7 +36,7 @@ Everything here is done.
 | --- | --- | --- | --- |
 | T-043 | Find out why the buttons under "You on this computer" were once drawn squeezed under the line below them, after the setup had been read again in another state. Seen once on the VM while checking T-040 (pull request 55), and not again in four tries; main may have it too. If it can't be made to happen again, close it | Todo | Pull request 55 |
 | T-044 | Find the test that fails now and then. A full run with `--include-ignored` reported one failure while checking T-037 and again while checking T-040, but the output wasn't kept, and later runs passed. Run the tests in a loop with `--no-fail-fast`, keep each run's output, and fix the test once it is known | Todo | Pull requests 51 and 55 |
-| T-041 | Choose what to back up: the heading "Choose what to back up for …"; only the tree scrolls, with the name patterns in a section that starts closed; open folders stay open when the language changes; a partly ticked box for a folder with something left out; and a pattern's message cleared when the field changes. Also About without the name selected, and "already open" as a proper message dialog | Todo | `ui-review/UiReview.md` T01, T02, T04, W05, W06 |
+| T-045 | On the start screen in German, the user's four buttons don't fit on one line at 1024 × 768: Eject wraps onto a line of its own, and the other three spread out in wide columns, because GTK's wrapping row lines its buttons up in columns. Make them sit close together when they wrap, or fit on one line | Todo | Pull request 56 |
 | T-035 | Show "Ext4 asks for your password while formatting." as soon as Ext4 is chosen. The format page only refreshes when exFAT is toggled, and at that moment Ext4 isn't active yet, so the line only appears after something else changes | Todo | Pull request 49; UiReview.md item F03 |
 | T-036 | Remove "Details for your poweruser" and Copy from the verdict screen, and make the log enough for diagnosing on its own: Babawus's version and the hostname at each start, and every skipped file and error. Update Requirements.md, the checklist's Copy step, and say in the README where the log is | Todo | Issues: 117 |
 
@@ -96,3 +96,4 @@ Nothing is waiting for a decision.
 | T-042 | Wait until udisks2 has read the file system before checking a real medium's status, so that `a_real_babawus_medium_is_ready` no longer fails now and then, as T-034 did for `exfat_is_reported` | [#53](https://github.com/ziggymax/babawus/pull/53) |
 | T-039 | The verdict screen as the review decided: three text styles, no reason line repeating "Some files were skipped", and "Run the backup again when it suits you." after the user stopped a backup. Also brings back two text styles that T-038 had removed while other pages still used them | [#54](https://github.com/ziggymax/babawus/pull/54) |
 | T-040 | Setup of this stick: "Add this computer and your account", with the folder name in the line above; the unreadable-setup text in the normal style; and "backup profile" for one account on one computer, with names quoted in sentences, made official in Requirements.md and Concept.md (Issues.md items 119 and 122) | [#55](https://github.com/ziggymax/babawus/pull/55) |
+| T-041 | Choose what to back up: the heading "Choose what to back up for …", which now also follows the language; only the tree scrolls, with the name patterns in a section "Leave out by name" that starts closed; open folders stay open when the language changes; a partly ticked box (Issues.md item 123); and a pattern's message cleared when the field changes. Also About without the name selected, and "already open" as a proper message | [#56](https://github.com/ziggymax/babawus/pull/56) |

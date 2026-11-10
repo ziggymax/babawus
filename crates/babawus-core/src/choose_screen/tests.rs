@@ -302,3 +302,42 @@ fn the_totals_compare_with_the_free_space() {
         "Nothing is chosen yet."
     );
 }
+
+#[test]
+fn a_ticked_folder_with_a_folder_left_out_is_partly_ticked() {
+    let choice = choice(&["Documents"], &["Documents/old"]);
+
+    let documents = row(&choice, &dir("Documents"));
+    assert!(documents.ticked);
+    assert!(documents.partly);
+    assert!(row(&choice, &dir("")).partly, "the home folder too");
+    assert!(!row(&choice, &dir("Documents/old")).partly);
+    assert!(!row(&choice, &dir("Pictures")).partly);
+}
+
+#[test]
+fn what_a_name_pattern_leaves_out_doesnt_make_a_folder_partly_ticked() {
+    // `*.tmp` leaves out Documents/scratch.tmp.
+    let choice = choice(&["Documents"], &[]);
+
+    assert!(!row(&choice, &dir("Documents")).partly);
+}
+
+#[test]
+fn an_unticked_folder_with_something_ticked_inside_is_partly_ticked() {
+    let choice = choice(&["Documents/old"], &[]);
+
+    let documents = row(&choice, &dir("Documents"));
+    assert!(!documents.ticked);
+    assert!(documents.partly);
+    assert!(!row(&choice, &dir("Documents/old")).partly);
+    assert!(!row(&choice, &file("Documents/letter.txt")).partly);
+}
+
+#[test]
+fn a_whole_ticked_folder_is_not_partly_ticked() {
+    let choice = choice(&["Documents"], &[]);
+
+    assert!(!row(&choice, &dir("Documents/old")).partly);
+    assert!(!row(&choice, &file("Documents/letter.txt")).partly);
+}

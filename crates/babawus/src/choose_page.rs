@@ -8,7 +8,7 @@
 //! each change.
 
 use std::cell::{Cell, RefCell};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -23,16 +23,21 @@ use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
 use gtk4::prelude::*;
 use gtk4::{
-    Align, Box, Button, CheckButton, Entry as TextEntry, Image, Label, ListItem, ListView,
-    NoSelection, Orientation, PolicyType, ScrolledWindow, Separator, SignalListItemFactory,
-    Spinner, Switch, TreeExpander, TreeListModel, TreeListRow, gio, glib,
+    Align, Box, Button, CheckButton, Entry as TextEntry, Expander, Image, Label, ListItem,
+    ListView, NoSelection, Orientation, PolicyType, ScrolledWindow, Separator,
+    SignalListItemFactory, Spinner, Switch, TreeExpander, TreeListModel, TreeListRow, gio, glib,
 };
 
 use crate::icons;
 
 const MARGIN: i32 = 32;
 const SPACING: i32 = 12;
-const TREE_HEIGHT: i32 = 320;
+/// The tree's least height. It grows to fill whatever height the window has, and is the only
+/// part of the page that scrolls (`ui-review/UiReview.md` T01).
+const TREE_HEIGHT: i32 = 120;
+/// How tall the name patterns grow before they scroll, so that opening them never makes the
+/// window taller.
+const PATTERNS_HEIGHT: i32 = 160;
 
 /// The widgets of one row of the tree. GTK reuses them for whichever row is in view.
 struct RowWidgets {
@@ -68,7 +73,10 @@ impl Shared {
             .borrow()
             .row(&RealFs, &self.home, entry, language);
         self.updating.set(true);
-        row.check.set_active(shown.ticked);
+        // The theme draws a tick over the dash if the box is also checked. A click goes by the
+        // choice, not by the box, so this changes only how it looks.
+        row.check.set_active(shown.ticked && !shown.partly);
+        row.check.set_inconsistent(shown.partly);
         row.check.set_sensitive(shown.can_toggle);
         self.updating.set(false);
         let name = glib::markup_escape_text(&entry.name);
@@ -110,6 +118,9 @@ pub struct ChoosePage {
     hidden_label: Label,
     hidden: Switch,
     tree_scroll: ScrolledWindow,
+    /// The tree as shown, to keep its open folders open when it is built again.
+    tree: RefCell<Option<TreeListModel>>,
+    patterns_section: Expander,
     patterns_heading: Label,
     patterns_detail: Label,
     patterns: Box,
@@ -123,6 +134,8 @@ pub struct ChoosePage {
     pub done: Button,
     pub cancel: Button,
     shared: Rc<Shared>,
+    /// The account whose choice it is, for the heading.
+    user: RefCell<String>,
     /// The free space on the medium, if known.
     free: Cell<Option<u64>>,
     /// Stops the count that is going on, if any.
@@ -184,8 +197,28 @@ impl ChoosePage {
         add_row.append(&pattern_entry);
         add_row.append(&pattern_add);
         let pattern_problem = label(Some("dim-label"));
+        let patterns_scroll = ScrolledWindow::builder()
+            .hscrollbar_policy(PolicyType::Never)
+            .propagate_natural_height(true)
+            .max_content_height(PATTERNS_HEIGHT)
+            .child(&patterns)
+            .build();
+        let patterns_box = column();
+        patterns_box.set_margin_top(8);
+        patterns_box.append(&patterns_detail);
+        patterns_box.append(&patterns_scroll);
+        patterns_box.append(&add_row);
+        patterns_box.append(&pattern_problem);
+        // Closed at first, so that the tree gets the room (`ui-review/UiReview.md` T01). Its
+        // title says what the heading inside it used to.
+        let patterns_section = Expander::builder()
+            .label_widget(&patterns_heading)
+            .child(&patterns_box)
+            .build();
 
+        // Only the tree scrolls, so the page itself doesn't.
         let page = column();
+        page.set_vexpand(true);
         page.set_margin_top(MARGIN);
         page.set_margin_bottom(SPACING);
         page.set_margin_start(MARGIN);
@@ -197,16 +230,7 @@ impl ChoosePage {
         page.append(&totals_row);
         page.append(&warning_row);
         page.append(&Separator::new(Orientation::Horizontal));
-        page.append(&patterns_heading);
-        page.append(&patterns_detail);
-        page.append(&patterns);
-        page.append(&add_row);
-        page.append(&pattern_problem);
-        let scroll = ScrolledWindow::builder()
-            .hscrollbar_policy(PolicyType::Never)
-            .vexpand(true)
-            .child(&page)
-            .build();
+        page.append(&patterns_section);
 
         let done = Button::new();
         done.add_css_class("suggested-action");
@@ -221,7 +245,7 @@ impl ChoosePage {
         bottom.append(&Separator::new(Orientation::Horizontal));
         bottom.append(&buttons);
         let root = Box::new(Orientation::Vertical, 0);
-        root.append(&scroll);
+        root.append(&page);
         root.append(&bottom);
 
         let page = Rc::new(Self {
@@ -231,6 +255,8 @@ impl ChoosePage {
             hidden_label,
             hidden,
             tree_scroll,
+            tree: RefCell::new(None),
+            patterns_section,
             patterns_heading,
             patterns_detail,
             patterns,
@@ -253,6 +279,7 @@ impl ChoosePage {
                 rows: RefCell::new(HashMap::new()),
                 changed: RefCell::new(None),
             }),
+            user: RefCell::new(String::new()),
             free: Cell::new(None),
             count_cancel: RefCell::new(Arc::new(AtomicBool::new(false))),
             count_generation: Cell::new(0),
@@ -295,6 +322,13 @@ impl ChoosePage {
             }
         };
         let add = Rc::new(add);
+        // A message about the last pattern tried goes once the field changes.
+        let weak = Rc::downgrade(self);
+        self.pattern_entry.connect_changed(move |_| {
+            if let Some(page) = weak.upgrade() {
+                page.pattern_problem.set_visible(false);
+            }
+        });
         let on_click = add.clone();
         self.pattern_add.connect_clicked(move |_| on_click());
         self.pattern_entry.connect_activate(move |_| add());
@@ -315,19 +349,22 @@ impl ChoosePage {
         self.hidden.set_active(false);
         self.pattern_entry.set_text("");
         self.pattern_problem.set_visible(false);
-        self.title
-            .set_label(&Text::ChooseHeading.fill(language, &[("user", user)]));
+        self.patterns_section.set_expanded(false);
+        *self.user.borrow_mut() = user.to_owned();
         self.set_language(language);
     }
 
     /// Sets every text again, for example after the language changed.
     pub fn set_language(self: &Rc<Self>, language: Language) {
         self.shared.language.set(language);
+        let user = self.user.borrow().clone();
+        self.title
+            .set_label(&Text::ChooseHeading.fill(language, &[("user", &user)]));
         self.intro.set_label(Text::ChooseIntro.get(language));
         self.hidden_label
             .set_label(Text::ChooseShowHidden.get(language));
         self.patterns_heading
-            .set_label(Text::ChoosePatterns.get(language));
+            .set_label(Text::ChoosePatternsSection.get(language));
         self.patterns_detail
             .set_label(Text::ChoosePatternsDetail.get(language));
         self.pattern_add
@@ -357,11 +394,15 @@ impl ChoosePage {
     pub fn close(&self) {
         self.count_cancel.borrow().store(true, Ordering::Relaxed);
         self.tree_scroll.set_child(None::<&gtk4::Widget>);
+        *self.tree.borrow_mut() = None;
         self.shared.rows.borrow_mut().clear();
     }
 
-    /// Builds the tree again from the home folder, with the home folder open.
+    /// Builds the tree again from the home folder. The folders that were open stay open, so that
+    /// changing the language or showing hidden files doesn't close them; a new tree has the
+    /// home folder open.
     fn build_tree(&self) {
+        let open = self.open_folders();
         let root = gio::ListStore::new::<glib::BoxedAnyObject>();
         root.append(&glib::BoxedAnyObject::new(home_entry(
             self.shared.language.get(),
@@ -465,9 +506,40 @@ impl ChoosePage {
         });
         let view = ListView::new(Some(NoSelection::new(Some(tree.clone()))), Some(factory));
         self.tree_scroll.set_child(Some(&view));
-        if let Some(home) = tree.item(0).and_downcast::<TreeListRow>() {
-            home.set_expanded(true);
+        match open {
+            None => {
+                if let Some(home) = tree.item(0).and_downcast::<TreeListRow>() {
+                    home.set_expanded(true);
+                }
+            }
+            // Opening a folder adds its rows right after it, so one pass down the list reaches
+            // folders inside open ones too.
+            Some(open) => {
+                let mut index = 0;
+                while index < tree.n_items() {
+                    if let Some(row) = tree.item(index).and_downcast::<TreeListRow>()
+                        && row_path(&row).is_some_and(|path| open.contains(&path))
+                    {
+                        row.set_expanded(true);
+                    }
+                    index += 1;
+                }
+            }
         }
+        *self.tree.borrow_mut() = Some(tree);
+    }
+
+    /// The folders open in the tree as shown, or `None` if there is no tree yet.
+    fn open_folders(&self) -> Option<HashSet<PathBuf>> {
+        let tree = self.tree.borrow();
+        let tree = tree.as_ref()?;
+        Some(
+            (0..tree.n_items())
+                .filter_map(|index| tree.item(index).and_downcast::<TreeListRow>())
+                .filter(TreeListRow::is_expanded)
+                .filter_map(|row| row_path(&row))
+                .collect(),
+        )
     }
 
     /// Lists the name patterns, each with "Remove".
@@ -530,4 +602,10 @@ impl ChoosePage {
             .set_label(too_big.as_deref().unwrap_or_default());
         self.warning_row.set_visible(too_big.is_some());
     }
+}
+
+/// The path, relative to the home folder, of the entry in `row`.
+fn row_path(row: &TreeListRow) -> Option<PathBuf> {
+    let object = row.item().and_downcast::<glib::BoxedAnyObject>()?;
+    Some(object.borrow::<Entry>().relative.clone())
 }
