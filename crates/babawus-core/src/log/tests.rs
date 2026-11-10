@@ -11,6 +11,10 @@ const LATER: &str = "2026-11-04 09:00:00 +0100";
 const RUN: &str = "0123456789abcdef";
 const OTHER_RUN: &str = "fedcba9876543210";
 const ACCOUNT: &str = "usera@mint";
+const RUNNER: Runner = Runner {
+    account: ACCOUNT,
+    hostname: "Mint-PC",
+};
 const END_FIELDS: &str = "verdict=ALL_GOOD\treason=NONE\tscanned_files=5\tcopied_files=2\t\
                           copied_bytes=300\tskipped_files=0\terrors=0\tversions_removed=1\t\
                           free_bytes=4000";
@@ -88,7 +92,7 @@ impl Setup {
             &root,
             format,
             RUN.to_owned(),
-            ACCOUNT,
+            &RUNNER,
             &now,
             None,
         )
@@ -128,8 +132,10 @@ fn a_run_writes_the_entries_in_the_requirements() {
         log.end(Reason::FilesSkipped, stats)
     });
 
+    let version = crate::VERSION;
     let expected = format!(
-        "{LATER}\t{RUN}\tSTART\taccount=usera@mint\tBackup started\n\
+        "{LATER}\t{RUN}\tSTART\taccount=usera@mint\tversion={version}\thostname=Mint-PC\t\
+         Backup started\n\
          {LATER}\t{RUN}\tERROR\tcode=UNREADABLE\tpath=Documents/a.txt\n\
          {LATER}\t{RUN}\tERROR\tcode=CASE_CLASH\tpath=Bilder\tfiles=12\n\
          {LATER}\t{RUN}\tEND\tverdict=SKIPPED\treason=FILES_SKIPPED\tscanned_files=5\t\
@@ -229,23 +235,23 @@ fn a_medium_with_no_log_has_no_runs() {
 }
 
 #[test]
-fn the_first_20_errors_are_logged_and_the_rest_only_counted() {
+fn the_first_100_errors_are_logged_and_the_rest_only_counted() {
     let setup = Setup::new();
 
     setup.with_run(Format::ExFat, |mut log| {
-        for number in 0..25 {
+        for number in 0..105 {
             log.error("UNREADABLE", Path::new(&format!("file-{number}")), 1)?;
         }
         log.end(Reason::FilesSkipped, Stats::default())
     });
 
     let run = &setup.runs()[0];
-    assert_eq!(run.errors.len(), 21);
-    assert_eq!(run.errors[19].path, Some(PathBuf::from("file-19")));
-    let last = &run.errors[20];
+    assert_eq!(run.errors.len(), 101);
+    assert_eq!(run.errors[99].path, Some(PathBuf::from("file-99")));
+    let last = &run.errors[100];
     assert_eq!(last.code, "MULTIPLE_ERRORS");
     assert_eq!(last.path, None);
-    assert_eq!(run.end.unwrap().stats.unwrap().errors, 25);
+    assert_eq!(run.end.unwrap().stats.unwrap().errors, 105);
     assert_eq!(
         setup
             .text()
@@ -256,17 +262,31 @@ fn the_first_20_errors_are_logged_and_the_rest_only_counted() {
 }
 
 #[test]
-fn exactly_20_errors_need_no_note_about_further_errors() {
+fn exactly_100_errors_need_no_note_about_further_errors() {
     let setup = Setup::new();
 
     setup.with_run(Format::ExFat, |mut log| {
-        for _ in 0..20 {
+        for _ in 0..100 {
             log.error("UNREADABLE", Path::new("file"), 1)?;
         }
         Ok(())
     });
 
     assert!(!setup.text().contains("MULTIPLE_ERRORS"));
+}
+
+#[test]
+fn the_start_entry_says_which_babawus_ran_where() {
+    let setup = Setup::new();
+
+    setup.start_only();
+
+    let start = format!(
+        "{LATER}\t{RUN}\tSTART\taccount={ACCOUNT}\tversion={}\thostname=Mint-PC\tBackup started\n",
+        crate::VERSION
+    );
+    assert!(setup.text().ends_with(&start), "{}", setup.text());
+    assert_eq!(setup.runs()[0].account, ACCOUNT);
 }
 
 #[test]
@@ -504,7 +524,7 @@ fn a_run_with_a_live_lock_is_never_closed() {
         &root,
         Format::ExFat,
         RUN.to_owned(),
-        ACCOUNT,
+        &RUNNER,
         &now,
         Some(OTHER_RUN),
     );
@@ -798,7 +818,7 @@ fn pulling_the_medium_at_any_step_of_a_run_never_loses_earlier_runs() {
             &root,
             Format::Ext4,
             RUN.to_owned(),
-            ACCOUNT,
+            &RUNNER,
             &now,
             None,
         )?;
@@ -849,7 +869,7 @@ fn an_error_while_writing_is_reported() {
         &root,
         Format::ExFat,
         RUN.to_owned(),
-        ACCOUNT,
+        &RUNNER,
         &now,
         None,
     );

@@ -34,7 +34,6 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 | Computer folder | A computer's folder under `backup` on a medium, for example `mint-2`. |
 | Computer ID | The hashed ID that identifies a computer (see "Identifying a computer"). |
 | Configuration | The contents of `.babawus/babawus_config`. |
-| Details for your poweruser | The text shown with a verdict, which the user can copy and send to the poweruser. |
 | Eject | Unmounting a medium and powering off the device. |
 | Entry | A computer or account in the configuration. On screen, an account's entry is a *backup profile*, and a computer's entry is the computer. |
 | Exclusion | A name pattern or a specific folder that is left out of a backup. |
@@ -169,8 +168,8 @@ A damaged configuration that can be parsed opens with a warning to check it and 
 
 As a poweruser I want Babawus to maintain a log of the runs performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text (see "Format of the log"). All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each run has these entries:
 
-- A start entry with the timestamp and the `username@computer folder` the backup runs for.
-- An entry for each anomaly (error) seen during the run, with an error code and the path of the file relative to the home folder. The first 20 errors are logged individually. If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
+- A start entry with the timestamp, the `username@computer folder` the backup runs for, the version of Babawus, and the computer's hostname.
+- An entry for each anomaly (error) seen during the run, including each skipped file, with an error code and the path of the file relative to the home folder. The first 100 errors are logged individually (Issues.md item 124). If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
 - An end entry with the timestamp, the verdict, the reason, the number of files scanned, the number of files and bytes successfully copied, the number of files skipped, the number of errors, the number of older versions removed, and the free space left on the medium.
 
 The log is kept below 1 MB (1,000,000 bytes). When it has grown beyond 900,000 bytes at the start of a run, the oldest whole runs are removed from it until it is back within 900,000 bytes, which leaves room for the run that follows. The most recent run of each account that counts as a backup (see "See when I last made a backup") is always kept.
@@ -192,7 +191,7 @@ If several of these happen in one run, the worst verdict wins: Backup failed, th
 
 Every verdict other than "All good" gives the reason in plain words (for example "the medium is full" or "the medium was removed"). Skipped files are grouped by reason (for example "3 files have characters in their names that this medium can't store"). The verdict also tells me how long it has been since my last backup (see "See when I last made a backup").
 
-Next to the verdict, Babawus shows "Details for your poweruser": the verdict, the reason, the date and time, `username@computer folder`, the medium's label, the counts, and the first errors. A "Copy" button puts these details on the clipboard, so that I can paste them into an email or a chat. The details are written in the language Babawus shows, with the fixed codes from the log next to the verdict, the reason and each problem, so that the poweruser can read them whatever the language. They list the first 10 problems; the log has them all. The details are folded away until I open them, so that the verdict itself stays plain.
+The log is the one place for diagnosing a run. Users don't copy details for the poweruser: the log is always there, whether or not anyone did anything, and holds what the poweruser needs, in fixed codes that read the same whatever the language (Issues.md item 117).
 
 The verdict screen takes the place of the backup screen when the run ends. It shows a mark next to the verdict: a green tick for "All good", an amber "!" for "Some files were skipped" and "Backup not finished", and a red cross for "Backup failed". Below it come the reason, the skipped files by reason, the next step, what was copied ("Copied: 12 files (3.4 MB)", or "Everything was already up to date."), and the last backup. "Some files were skipped" needs no reason below it, because it says it already. The screen has three text styles: the label, the verdict with its mark, and one style for everything below, in which only the next step is bold (`ui-review/UiReview.md` items G02, V03 and V05). When the run counts as a backup, an "Eject" button offers to eject the medium (see "Offer to eject media after a successful backup operation"). "Back" returns to the start screen.
 
@@ -585,7 +584,7 @@ Verdicts, reasons and error codes are written as fixed, language-neutral codes. 
 
 | Entry | Fields |
 |---|---|
-| `START` | `account`: `username@computer folder`. If the computer has not been added to the medium, there is no computer folder, so the hostname is used in its place |
+| `START` | `account`: `username@computer folder`. If the computer has not been added to the medium, there is no computer folder, so the hostname is used in its place. `version`: the version of Babawus, for example `0.1.0`. `hostname`: the computer's hostname, as it is now. A log written before these two were added has a start entry without them |
 | `ERROR` | `code`, and `path` (relative to the home folder). `files` gives the number of files in a skipped folder, if it has any |
 | `END` | `verdict` and `reason`. Except for an interrupted run, whose numbers are not known, also `scanned_files`, `copied_files`, `copied_bytes`, `skipped_files`, `errors`, `versions_removed` and `free_bytes` |
 

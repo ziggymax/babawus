@@ -23,6 +23,10 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Build the `.deb` package | `cargo deb -p babawus` |
 
+## Finding out what went wrong
+
+Each stick keeps a log of every backup made to it, in `.babawus/babawus_log.txt` on the stick. It is plain text, one entry per line: when each run started, for whom, on which computer and with which version of Babawus, every file it had to skip and why, and how it ended. Open it with any text editor; the folder `.babawus` is hidden, so show hidden files in the file manager first. The format is described under "Format of the log" in [Requirements.md](Requirements.md).
+
 ## Installing and uninstalling
 
 Install Babawus by double-clicking the `.deb` package and choosing "Install Package". Install a newer version the same way: it replaces the old one, and keeps the chosen language and everything on the sticks.

@@ -23,8 +23,9 @@ use crate::versions::Format;
 /// below the limit of 1,000,000 bytes.
 const TRIM_LIMIT: usize = 900_000;
 
-/// The errors of a run that are logged one by one. The rest are only counted.
-const MAX_LOGGED_ERRORS: u64 = 20;
+/// The errors of a run that are logged one by one. The rest are only counted: many errors most
+/// likely share a cause, and the first ones show it (Issues.md item 124).
+const MAX_LOGGED_ERRORS: u64 = 100;
 
 /// The code for an older version that could not be removed. This doesn't change the verdict.
 pub const PRUNE_FAILED: &str = "PRUNE_FAILED";
@@ -35,6 +36,15 @@ const ERROR: &str = "ERROR";
 const END: &str = "END";
 
 const RUN_ID_BYTES: usize = 8;
+
+/// Who runs a backup, for its start entry.
+#[derive(Clone, Copy, Debug)]
+pub struct Runner<'s> {
+    /// `username@computer folder`.
+    pub account: &'s str,
+    /// The computer's hostname, which the configuration only keeps as "last seen as".
+    pub hostname: &'s str,
+}
 
 /// The numbers of a finished run.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -475,14 +485,14 @@ pub struct RunLog<'a> {
 
 impl<'a> RunLog<'a> {
     /// Starts the log of a run: closes interrupted runs, trims the log, and writes the start
-    /// entry. `.babawus/tmp/` has already been emptied. `live_run` is the run whose lock is still
-    /// live, if any, and is never closed.
+    /// entry, which says who runs it, where, and with which Babawus. `.babawus/tmp/` has already
+    /// been emptied. `live_run` is the run whose lock is still live, if any, and is never closed.
     pub fn start(
         medium: &'a dyn FileSystem,
         root: &'a Path,
         format: Format,
         run_id: String,
-        account: &str,
+        runner: &Runner,
         now: &'a dyn Fn() -> String,
         live_run: Option<&str>,
     ) -> io::Result<Self> {
@@ -509,8 +519,12 @@ impl<'a> RunLog<'a> {
             now,
             errors: 0,
         };
-        let account = [("account", escape(account.as_bytes()))];
-        log.write(START, &account, Some("Backup started"))?;
+        let pairs = [
+            ("account", escape(runner.account.as_bytes())),
+            ("version", escape(crate::VERSION.as_bytes())),
+            ("hostname", escape(runner.hostname.as_bytes())),
+        ];
+        log.write(START, &pairs, Some("Backup started"))?;
         Ok(log)
     }
 

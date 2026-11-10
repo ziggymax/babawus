@@ -9,8 +9,8 @@ use babawus_core::text::Text;
 use babawus_core::verdict_screen::VerdictShown;
 use gtk4::prelude::*;
 use gtk4::{
-    Align, Box, Button, Expander, Image, Label, Orientation, PolicyType, ProgressBar,
-    ScrolledWindow, Separator, Spinner, TextView, WrapMode,
+    Box, Button, Image, Label, Orientation, PolicyType, ProgressBar, ScrolledWindow, Separator,
+    Spinner,
 };
 
 use crate::icons;
@@ -41,10 +41,6 @@ pub struct BackupPage {
     next_step: Label,
     copied: Label,
     last_backup: Label,
-    details: Expander,
-    details_text: TextView,
-    pub copy: Button,
-    copied_note: Label,
     notice: Label,
     pub eject: Button,
     pub back: Button,
@@ -99,27 +95,6 @@ impl BackupPage {
         let next_step = label(Some("babawus-next-step"));
         let copied = label(None);
         let last_backup = label(None);
-        let details_text = TextView::builder()
-            .editable(false)
-            .monospace(true)
-            .wrap_mode(WrapMode::WordChar)
-            .left_margin(8)
-            .right_margin(8)
-            .top_margin(8)
-            .bottom_margin(8)
-            .build();
-        details_text.add_css_class("babawus-details");
-        let copy = Button::new();
-        copy.set_halign(Align::Start);
-        let copied_note = label(Some("dim-label"));
-        let copy_row = Box::new(Orientation::Horizontal, SPACING);
-        copy_row.append(&copy);
-        copy_row.append(&copied_note);
-        let details_box = column();
-        details_box.set_margin_top(8);
-        details_box.append(&details_text);
-        details_box.append(&copy_row);
-        let details = Expander::builder().child(&details_box).build();
         let notice = label(None);
         let verdict = column();
         verdict.append(&verdict_row);
@@ -128,7 +103,6 @@ impl BackupPage {
         verdict.append(&next_step);
         verdict.append(&copied);
         verdict.append(&last_backup);
-        verdict.append(&details);
 
         let cancel = Button::new();
         let eject = Button::new();
@@ -190,10 +164,6 @@ impl BackupPage {
             next_step,
             copied,
             last_backup,
-            details,
-            details_text,
-            copy,
-            copied_note,
             notice,
             eject,
             back,
@@ -226,14 +196,13 @@ impl BackupPage {
     }
 
     /// Shows the verdict. `notice` is what came of ejecting, if anything, and `ejecting` is set
-    /// while it goes on. `copied` says the details have just been copied.
+    /// while it goes on.
     pub fn show_verdict(
         &self,
         label: &str,
         shown: &VerdictShown,
         notice: Option<&str>,
         ejecting: bool,
-        copied: bool,
         language: Language,
     ) {
         self.set_buttons(label, language);
@@ -258,12 +227,6 @@ impl BackupPage {
         set_optional(&self.next_step, shown.next_step.as_deref());
         set_optional(&self.copied, shown.copied.as_deref());
         self.last_backup.set_label(&shown.last_backup);
-        self.details.set_visible(!shown.details.is_empty());
-        self.details_text.buffer().set_text(&shown.details);
-        set_optional(
-            &self.copied_note,
-            copied.then(|| Text::DetailsCopied.get(language)),
-        );
         set_optional(&self.notice, notice);
         self.cancel.set_visible(false);
         // Once the medium has been ejected, or tried to be, the notice says what to do.
@@ -271,11 +234,6 @@ impl BackupPage {
             .set_visible(shown.offer_eject && (notice.is_none() || ejecting));
         self.eject.set_sensitive(!ejecting);
         self.back.set_visible(true);
-    }
-
-    /// The details as shown, to copy them.
-    pub fn details_text(&self) -> gtk4::TextBuffer {
-        self.details_text.buffer()
     }
 
     fn set_buttons(&self, label: &str, language: Language) {
@@ -289,13 +247,6 @@ impl BackupPage {
         self.back.set_label(Text::Back.get(language));
         self.back
             .set_tooltip_text(Some(Text::BackTooltip.get(language)));
-        self.details
-            .set_label(Some(Text::DetailsTitle.get(language)));
-        self.details
-            .set_tooltip_text(Some(Text::DetailsTooltip.get(language)));
-        self.copy.set_label(Text::CopyDetails.get(language));
-        self.copy
-            .set_tooltip_text(Some(Text::CopyDetailsTooltip.get(language)));
     }
 }
 

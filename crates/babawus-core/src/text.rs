@@ -143,20 +143,6 @@ texts! {
     SkipSelectionMissing: "Chosen for backup, but doesn't exist any more", "Zum Sichern ausgewählt, aber nicht mehr vorhanden";
     SkipOutsideHome: "Chosen for backup, but outside your home folder", "Zum Sichern ausgewählt, aber außerhalb deines persönlichen Ordners";
 
-    DetailsTitle: "Details for your poweruser", "Einzelheiten für deinen Betreuer";
-    DetailsTooltip: "What happened, in a form your poweruser can use", "Was passiert ist, in einer Form, mit der dein Betreuer etwas anfangen kann";
-    CopyDetails: "Copy", "Kopieren";
-    CopyDetailsTooltip: "Copy the details, to paste them into an email or a chat", "Die Einzelheiten kopieren, um sie in eine E-Mail oder einen Chat einzufügen";
-    DetailsCopied: "Copied. You can paste the details into an email or a chat.", "Kopiert. Du kannst die Einzelheiten jetzt in eine E-Mail oder einen Chat einfügen.";
-    DetailsVerdict: "Verdict: {verdict} ({code})", "Ergebnis: {verdict} ({code})";
-    DetailsReason: "Reason: {reason} ({code})", "Grund: {reason} ({code})";
-    DetailsTime: "Time: {time}", "Zeit: {time}";
-    DetailsAccount: "Account: {account}", "Konto: {account}";
-    DetailsMedium: "Medium: {label}", "Stick: {label}";
-    DetailsCounts: "Files found: {scanned}, copied: {copied} ({size}), skipped: {skipped}, errors: {errors}, older versions removed: {removed}", "Gefundene Dateien: {scanned}, kopiert: {copied} ({size}), übersprungen: {skipped}, Fehler: {errors}, ältere Versionen entfernt: {removed}";
-    DetailsFree: "Free on the medium: {size}", "Frei auf dem Stick: {size}";
-    DetailsProblems: "First problems:", "Erste Probleme:";
-    DetailsMore: "  … and {more} more, listed in the log on the medium", "  … und {more} weitere, aufgeführt im Protokoll auf dem Stick";
     EjectNow: "Eject {label}", "{label} auswerfen";
     EjectNowTooltip: "Make the stick safe to pull out now", "Den Stick jetzt so vorbereiten, dass du ihn gefahrlos abziehen kannst";
     VerdictAllGood: "All good", "Alles in Ordnung";

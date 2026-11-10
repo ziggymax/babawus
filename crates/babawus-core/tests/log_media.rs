@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime};
 
 use babawus_core::config::{Config, link_account, save};
 use babawus_core::fs::RealFs;
-use babawus_core::log::{RunLog, Stats, last_backup, new_run_id, read_runs};
+use babawus_core::log::{RunLog, Runner, Stats, last_backup, new_run_id, read_runs};
 use babawus_core::medium::LOG_FILE;
 use babawus_core::time::{days_since, log_timestamp};
 use babawus_core::verdict::{Reason, Verdict};
@@ -54,7 +54,10 @@ impl Test {
             self.root(),
             self.format,
             new_run_id(),
-            ACCOUNT,
+            &Runner {
+                account: ACCOUNT,
+                hostname: "mint",
+            },
             now,
             None,
         )

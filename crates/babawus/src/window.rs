@@ -76,7 +76,6 @@ const CSS: &str = "
 .babawus-plug-in { font-size: 16pt; }
 .babawus-verdict { font-size: 18pt; font-weight: bold; }
 .babawus-next-step { font-weight: bold; }
-.babawus-details { font-family: monospace; }
 .babawus-advanced {
     background-color: #f0a020;
     color: #3a2400;
@@ -142,8 +141,6 @@ struct BackupState {
     previous: Option<LastBackup>,
     /// When the run ended, once it has.
     ended_at: Option<SystemTime>,
-    /// The details have just been copied.
-    copied: bool,
     /// Nothing once the run has ended.
     running: Option<RunningBackup>,
     tracker: Tracker,
@@ -636,19 +633,6 @@ impl Window {
             if let Some((drive_id, label)) = drive {
                 window.eject_drive(drive_id, label);
             }
-        });
-        let weak = Rc::downgrade(self);
-        self.backup_page.copy.connect_clicked(move |button| {
-            let Some(window) = weak.upgrade() else { return };
-            let details = {
-                let buffer = window.backup_page.details_text();
-                buffer.text(&buffer.start_iter(), &buffer.end_iter(), false)
-            };
-            button.clipboard().set_text(&details);
-            if let Some(backup) = window.backup.borrow_mut().as_mut() {
-                backup.copied = true;
-            }
-            window.show_backup();
         });
         let weak = Rc::downgrade(self);
         self.backup_page.back.connect_clicked(move |_| {
@@ -2097,7 +2081,6 @@ impl Window {
             drive_id: medium.drive.id.clone(),
             previous: previous.flatten(),
             ended_at: None,
-            copied: false,
             running: Some(backup.start()),
             tracker: Tracker::default(),
             ended: None,
@@ -2179,7 +2162,6 @@ impl Window {
                     &shown,
                     notice.as_deref(),
                     ejecting,
-                    backup.copied,
                     language,
                 );
             }
