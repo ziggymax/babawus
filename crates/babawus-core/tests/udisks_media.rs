@@ -54,11 +54,13 @@ fn reports_the_file_system(format: MediumFormat, name: &str) {
         let udisks = Udisks::connect().expect("connect to udisks2");
         let medium = LoopMedium::new(format, 32 * MIB);
 
-        // udisks2 reads the mount table on its own schedule.
+        // udisks2 reads the mount table on its own schedule, and can list the mount before it
+        // has probed the label and file system, so wait for those too.
         let mut snapshot = Snapshot::default();
         wait_until(context, || {
             snapshot = udisks.snapshot();
-            volume_at(&snapshot, medium.path()).is_some()
+            volume_at(&snapshot, medium.path())
+                .is_some_and(|volume| !volume.label.is_empty() && !volume.file_system.is_empty())
         });
 
         let volume = volume_at(&snapshot, medium.path()).unwrap();

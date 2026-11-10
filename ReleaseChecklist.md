@@ -76,8 +76,10 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 ## Pulling out a stick (T-022)
 
-- [ ] Change `big.bin` again, start a backup to stick A, and pull the stick out while it says "Backing up…". → "Backup not finished", "The stick was removed.", and "Run the backup again. If it happens again, contact your poweruser." Note in the issue whether any skipped files or other errors were listed: there should be none.
-- [ ] Plug stick A back in, and start a backup. → It finishes, catching up on `big.bin`. The history shows the interrupted run as "Backup not finished" and this one after it.
+- [ ] Change `big.bin` again, start a backup to stick A, and pull the stick out while it says "Backing up…". → "Backup not finished", "The stick was removed.", and "Run the backup again. If it happens again, contact your poweruser." Files skipped before the pull may be listed, such as `meeting: notes.txt`, but nothing that the pull caused: no "Couldn't be written". Note in the issue what was listed.
+- [ ] Plug stick A back in, and start a backup. → It finishes, catching up on `big.bin`. The history shows the interrupted run as "Backup not finished", "The backup was interrupted.", and this one after it.
+
+There is no step for pulling out a stick during "Finishing…": it lasted less than a third of a second, too short to hit by hand. The automated tests cover it (see Issues.md item 103).
 
 ## Ejecting
 
