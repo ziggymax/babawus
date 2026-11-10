@@ -94,6 +94,8 @@ fn skipped_files_are_grouped_by_reason() {
     let shown = shown(with_skips, Some(3));
     assert_eq!(shown.mark, VerdictMark::Attention);
     assert_eq!(shown.title, "Some files were skipped");
+    // The title says it, so no reason repeats it.
+    assert_eq!(shown.reason, None);
     assert_eq!(shown.next_step.as_deref(), Some("Contact your poweruser."));
     let groups = [
         "Couldn't be read: 5 files",
@@ -107,10 +109,10 @@ fn skipped_files_are_grouped_by_reason() {
 
 #[test]
 fn an_unfinished_run_says_to_run_it_again() {
-    let shown = shown(outcome(Reason::Cancelled), Some(47));
+    let shown = shown(outcome(Reason::MediumRemoved), Some(47));
     assert_eq!(shown.mark, VerdictMark::Attention);
     assert_eq!(shown.title, "Backup not finished");
-    assert_eq!(shown.reason.as_deref(), Some("You stopped the backup."));
+    assert_eq!(shown.reason.as_deref(), Some("The stick was removed."));
     let next = "Run the backup again. If it happens again, contact your poweruser.";
     assert_eq!(shown.next_step.as_deref(), Some(next));
     // The last backup is still the one before.
@@ -119,6 +121,17 @@ fn an_unfinished_run_says_to_run_it_again() {
         "Last backup: 47 days ago (2024-08-18 at 12:00)"
     );
     assert!(!shown.offer_eject);
+}
+
+#[test]
+fn a_run_the_user_stopped_needs_no_poweruser() {
+    let shown = shown(outcome(Reason::Cancelled), Some(47));
+    assert_eq!(shown.title, "Backup not finished");
+    assert_eq!(shown.reason.as_deref(), Some("You stopped the backup."));
+    assert_eq!(
+        shown.next_step.as_deref(),
+        Some("Run the backup again when it suits you.")
+    );
 }
 
 #[test]

@@ -184,7 +184,7 @@ As a user I want every backup run to end with a clear, unmistakable verdict, wit
 |---|---|---|
 | All good | Everything that needed copying was copied | None |
 | Some files were skipped | The run finished, but files were skipped (for example unreadable, name cannot be stored, case clash, version name too long) | Contact your poweruser |
-| Backup not finished | The run was interrupted: the medium was removed, the computer was shut down, or I cancelled | Run the backup again. If it happens again, contact your poweruser |
+| Backup not finished | The run was interrupted: the medium was removed, the computer was shut down, or I cancelled | Run the backup again. If it happens again, contact your poweruser. If I stopped it myself: run the backup again when it suits me |
 | Backup failed | The run cannot succeed without the poweruser: the medium is full, the computer or account has not been added, the configuration is damaged or outdated, or the medium cannot be written to | Contact your poweruser |
 
 If several of these happen in one run, the worst verdict wins: Backup failed, then Backup not finished, then Some files were skipped, then All good.
@@ -193,7 +193,7 @@ Every verdict other than "All good" gives the reason in plain words (for example
 
 Next to the verdict, Babawus shows "Details for your poweruser": the verdict, the reason, the date and time, `username@computer folder`, the medium's label, the counts, and the first errors. A "Copy" button puts these details on the clipboard, so that I can paste them into an email or a chat. The details are written in the language Babawus shows, with the fixed codes from the log next to the verdict, the reason and each problem, so that the poweruser can read them whatever the language. They list the first 10 problems; the log has them all. The details are folded away until I open them, so that the verdict itself stays plain.
 
-The verdict screen takes the place of the backup screen when the run ends. It shows a mark next to the verdict: a green tick for "All good", an amber "!" for "Some files were skipped" and "Backup not finished", and a red cross for "Backup failed". Below it come the reason, the skipped files by reason, the next step, what was copied ("Copied: 12 files (3.4 MB)", or "Everything was already up to date."), and the last backup. When the run counts as a backup, an "Eject" button offers to eject the medium (see "Offer to eject media after a successful backup operation"). "Back" returns to the start screen.
+The verdict screen takes the place of the backup screen when the run ends. It shows a mark next to the verdict: a green tick for "All good", an amber "!" for "Some files were skipped" and "Backup not finished", and a red cross for "Backup failed". Below it come the reason, the skipped files by reason, the next step, what was copied ("Copied: 12 files (3.4 MB)", or "Everything was already up to date."), and the last backup. "Some files were skipped" needs no reason below it, because it says it already. The screen has three text styles: the label, the verdict with its mark, and one style for everything below, in which only the next step is bold (`ui-review/UiReview.md` items G02, V03 and V05). When the run counts as a backup, an "Eject" button offers to eject the medium (see "Offer to eject media after a successful backup operation"). "Back" returns to the start screen.
 
 ### See which files and folders a medium covers
 

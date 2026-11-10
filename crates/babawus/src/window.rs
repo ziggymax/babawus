@@ -71,6 +71,8 @@ const EJECT_GAP: i32 = 16;
 const CSS: &str = "
 .babawus-row-label { font-weight: bold; }
 .babawus-title { font-size: 20pt; font-weight: bold; }
+.babawus-status { font-size: 13pt; }
+.babawus-last-backup { font-size: 13pt; }
 .babawus-plug-in { font-size: 16pt; }
 .babawus-verdict { font-size: 18pt; font-weight: bold; }
 .babawus-next-step { font-weight: bold; }

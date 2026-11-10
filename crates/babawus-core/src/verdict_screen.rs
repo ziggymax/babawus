@@ -130,6 +130,10 @@ fn finished(outcome: &Outcome, context: &Context, language: Language) -> Verdict
     let mark = VerdictMark::of(verdict);
     let next_step = match verdict {
         Verdict::AllGood => None,
+        // The user stopped it on purpose, so nothing is wrong (`ui-review/UiReview.md` V05).
+        Verdict::NotFinished if outcome.reason == Reason::Cancelled => {
+            Some(Text::NextRunAgainLater)
+        }
         Verdict::NotFinished => Some(Text::NextRunAgain),
         Verdict::Skipped | Verdict::Failed => Some(Text::NextContact),
     };
@@ -145,7 +149,11 @@ fn finished(outcome: &Outcome, context: &Context, language: Language) -> Verdict
     VerdictShown {
         mark,
         title: verdict_title(verdict).get(language).to_owned(),
-        reason: reason_text(outcome.reason).map(|text| text.get(language).to_owned()),
+        // "Some files were skipped" says it already (`ui-review/UiReview.md` V03).
+        reason: (outcome.reason != Reason::FilesSkipped)
+            .then(|| reason_text(outcome.reason))
+            .flatten()
+            .map(|text| text.get(language).to_owned()),
         skipped: skipped_groups(outcome, language),
         next_step: next_step.map(|text| text.get(language).to_owned()),
         copied,
