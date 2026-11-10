@@ -93,7 +93,7 @@ impl BackupPage {
         let verdict_row = Box::new(Orientation::Horizontal, SPACING);
         verdict_row.append(&mark);
         verdict_row.append(&verdict_title);
-        let reason = label(Some("babawus-status"));
+        let reason = label(None);
         let skipped = label(None);
         skipped.set_margin_start(SPACING);
         let next_step = label(Some("babawus-next-step"));

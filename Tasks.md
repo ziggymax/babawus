@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-038 is merged, and T-042, a fix for a test that failed now and then, is waiting for review. Next are the other changes from the review of the look (T-032): T-039 to T-041, screen by screen, and T-035 and T-036.
+T-039, the verdict screen, is waiting for review. Next are the other changes from the review of the look (T-032): T-040 and T-041, screen by screen, and T-035 and T-036.
 
 ## First version: logic
 
@@ -34,7 +34,6 @@ Everything here is done.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-039 | The verdict screen as G02 says: three text styles, no repeated reason line under "Some files were skipped", and "Run the backup again when it suits you." after the user stopped a backup | Todo | `ui-review/UiReview.md` G02, V03, V05 |
 | T-040 | Setup of this stick: "Add this computer and your account", with the folder name in the line above; the unreadable-setup text in the normal style; and entries called "backup profiles", with their names always marked as names ("the backup profile called “laptop”"), with the same words on the page and in the questions. Make the term official: "Backup profile" in the glossary of Requirements.md, and in Concept.md | Todo | Issues: 119; `ui-review/UiReview.md` C01, C06, C10 |
 | T-041 | Choose what to back up: the heading "Choose what to back up for …"; only the tree scrolls, with the name patterns in a section that starts closed; open folders stay open when the language changes; a partly ticked box for a folder with something left out; and a pattern's message cleared when the field changes. Also About without the name selected, and "already open" as a proper message dialog | Todo | `ui-review/UiReview.md` T01, T02, T04, W05, W06 |
 | T-035 | Show "Ext4 asks for your password while formatting." as soon as Ext4 is chosen. The format page only refreshes when exFAT is toggled, and at that moment Ext4 isn't active yet, so the line only appears after something else changes | Todo | Pull request 49; UiReview.md item F03 |
@@ -94,3 +93,4 @@ Nothing is waiting for a decision.
 | T-037 | Open the window at 1024 × 768, and start every page that scrolls at the top whenever it opens or changes part | [#51](https://github.com/ziggymax/babawus/pull/51) |
 | T-038 | The start screen as the review decided: a larger stick picture and a bold label in the list; in the details the label, the stick's details, a thin line, then the status and every message in one style; a larger logo; buttons at their own width, Eject apart, the poweruser's on a row of their own; and texts for a stick that is plugged in but not listed (Issues.md items 120 and 121) | [#52](https://github.com/ziggymax/babawus/pull/52) |
 | T-042 | Wait until udisks2 has read the file system before checking a real medium's status, so that `a_real_babawus_medium_is_ready` no longer fails now and then, as T-034 did for `exfat_is_reported` | [#53](https://github.com/ziggymax/babawus/pull/53) |
+| T-039 | The verdict screen as the review decided: three text styles, no reason line repeating "Some files were skipped", and "Run the backup again when it suits you." after the user stopped a backup. Also brings back two text styles that T-038 had removed while other pages still used them | [#54](https://github.com/ziggymax/babawus/pull/54) |

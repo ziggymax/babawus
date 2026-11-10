@@ -107,6 +107,7 @@ texts! {
     VerdictBusy: "Another backup to this stick is just starting", "Gerade beginnt eine andere Sicherung auf diesen Stick";
     NextWait: "Wait until it has finished, then try again.", "Warte, bis sie fertig ist, und versuch es dann noch einmal.";
     NextRunAgain: "Run the backup again. If it happens again, contact your poweruser.", "Starte die Sicherung noch einmal. Wenn es wieder passiert, wende dich an deinen Betreuer.";
+    NextRunAgainLater: "Run the backup again when it suits you.", "Starte die Sicherung noch einmal, wenn es dir passt.";
     NextContact: "Contact your poweruser.", "Wende dich an deinen Betreuer.";
     NothingToCopy: "Everything was already up to date.", "Alles war schon auf dem neuesten Stand.";
     Copied: "Copied: {files} ({size})", "Kopiert: {files} ({size})";
