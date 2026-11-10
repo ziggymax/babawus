@@ -12,6 +12,13 @@ gtk4.workspace = true
 [package.metadata.deb]
 maintainer = "Steen K <steen@kroeyer.net>"
 section = "utils"
+# Shown below the summary by the installer (Issues.md item 111).
+extended-description = """\
+Babawus backs up your important files to a USB stick, with one button.
+
+It copies only what has changed, keeps older versions of each file, and says in plain words whether the backup worked. One stick can hold the backups of several computers and accounts.
+
+Whoever looks after the computer prepares the stick and chooses what is backed up, under Advanced. Sticks are formatted as exFAT, which also works on Windows and Mac, or Ext4."""
 depends = "$auto, udisks2, exfatprogs, e2fsprogs, acl"
 assets = [
     ["target/release/babawus", "usr/bin/", "755"],

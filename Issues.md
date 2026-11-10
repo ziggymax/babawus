@@ -312,3 +312,8 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-10):** Yes: when an administrator chooses Ext4, a short line says that it asks for their password while formatting.
 110. **A stick that is still open for another account.** A mount stays after its account logs out. In the first run, stick A was mounted at `/media/steen/BACKUP-A` when the second account logged in, and `/media/steen` can only be opened by `steen`. Babawus took the "Permission denied" to mean that the stick isn't a Babawus medium, and offered only "Prepare…", which would erase it.
     - **Decided (2026-11-10):** A stick whose root folder this account can't open gets its own status, "Open for another account", with an amber "!" and the advice to pull out the stick and plug it back in, which mounts it for this account. Babawus doesn't guess what is on it, and offers neither a backup nor "Prepare…" for it. The fix goes into the pull request for T-024.
+
+## Decisions on the package description (T-033)
+
+111. **What the installer shows about Babawus.** Mint's installer Captain showed only the summary, title-cased by Python's `str.title()` as "Basic Backup With Usb Storage", with nothing below it.
+    - **Decided (2026-11-10):** The summary stays "Basic backup with USB storage", which spells out the name, even though Captain shows "Usb". Below it comes a longer description for whoever installs Babawus: what it does, in plain words, and that the person who looks after the computer prepares the stick under Advanced. It is in English only, because a `.deb` package has one description.
