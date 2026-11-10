@@ -274,3 +274,98 @@ fn a_stick_open_for_another_account_says_so_and_offers_nothing_to_change_it() {
     assert!(!row.babawus, "what is on it is unknown");
     assert_eq!(row.mark, Some(Mark::Attention));
 }
+
+/// A snapshot with the stick of `medium("sdb", "BACKUP-A")`, its whole disk and partition, and
+/// its file system mounted or not.
+fn stick_snapshot(mounted: bool) -> Snapshot {
+    let mut medium = medium("sdb", "BACKUP-A");
+    if !mounted {
+        medium.volume.mount_point = None;
+    }
+    let block = |path: &str, size| crate::media::Block {
+        object_path: path.to_owned(),
+        drive: medium.drive.object_path.clone(),
+        size,
+        ..crate::media::Block::default()
+    };
+    Snapshot {
+        blocks: vec![
+            block("/org/freedesktop/UDisks2/block_devices/sdb", 15_502_147_584),
+            block(&medium.volume.object_path, 15_500_000_000),
+        ],
+        drives: vec![medium.drive],
+        volumes: vec![medium.volume],
+    }
+}
+
+#[test]
+fn a_listed_stick_is_not_unlisted() {
+    assert_eq!(unlisted(&stick_snapshot(true)), None);
+    assert_eq!(unlisted(&Snapshot::default()), None);
+}
+
+#[test]
+fn a_stick_whose_file_system_is_not_opened_is_unlisted() {
+    assert_eq!(unlisted(&stick_snapshot(false)), Some(Unlisted::NotOpened));
+}
+
+#[test]
+fn a_stick_without_a_file_system_cant_be_used() {
+    let mut snapshot = stick_snapshot(false);
+    snapshot.volumes.clear();
+
+    assert_eq!(unlisted(&snapshot), Some(Unlisted::CantBeUsed));
+}
+
+#[test]
+fn a_card_reader_without_a_card_is_not_a_stick() {
+    let mut snapshot = stick_snapshot(false);
+    snapshot.volumes.clear();
+    for block in &mut snapshot.blocks {
+        block.size = 0;
+    }
+
+    assert_eq!(unlisted(&snapshot), None);
+}
+
+#[test]
+fn a_drive_that_is_not_a_usb_medium_is_never_unlisted() {
+    let mut snapshot = stick_snapshot(false);
+    snapshot.drives[0].removable = false;
+
+    assert_eq!(unlisted(&snapshot), None);
+}
+
+#[test]
+fn a_stick_that_isnt_opened_comes_before_one_that_cant_be_used() {
+    let mut snapshot = stick_snapshot(false);
+    let mut blank = medium("sdc", "BLANK").drive;
+    blank.id.push_str("-blank");
+    snapshot.blocks.push(crate::media::Block {
+        object_path: "/org/freedesktop/UDisks2/block_devices/sdc".to_owned(),
+        drive: blank.object_path.clone(),
+        size: 1,
+        ..crate::media::Block::default()
+    });
+    snapshot.drives.insert(0, blank);
+
+    assert_eq!(unlisted(&snapshot), Some(Unlisted::NotOpened));
+}
+
+#[test]
+fn the_empty_page_says_what_to_do() {
+    assert_eq!(empty_text(false, true, None), (Text::NoUdisks, None));
+    assert_eq!(
+        empty_text(true, true, Some(Unlisted::NotOpened)),
+        (Text::ChooseMedium, None)
+    );
+    assert_eq!(empty_text(true, false, None), (Text::PlugIn, None));
+    assert_eq!(
+        empty_text(true, false, Some(Unlisted::NotOpened)),
+        (Text::StickNotOpened, Some(Text::StickNotOpenedAdvice))
+    );
+    assert_eq!(
+        empty_text(true, false, Some(Unlisted::CantBeUsed)),
+        (Text::StickCantBeUsed, Some(Text::StickCantBeUsedAdvice))
+    );
+}

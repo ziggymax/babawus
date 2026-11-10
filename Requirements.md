@@ -70,7 +70,7 @@ As a user I want to be able to simply start Babawus by clicking on an icon in a 
 
 The window is titled "Backup". The list of media is on the left. The details of the selected medium are on the right, with the actions for it below them. A menu button in the title bar holds Language, Advanced and About. The window is uncluttered. It opens at 1024 × 768, title bar included, which assumes a screen of at least Full HD (1920 × 1080); at that size no page needs scrolling to reach its buttons or read its text (Issues.md item 118). It can be made smaller, down to what each screen needs, and a page that scrolls then starts at the top whenever it opens or changes part. Every control has a tooltip.
 
-The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row shows only the medium's label in large type (for example **BACKUP-A**), a picture of a stick, and a mark. Everything else is in the details. The stick is in colour for a Babawus medium and grey for anything else. The mark shows at a glance whether a backup can be started. Its shape differs as well as its colour, so it can be read without telling colours apart:
+The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row shows only a large picture of a stick, the medium's label in bold (for example **BACKUP-A**), and a mark (Issues.md item 120). Everything else is in the details. The stick is in colour for a Babawus medium and grey for anything else. The mark shows at a glance whether a backup can be started. Its shape differs as well as its colour, so it can be read without telling colours apart:
 
 | Status | When | Mark |
 |---|---|---|
@@ -86,7 +86,9 @@ Working out a status reads the medium, so it happens off the main thread. Until 
 
 **Selecting.** Clicking a row selects it, and never starts anything. If nothing is selected and exactly one medium is Ready, that medium is selected, so the usual case needs only a press on "Start backup". The selection follows the medium while the list changes. When the selected medium is removed, nothing is selected.
 
-**The details** show a small Babawus logo in their upper right corner, out of the way of everything else. They also show the label, the status with its mark, the maker and model, the size and the free space (for example "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free"). Sizes are in GB, as on the packaging. For a Ready medium they also show the last backup (see "See when I last made a backup"). For any other status they say in plain words what it means and what to do, for example "This stick hasn't been set up for you on this computer. Contact your poweruser." With nothing selected, the details only say "Plug in your backup stick", or "Choose a stick in the list" if the list isn't empty.
+**The details** show a small Babawus logo in their upper right corner, out of the way of everything else. From the top they show the label as their heading; the maker and model, the size and the free space (for example "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free"); a thin line; and the explanation. Sizes are in GB, as on the packaging. The explanation starts with the status and its mark, for example "✓ Ready", on a line of its own. Below it, a Ready medium shows the last backup (see "See when I last made a backup"), and any other status says in plain words what it means and what to do, for example "This stick hasn't been set up for you on this computer. Contact your poweruser." Every other message about the medium goes there too, such as "Ejecting BACKUP-A…" or "BACKUP-A is still in use by a program…". The explanation has one text style throughout, and the mark makes the status stand out (`ui-review/UiReview.md` item G01).
+
+**The empty page.** With nothing selected, the details only say "Plug in your backup stick", or "Choose a stick in the list" if the list isn't empty. When a USB stick is plugged in but not listed, they say instead "The stick isn't opened", with "Pull it out and plug it back in." below it, for a stick whose file system isn't mounted; or "The stick that is plugged in can't be used yet", with "Your poweruser can prepare it.", for a stick with no file system Babawus can open (Issues.md item 121). After an eject, when the medium has left the list, "You can pull out BACKUP-A now." shows below the page's text, until a stick is plugged in.
 
 **The actions** for the selected medium:
 
@@ -98,6 +100,8 @@ Working out a status reads the medium, so it happens off the main thread. Until 
 | Eject | Every medium (see "Offer to eject media after a successful backup operation") | User |
 | Prepare… | A medium that may be formatted (see "Format USB media") | Poweruser |
 | Change setup… | A Babawus medium (see "Configure USB media") | Poweruser |
+
+The buttons keep their own width, and wrap onto another line when there isn't room. Eject comes last among the user's buttons, after a small gap. The poweruser's buttons sit on a row of their own, below a thin line.
 
 **Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 
