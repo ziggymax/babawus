@@ -67,7 +67,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 - [ ] Select stick A, press "Start backup". → The backup screen fills the window: "Finding the files to back up…", then "Backing up…" with counters and a bar, then "Finishing… Don't pull out the stick yet."
 - [ ] Wait for the verdict. → "Some files were skipped", amber "!", with the skipped files grouped by reason ("Name has characters this stick can't store: 1 file", "Couldn't be read: 1 file"), "Contact your poweruser.", what was copied, and "Last backup: today at" the time it finished.
-- [ ] Open "Details for your poweruser", and press "Copy". → The details, with codes such as `SKIPPED` and `NAME_INVALID_CHARS`. Paste them into the issue: they arrive whole.
+- [ ] Open `.babawus/babawus_log.txt` on stick A in a text editor. → The run's start entry, with `account`, `version` and `hostname`; an `ERROR` entry for each skipped file, with codes such as `NAME_INVALID_CHARS` and `UNREADABLE`; and the end entry with `verdict=SKIPPED`. Paste the run's lines into the issue.
 - [ ] Press "Back", then "Start backup" again. → "Some files were skipped" again, for the same two files, and it is quick, because nothing else changed.
 - [ ] Press "Show history". → Both runs, newest first, each with the time, the verdict, the reason, what was copied, how many were skipped, and whose run it was.
 - [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders and the name patterns.

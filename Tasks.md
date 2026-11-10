@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-035, the Ext4 note, is waiting for review. Next are the last change from the review of the look (T-032), T-036, and then T-045. T-043 and T-044 wait for their problems to show again.
+T-036, the log in place of the details to copy, is waiting for review. It is the last change from the review of the look (T-032). Next is T-045. T-043 and T-044 wait for their problems to show again.
 
 ## First version: logic
 
@@ -37,7 +37,6 @@ Everything here is done.
 | T-043 | Find out why the buttons under "You on this computer" were once drawn squeezed under the line below them, after the setup had been read again in another state. Seen once on the VM while checking T-040 (pull request 55), and not again in four tries; main may have it too. If it can't be made to happen again, close it | Todo | Pull request 55 |
 | T-044 | Find the test that fails now and then. A full run with `--include-ignored` reported one failure while checking T-037 and again while checking T-040, but the output wasn't kept, and later runs passed. Run the tests in a loop with `--no-fail-fast`, keep each run's output, and fix the test once it is known | Todo | Pull requests 51 and 55 |
 | T-045 | On the start screen in German, the user's four buttons don't fit on one line at 1024 × 768: Eject wraps onto a line of its own, and the other three spread out in wide columns, because GTK's wrapping row lines its buttons up in columns. Make them sit close together when they wrap, or fit on one line | Todo | Pull request 56 |
-| T-036 | Remove "Details for your poweruser" and Copy from the verdict screen, and make the log enough for diagnosing on its own: Babawus's version and the hostname at each start, and every skipped file and error. Update Requirements.md, the checklist's Copy step, and say in the README where the log is | Todo | Issues: 117 |
 
 ## First version: release
 
@@ -97,3 +96,4 @@ Nothing is waiting for a decision.
 | T-040 | Setup of this stick: "Add this computer and your account", with the folder name in the line above; the unreadable-setup text in the normal style; and "backup profile" for one account on one computer, with names quoted in sentences, made official in Requirements.md and Concept.md (Issues.md items 119 and 122) | [#55](https://github.com/ziggymax/babawus/pull/55) |
 | T-041 | Choose what to back up: the heading "Choose what to back up for …", which now also follows the language; only the tree scrolls, with the name patterns in a section "Leave out by name" that starts closed; open folders stay open when the language changes; a partly ticked box (Issues.md item 123); and a pattern's message cleared when the field changes. Also About without the name selected, and "already open" as a proper message | [#56](https://github.com/ziggymax/babawus/pull/56) |
 | T-035 | Show "Ext4 asks for your password while formatting." as soon as Ext4 is chosen: the format page is now shown again when Ext4 is toggled too, not only exFAT | [#57](https://github.com/ziggymax/babawus/pull/57) |
+| T-036 | Remove "Details for your poweruser" and Copy from the verdict screen, and make the log enough for diagnosing on its own: Babawus's version and the hostname in each start entry, and the first 100 skipped files and errors of a run, instead of 20 (Issues.md items 117 and 124). Requirements.md, the checklist's Copy step and the README, which now says where the log is, are updated | [#58](https://github.com/ziggymax/babawus/pull/58) |

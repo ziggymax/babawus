@@ -5,7 +5,7 @@ use super::*;
 use crate::config::{Config, save};
 use crate::fs::fake::FakeFs;
 use crate::lock::Holder;
-use crate::log::{RunLog, Stats, new_run_id};
+use crate::log::{RunLog, Runner, Stats, new_run_id};
 use crate::medium::{CONFIG_FILE, LOCK_FILE, LOG_FILE};
 use crate::time::log_timestamp;
 use crate::verdict::Reason;
@@ -291,7 +291,10 @@ impl Setup {
             &root,
             Format::ExFat,
             new_run_id(),
-            account,
+            &Runner {
+                account,
+                hostname: "mint",
+            },
             &now,
             None,
         )

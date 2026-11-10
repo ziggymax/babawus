@@ -41,7 +41,6 @@ fn outcome(reason: Reason) -> Outcome {
         },
         skipped: Vec::new(),
         prune_failures: Vec::new(),
-        account: Some("steen@steen-virtualbox".to_owned()),
     }
 }
 
@@ -164,61 +163,6 @@ fn every_reason_has_plain_words_but_none() {
 }
 
 #[test]
-fn the_details_hold_what_the_poweruser_needs() {
-    let mut with_skips = outcome(Reason::FilesSkipped);
-    with_skips.stats.skipped_files = 5;
-    with_skips.skipped = vec![
-        skipped("Documents/a.txt", Skip::Unreadable, 1),
-        skipped("Private", Skip::Unreadable, 4),
-    ];
-    with_skips.prune_failures = vec![PathBuf::from("Documents/old.txt")];
-    let details = shown(with_skips, None).details;
-    let expected = format!(
-        "Babawus {}
-Verdict: Some files were skipped (SKIPPED)
-Reason: Some files could not be backed up. (FILES_SKIPPED)
-Time: {}
-Account: steen@steen-virtualbox
-Medium: BACKUP-A
-Files found: 201, copied: 12 (3.4 MB), skipped: 5, errors: 0, older versions removed: 2
-Free on the medium: 14.9 GB
-First problems:
-  UNREADABLE Documents/a.txt
-  UNREADABLE Private (4 files)
-  PRUNE_FAILED Documents/old.txt",
-        crate::VERSION,
-        log_timestamp(now()),
-    );
-    assert_eq!(details, expected);
-}
-
-#[test]
-fn the_details_only_list_the_first_problems() {
-    let mut many = outcome(Reason::FilesSkipped);
-    many.skipped = (0..13)
-        .map(|index| skipped(&format!("file-{index}"), Skip::Unreadable, 1))
-        .collect();
-    let details = shown(many, None).details;
-    assert!(details.contains("  UNREADABLE file-9\n"));
-    assert!(!details.contains("file-10"));
-    assert!(details.ends_with("… and 3 more, listed in the log on the medium"));
-}
-
-#[test]
-fn a_name_that_is_not_text_is_shown_as_in_the_log() {
-    use std::os::unix::ffi::OsStringExt;
-    let mut odd = outcome(Reason::FilesSkipped);
-    let name = PathBuf::from(std::ffi::OsString::from_vec(b"bad\xffname".to_vec()));
-    odd.skipped = vec![Skipped {
-        relative: name,
-        reason: Skip::NameNotUtf8,
-        files: 1,
-    }];
-    let details = shown(odd, None).details;
-    assert!(details.contains("NAME_NOT_UTF8 bad\\xffname"), "{details}");
-}
-
-#[test]
 fn a_busy_medium_is_not_a_verdict() {
     let holder = Holder {
         run_id: "0123456789abcdef".to_owned(),
@@ -234,7 +178,6 @@ fn a_busy_medium_is_not_a_verdict() {
         shown.next_step.as_deref(),
         Some("Wait until it has finished, then try again.")
     );
-    assert_eq!(shown.details, "");
     assert!(!shown.offer_eject);
     let starting = verdict_screen(Some(&Ended::Busy(None)), &context(None), EN);
     assert_eq!(
@@ -255,7 +198,6 @@ fn a_crash_leaves_the_backup_unfinished() {
         shown.last_backup,
         "Last backup: 5 days ago (2024-09-29 at 12:00)"
     );
-    assert!(shown.details.contains("Babawus stopped unexpectedly."));
 }
 
 #[test]

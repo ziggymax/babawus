@@ -2,22 +2,17 @@
 //! feedback after a backup operation" and "Offer to eject" in Requirements.md. The UI only puts
 //! these texts on the screen.
 
-use std::os::unix::ffi::OsStrExt;
-use std::path::Path;
 use std::time::SystemTime;
 
 use crate::backup_screen::number;
 use crate::copy::Skip;
-use crate::log::{LastBackup, PRUNE_FAILED, Stats, escape};
+use crate::log::{LastBackup, Stats};
 use crate::media::user_of;
 use crate::run::{Ended, Outcome};
 use crate::settings::Language;
 use crate::text::{Text, size};
-use crate::time::{ClockTime, log_timestamp};
+use crate::time::ClockTime;
 use crate::verdict::{Reason, Verdict};
-
-/// How many problems the details list. The log has them all.
-const FIRST_PROBLEMS: usize = 10;
 
 /// The mark next to the verdict.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -56,8 +51,6 @@ pub struct VerdictShown {
     pub copied: Option<String>,
     /// For example "Last backup: today".
     pub last_backup: String,
-    /// "Details for your poweruser", to copy. Empty if the run did nothing.
-    pub details: String,
     /// The run counts as a backup, so Babawus offers to eject the medium.
     pub offer_eject: bool,
 }
@@ -104,7 +97,6 @@ pub fn verdict_screen(
                     context.clock,
                     language,
                 ),
-                details: String::new(),
                 offer_eject: false,
             }
         }
@@ -114,11 +106,9 @@ pub fn verdict_screen(
                 stats: Default::default(),
                 skipped: Vec::new(),
                 prune_failures: Vec::new(),
-                account: None,
             };
             let mut shown = finished(&outcome, context, language);
             shown.reason = Some(Text::ReasonCrashed.get(language).to_owned());
-            shown.details = details(&outcome, context, Some(&Text::ReasonCrashed), language);
             shown
         }
     }
@@ -158,7 +148,6 @@ fn finished(outcome: &Outcome, context: &Context, language: Language) -> Verdict
         next_step: next_step.map(|text| text.get(language).to_owned()),
         copied,
         last_backup: last_backup_text(previous, context.now, context.clock, language),
-        details: details(outcome, context, None, language),
         offer_eject: counts,
     }
 }
@@ -284,90 +273,6 @@ pub(crate) fn last_backup_text(
             )
         }
     }
-}
-
-/// "Details for your poweruser": the verdict, the reason, the date and time, the account, the
-/// medium's label, the counts and the first problems. Codes are added as in the log, so that the
-/// poweruser can look them up whatever the language.
-fn details(
-    outcome: &Outcome,
-    context: &Context,
-    reason_override: Option<&Text>,
-    language: Language,
-) -> String {
-    let verdict = outcome.verdict();
-    let stats = &outcome.stats;
-    let mut lines = vec![format!("Babawus {}", crate::VERSION)];
-    let verdict_text = verdict_title(verdict).get(language);
-    lines.push(Text::DetailsVerdict.fill(
-        language,
-        &[("verdict", verdict_text), ("code", verdict.code())],
-    ));
-    let reason = reason_override
-        .copied()
-        .or_else(|| reason_text(outcome.reason));
-    if let Some(reason) = reason {
-        lines.push(Text::DetailsReason.fill(
-            language,
-            &[
-                ("reason", reason.get(language)),
-                ("code", outcome.reason.code()),
-            ],
-        ));
-    }
-    lines.push(Text::DetailsTime.fill(language, &[("time", &log_timestamp(context.now))]));
-    if let Some(account) = &outcome.account {
-        lines.push(Text::DetailsAccount.fill(language, &[("account", account)]));
-    }
-    lines.push(Text::DetailsMedium.fill(language, &[("label", context.label)]));
-    lines.push(Text::DetailsCounts.fill(
-        language,
-        &[
-            ("scanned", &number(stats.scanned_files, language)),
-            ("copied", &number(stats.copied_files, language)),
-            ("size", &size(stats.copied_bytes, language)),
-            ("skipped", &number(stats.skipped_files, language)),
-            ("errors", &number(stats.errors, language)),
-            ("removed", &number(stats.versions_removed, language)),
-        ],
-    ));
-    if stats.free_bytes > 0 {
-        let free = size(stats.free_bytes, language);
-        lines.push(Text::DetailsFree.fill(language, &[("size", &free)]));
-    }
-    let problems: Vec<String> = outcome
-        .skipped
-        .iter()
-        .map(|skipped| {
-            let path = shown_path(&skipped.relative);
-            if skipped.files > 1 {
-                let files = files_text(skipped.files, language);
-                format!("  {} {path} ({files})", skipped.reason.code())
-            } else {
-                format!("  {} {path}", skipped.reason.code())
-            }
-        })
-        .chain(
-            outcome
-                .prune_failures
-                .iter()
-                .map(|path| format!("  {PRUNE_FAILED} {}", shown_path(path))),
-        )
-        .collect();
-    if !problems.is_empty() {
-        lines.push(Text::DetailsProblems.get(language).to_owned());
-        lines.extend(problems.iter().take(FIRST_PROBLEMS).cloned());
-        if problems.len() > FIRST_PROBLEMS {
-            let more = number((problems.len() - FIRST_PROBLEMS) as u64, language);
-            lines.push(Text::DetailsMore.fill(language, &[("more", &more)]));
-        }
-    }
-    lines.join("\n")
-}
-
-/// A path as in the log: escaped, so that any name can be shown.
-fn shown_path(path: &Path) -> String {
-    escape(path.as_os_str().as_bytes())
 }
 
 #[cfg(test)]

@@ -17,7 +17,7 @@ use crate::config::{Config, Loaded, load, save};
 use crate::copy::{FileCopier, Pruned, Skip, Visit, stop_for};
 use crate::fs::FileSystem;
 use crate::lock::{Holder, LockError, MediumLock, ThisProcess};
-use crate::log::{PRUNE_FAILED, RunLog, Stats, account_name, new_run_id};
+use crate::log::{PRUNE_FAILED, RunLog, Runner, Stats, account_name, new_run_id};
 use crate::scan::{Destination, Entry, Scan, Selection, Skipped, account_folder, scan};
 use crate::time::{log_timestamp, version_timestamp};
 use crate::verdict::{Reason, Verdict, worst};
@@ -45,8 +45,6 @@ pub struct Outcome {
     pub skipped: Vec<Skipped>,
     /// Files whose older versions could not all be removed. These don't change the verdict.
     pub prune_failures: Vec<PathBuf>,
-    /// `username@computer folder`, if the run got as far as reading the configuration.
-    pub account: Option<String>,
 }
 
 impl Outcome {
@@ -61,7 +59,6 @@ impl Outcome {
             stats: Stats::default(),
             skipped: Vec::new(),
             prune_failures: Vec::new(),
-            account: None,
         }
     }
 }
@@ -178,7 +175,10 @@ impl Backup {
             &self.root,
             self.format,
             run_id,
-            &account,
+            &Runner {
+                account: &account,
+                hostname: &self.hostname,
+            },
             &log_now,
             None,
         );
@@ -208,8 +208,7 @@ impl Backup {
             Some(plan) => pass.back_up(self, plan, copier),
             None => Some(Reason::NotAdded),
         };
-        let mut outcome = pass.finish(self, stop);
-        outcome.account = Some(account);
+        let outcome = pass.finish(self, stop);
         // Only now: the lock is removed after the end entry has been written.
         drop(lock);
         Ended::Finished(outcome)
@@ -394,7 +393,6 @@ impl Pass<'_> {
             stats: self.stats,
             skipped: self.skipped,
             prune_failures: self.prune_failures,
-            account: None,
         }
     }
 }
