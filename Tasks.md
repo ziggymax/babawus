@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-034.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-035.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -86,3 +86,4 @@ Nothing is waiting for a decision.
 | T-021 | Write the manual release checklist | [#43](https://github.com/ziggymax/babawus/pull/43) |
 | T-025 | Install, update and uninstall the `.deb` for real, for the first time, and write the uninstall notes. The menu icon now names its file by full path | [#44](https://github.com/ziggymax/babawus/pull/44) |
 | T-022 | Pull a real stick during a copy, and check that its errors count as "medium gone": the checklist's "Pulling out a stick", for the first time | [#45](https://github.com/ziggymax/babawus/pull/45) |
+| T-034 | Wait until udisks2 has read the label before checking it, so that `exfat_is_reported` no longer fails now and then | [#45](https://github.com/ziggymax/babawus/pull/45) |
