@@ -238,6 +238,10 @@ impl BackupPage {
     ) {
         self.set_buttons(label, language);
         self.title.set_label(label);
+        // The verdict starts at the top once, not on every later update.
+        if !self.verdict.is_visible() {
+            crate::scroll::to_top(&self.root);
+        }
         self.progress.set_visible(false);
         self.verdict.set_visible(true);
         self.mark
