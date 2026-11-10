@@ -43,6 +43,10 @@ texts! {
     Logo: "Babawus", "Babawus";
     PlugIn: "Plug in your backup stick", "Steck deinen Sicherungs-Stick ein";
     ChooseMedium: "Choose a stick in the list", "Wähle einen Stick in der Liste";
+    StickNotOpened: "The stick isn't opened", "Der Stick ist nicht geöffnet";
+    StickNotOpenedAdvice: "Pull it out and plug it back in.", "Zieh ihn ab und steck ihn wieder ein.";
+    StickCantBeUsed: "The stick that is plugged in can't be used yet", "Der eingesteckte Stick kann noch nicht benutzt werden";
+    StickCantBeUsedAdvice: "Your poweruser can prepare it.", "Dein Betreuer kann ihn vorbereiten.";
     AlreadyOpen: "Babawus is already open for {user} on this computer", "Babawus ist auf diesem Computer schon für {user} geöffnet";
     NoUdisks: "Babawus can't see the USB sticks, because the udisks2 service isn't running. Contact your poweruser.", "Babawus kann die USB-Sticks nicht sehen, weil der Dienst udisks2 nicht läuft. Wende dich an deinen Betreuer.";
 

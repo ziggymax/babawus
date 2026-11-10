@@ -31,7 +31,7 @@ use babawus_core::settings::{Language, SETTINGS_FILE, Settings};
 use babawus_core::setup_screen::{
     self, Editor, Here, HereAction, Opened, SaveError, overview, save_error_text,
 };
-use babawus_core::start_screen::{self, Action, Checked, Shown};
+use babawus_core::start_screen::{self, Action, Checked, Shown, Unlisted};
 use babawus_core::text::Text;
 use babawus_core::time::local_clock;
 use babawus_core::udisks::{EjectError, Ejected, Udisks};
@@ -58,15 +58,19 @@ const LIST_WIDTH: i32 = 260;
 /// How often the backup screen is updated: at most about 10 times a second. See
 /// "Responsiveness" in Requirements.md.
 const BACKUP_UPDATES: Duration = Duration::from_millis(100);
-const LOGO_SIZE: i32 = 64;
+const LOGO_SIZE: i32 = 80;
 /// Leaves room for the logo in the upper right corner of the details.
 const LOGO_ROOM: i32 = LOGO_SIZE + MARGIN;
+/// The size of a stick in the media list (Issues.md item 120).
+const STICK_SIZE: i32 = 48;
+/// The size of the marks in the explanation, close to the height of its text.
+const MARK_SIZE: i32 = 18;
+/// The extra space before Eject, so that it stays apart from the other buttons.
+const EJECT_GAP: i32 = 16;
 
 const CSS: &str = "
-.babawus-row-label { font-size: 15pt; font-weight: bold; }
+.babawus-row-label { font-weight: bold; }
 .babawus-title { font-size: 20pt; font-weight: bold; }
-.babawus-status { font-size: 13pt; }
-.babawus-last-backup { font-size: 13pt; }
 .babawus-plug-in { font-size: 16pt; }
 .babawus-verdict { font-size: 18pt; font-weight: bold; }
 .babawus-next-step { font-weight: bold; }
@@ -102,6 +106,10 @@ struct RowWidgets {
 struct DetailsWidgets {
     pages: Stack,
     plug_in: Label,
+    /// What to do, below the empty page's heading, such as "Pull it out and plug it back in.".
+    empty_advice: Label,
+    /// A notice on the empty page, such as "You can pull out BACKUP-A now.".
+    empty_notice: Label,
     /// "Prepare…" on the empty page, so that a blank stick can be formatted while Advanced is
     /// on. See Issues.md item 78.
     empty_prepare: Button,
@@ -114,7 +122,10 @@ struct DetailsWidgets {
     skipped: Image,
     explanation: Label,
     buttons: HashMap<Action, Button>,
-    poweruser: FlowBox,
+    poweruser: Box,
+    /// The line above the poweruser's buttons.
+    poweruser_line: Separator,
+    /// A notice in the explanation, such as "Ejecting BACKUP-A…".
     notice: Label,
     logo: Image,
 }
@@ -278,6 +289,8 @@ struct Window {
     notice: RefCell<Option<Notice>>,
     /// The drive being ejected, if any.
     ejecting: RefCell<Option<String>>,
+    /// A stick that is plugged in but not listed, for the empty page.
+    unlisted: Cell<Option<Unlisted>>,
 }
 
 /// Opens the start screen.
@@ -401,6 +414,7 @@ pub fn show(app: &Application) {
         updating: Cell::new(false),
         notice: RefCell::new(None),
         ejecting: RefCell::new(None),
+        unlisted: Cell::new(None),
     });
     *setup_events.borrow_mut() = Rc::downgrade(&this_window);
     this_window.connect_signals();
@@ -447,66 +461,84 @@ fn wrapping_label() -> Label {
     Label::builder().wrap(true).xalign(0.0).build()
 }
 
-/// The details pane, and the widgets in it that change.
+/// The details pane, and the widgets in it that change. From the top: the label, the stick's
+/// details, a thin line, and the explanation, which starts with the status and holds every
+/// message about the stick. See `ui-review/UiReview.md` item G01.
 fn details_widgets() -> (DetailsWidgets, Overlay) {
     let title = Label::builder().xalign(0.0).build();
     title.add_css_class("babawus-title");
-    let mark = icons::image(&icons::mark(start_screen::Mark::Ready), 24);
+    let about = wrapping_label();
+    about.add_css_class("dim-label");
+    // As tall as the logo, so that the line below it passes under the logo.
+    let heading = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(4)
+        .margin_end(LOGO_ROOM)
+        .height_request(LOGO_SIZE - MARGIN / 2)
+        .build();
+    heading.append(&title);
+    heading.append(&about);
+
+    let mark = icons::image(&icons::mark(start_screen::Mark::Ready), MARK_SIZE);
     let spinner = Spinner::builder().spinning(true).build();
-    let status = Label::new(None);
-    status.add_css_class("babawus-status");
+    let status = Label::builder().xalign(0.0).build();
     let status_row = Box::new(Orientation::Horizontal, 8);
     status_row.append(&mark);
     status_row.append(&spinner);
     status_row.append(&status);
-    let about = wrapping_label();
-    about.add_css_class("dim-label");
-
-    let last_backup = Label::new(None);
-    last_backup.add_css_class("babawus-last-backup");
-    let skipped = icons::image(&icons::mark(start_screen::Mark::Attention), 18);
+    let last_backup = Label::builder().xalign(0.0).build();
+    let skipped = icons::image(&icons::mark(start_screen::Mark::Attention), MARK_SIZE);
     let last_backup_row = Box::new(Orientation::Horizontal, 8);
     last_backup_row.append(&last_backup);
     last_backup_row.append(&skipped);
     let explanation = wrapping_label();
+    let notice = wrapping_label();
+    notice.set_visible(false);
+    let explained = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(6)
+        .build();
+    explained.append(&status_row);
+    explained.append(&last_backup_row);
+    explained.append(&explanation);
+    explained.append(&notice);
 
-    // The buttons wrap onto another line when the window is narrow, or their texts are long, as
-    // in German, so that the window needn't grow.
+    // The user's buttons keep their own width, and wrap onto another line when the window is
+    // narrow, or their texts are long, as in German, so that the window needn't grow. The
+    // poweruser's two fit side by side at any width, and a plain row keeps them together.
     let actions = action_row();
-    let poweruser = action_row();
+    let poweruser = Box::new(Orientation::Horizontal, 8);
     let mut buttons = HashMap::new();
     for action in Action::ALL {
-        let button = Button::new();
+        let button = Button::builder().halign(Align::Start).build();
         if action == Action::StartBackup {
             button.add_css_class("suggested-action");
         }
         if action.for_poweruser() {
-            poweruser.append(&FlowBoxChild::builder().child(&button).build());
+            poweruser.append(&button);
         } else {
-            actions.append(&FlowBoxChild::builder().child(&button).build());
+            let slot = FlowBoxChild::builder().child(&button).build();
+            if action == Action::Eject {
+                slot.set_margin_start(EJECT_GAP);
+            }
+            actions.append(&slot);
         }
         buttons.insert(action, button);
     }
+    let poweruser_line = Separator::new(Orientation::Horizontal);
 
     let medium_page = Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(SPACING)
         .build();
-    let heading = Box::builder()
-        .orientation(Orientation::Vertical)
-        .spacing(4)
-        .margin_end(LOGO_ROOM)
-        .build();
-    heading.append(&title);
-    heading.append(&status_row);
-    heading.append(&about);
     medium_page.append(&heading);
-    medium_page.append(&last_backup_row);
-    medium_page.append(&explanation);
+    medium_page.append(&Separator::new(Orientation::Horizontal));
+    medium_page.append(&explained);
     let spacer = Box::builder().vexpand(true).build();
     medium_page.append(&spacer);
     medium_page.append(&Separator::new(Orientation::Horizontal));
     medium_page.append(&actions);
+    medium_page.append(&poweruser_line);
     medium_page.append(&poweruser);
 
     let plug_in = Label::builder()
@@ -516,6 +548,16 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         .halign(Align::Center)
         .build();
     plug_in.add_css_class("babawus-plug-in");
+    let centred_label = || {
+        Label::builder()
+            .wrap(true)
+            .justify(gtk4::Justification::Center)
+            .halign(Align::Center)
+            .visible(false)
+            .build()
+    };
+    let empty_advice = centred_label();
+    let empty_notice = centred_label();
 
     let empty_prepare = Button::builder().halign(Align::Center).build();
     let empty_page = Box::builder()
@@ -524,17 +566,16 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         .valign(Align::Center)
         .build();
     empty_page.append(&plug_in);
+    empty_page.append(&empty_advice);
+    empty_page.append(&empty_notice);
     empty_page.append(&empty_prepare);
 
     let pages = Stack::builder().vexpand(true).build();
     pages.add_named(&medium_page, Some("medium"));
     pages.add_named(&empty_page, Some("empty"));
 
-    let notice = wrapping_label();
-    notice.set_visible(false);
     let pane = Box::builder()
         .orientation(Orientation::Vertical)
-        .spacing(SPACING)
         .margin_top(MARGIN)
         .margin_bottom(MARGIN)
         .margin_start(MARGIN)
@@ -542,7 +583,6 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         .hexpand(true)
         .build();
     pane.append(&pages);
-    pane.append(&notice);
 
     let logo = icons::image(&icons::logo(), LOGO_SIZE);
     logo.set_halign(Align::End);
@@ -555,6 +595,8 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     let widgets = DetailsWidgets {
         pages,
         plug_in,
+        empty_advice,
+        empty_notice,
         empty_prepare,
         title,
         mark,
@@ -566,6 +608,7 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         explanation,
         buttons,
         poweruser,
+        poweruser_line,
         notice,
         logo,
     };
@@ -797,6 +840,7 @@ impl Window {
             return;
         };
         let snapshot = udisks.snapshot();
+        self.unlisted.set(start_screen::unlisted(&snapshot));
         *self.formattable.borrow_mut() = snapshot
             .formattable()
             .into_iter()
@@ -816,6 +860,15 @@ impl Window {
                 (medium, checked)
             })
             .collect();
+        // A notice such as "You can pull out BACKUP-A now." has done its job once a stick is
+        // plugged in.
+        let path = |(medium, _): &(Medium, Option<Checked>)| medium.volume.object_path.clone();
+        let before: HashSet<String> = old.iter().map(path).collect();
+        if media.iter().any(|entry| !before.contains(&path(entry)))
+            && self.ejecting.borrow().is_none()
+        {
+            *self.notice.borrow_mut() = None;
+        }
         let to_check: Vec<Medium> = media.iter().map(|(medium, _)| medium.clone()).collect();
         *self.media.borrow_mut() = media;
         self.update_rows();
@@ -921,13 +974,16 @@ impl Window {
     fn show_details(&self) {
         let language = self.language.get();
         let widgets = &self.details;
-        match &*self.notice.borrow() {
-            Some(notice) => {
-                let text = notice.text.fill(language, &[("label", &notice.label)]);
-                widgets.notice.set_label(&text);
-                widgets.notice.set_visible(true);
-            }
-            None => widgets.notice.set_visible(false),
+        // The notice goes in the explanation, or below the empty page's text once the stick
+        // has left the list.
+        let notice = self
+            .notice
+            .borrow()
+            .as_ref()
+            .map(|notice| notice.text.fill(language, &[("label", &notice.label)]));
+        for label in [&widgets.notice, &widgets.empty_notice] {
+            label.set_label(notice.as_deref().unwrap_or_default());
+            label.set_visible(notice.is_some());
         }
         let media = self.media.borrow();
         let selected = self.selected.borrow();
@@ -936,13 +992,17 @@ impl Window {
                 .iter()
                 .find(|(medium, _)| &medium.volume.object_path == selected)
         }) else {
-            let text = if self.udisks.is_none() {
-                Text::NoUdisks
-            } else if media.is_empty() {
-                Text::PlugIn
-            } else {
-                Text::ChooseMedium
-            };
+            let (text, advice) = start_screen::empty_text(
+                self.udisks.is_some(),
+                !media.is_empty(),
+                self.unlisted.get(),
+            );
+            widgets.empty_advice.set_label(
+                advice
+                    .map(|advice| advice.get(language))
+                    .unwrap_or_default(),
+            );
+            widgets.empty_advice.set_visible(advice.is_some());
             widgets.plug_in.set_label(text.get(language));
             widgets
                 .empty_prepare
@@ -1004,6 +1064,7 @@ impl Window {
             }
         }
         widgets.poweruser.set_visible(self.advanced.get());
+        widgets.poweruser_line.set_visible(self.advanced.get());
     }
 
     fn act(self: &Rc<Self>, action: Action) {
@@ -2209,17 +2270,17 @@ fn action_row() -> FlowBox {
         .build()
 }
 
-/// Shows or hides an action button, with the slot that holds it in its row.
+/// Shows or hides an action button, with the slot that holds it in a wrapping row.
 fn show_button(button: &Button, visible: bool) {
     button.set_visible(visible);
-    if let Some(slot) = button.parent() {
+    if let Some(slot) = button.parent().and_downcast::<FlowBoxChild>() {
         slot.set_visible(visible);
     }
 }
 
 /// A new row of the media list, named by the udisks2 object path of the medium's file system.
 fn new_row(object_path: &str) -> RowWidgets {
-    let stick = icons::image(&icons::stick(false), 32);
+    let stick = icons::image(&icons::stick(false), STICK_SIZE);
     let label = Label::builder().xalign(0.0).hexpand(true).build();
     label.add_css_class("babawus-row-label");
     let mark = icons::image(&icons::mark(start_screen::Mark::Ready), 24);

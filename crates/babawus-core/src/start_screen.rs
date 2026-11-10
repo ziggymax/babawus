@@ -7,7 +7,7 @@ use std::time::SystemTime;
 
 use crate::fs::FileSystem;
 use crate::log::read_runs;
-use crate::media::{Medium, Status, Viewer};
+use crate::media::{Medium, Snapshot, Status, Viewer};
 use crate::settings::Language;
 use crate::text::{Text, size};
 use crate::time::ClockTime;
@@ -285,6 +285,70 @@ pub fn details(
         last_backup,
         explanation: status.and_then(|status| explanation(status, language)),
         buttons,
+    }
+}
+
+/// A USB stick that is plugged in, but isn't in the list. See Issues.md item 121.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Unlisted {
+    /// It has a file system that isn't opened, which plugging it back in opens.
+    NotOpened,
+    /// It has no file system Babawus can open, so it has to be prepared first.
+    CantBeUsed,
+}
+
+/// What kind of stick is plugged in but not listed, if any. A stick that isn't opened comes
+/// first, because the user can do something about it.
+pub fn unlisted(snapshot: &Snapshot) -> Option<Unlisted> {
+    let listed: Vec<String> = snapshot
+        .media()
+        .into_iter()
+        .map(|medium| medium.drive.object_path)
+        .collect();
+    let mut found = None;
+    for drive in &snapshot.drives {
+        if !drive.is_usb_medium() || listed.contains(&drive.object_path) {
+            continue;
+        }
+        let on_drive = |path: &String| *path == drive.object_path;
+        if snapshot
+            .volumes
+            .iter()
+            .any(|volume| on_drive(&volume.drive))
+        {
+            return Some(Unlisted::NotOpened);
+        }
+        // A card reader without a card has a drive, but nothing with a size on it.
+        if snapshot
+            .blocks
+            .iter()
+            .any(|block| on_drive(&block.drive) && block.size > 0)
+        {
+            found = Some(Unlisted::CantBeUsed);
+        }
+    }
+    found
+}
+
+/// What the page says when no medium is selected: a short heading, and what to do, if
+/// anything more.
+pub fn empty_text(
+    udisks_running: bool,
+    any_listed: bool,
+    unlisted: Option<Unlisted>,
+) -> (Text, Option<Text>) {
+    if !udisks_running {
+        (Text::NoUdisks, None)
+    } else if any_listed {
+        (Text::ChooseMedium, None)
+    } else {
+        match unlisted {
+            Some(Unlisted::NotOpened) => (Text::StickNotOpened, Some(Text::StickNotOpenedAdvice)),
+            Some(Unlisted::CantBeUsed) => {
+                (Text::StickCantBeUsed, Some(Text::StickCantBeUsedAdvice))
+            }
+            None => (Text::PlugIn, None),
+        }
     }
 }
 

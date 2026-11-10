@@ -14,7 +14,7 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 | Task | What | Items |
 | --- | --- | --- |
 | T-037 | The window opens at 1024 × 768, and pages that scroll start at the top (Issues.md item 118). *Done in PR #51: every screen fits at that size, except "Choose what to back up…", which T-041 changes.* | G03, F01, F06, F07 |
-| T-038 | The start screen's layout: larger stick pictures, one explanation area for the status and every message, fewer text styles, buttons at their natural width | G01, S02, S06, S14–S17 |
+| T-038 | The start screen's layout: larger stick pictures, one explanation area for the status and every message, fewer text styles, buttons at their natural width. *Done in PR #52, with texts for a stick that is plugged in but not listed (Issues.md items 120 and 121).* | G01, S02, S06, S14–S17 |
 | T-039 | The verdict screen: fewer text styles, no repeated reason, a fitting text after a stopped backup | G02, V03, V05 |
 | T-040 | Setup of this stick: clearer adding and linking texts | C01, C06, C10 |
 | T-041 | Choose what to back up, plus About and "already open" | T01, T02, T04, W05, W06 |
