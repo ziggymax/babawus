@@ -39,13 +39,35 @@ fn with_context(test: impl FnOnce(&glib::MainContext)) {
 }
 
 /// Runs the main context until `done` holds, or fails after a while.
-fn wait_until(context: &glib::MainContext, mut done: impl FnMut() -> bool) {
+fn wait_until(context: &glib::MainContext, done: impl FnMut() -> bool) {
+    wait_for(context, done, || "(not recorded for this wait)".to_owned());
+}
+
+/// Like [`wait_until`], but a failure also says what `seen` returns: what udisks2 reported
+/// instead, so that a failure on CI shows why (T-044).
+fn wait_for(
+    context: &glib::MainContext,
+    mut done: impl FnMut() -> bool,
+    seen: impl Fn() -> String,
+) {
     let start = Instant::now();
     while !done() {
-        assert!(start.elapsed() < WAIT, "udisks2 did not report the change");
+        assert!(
+            start.elapsed() < WAIT,
+            "udisks2 did not report the change. It reported: {}",
+            seen()
+        );
         if !context.iteration(false) {
             std::thread::sleep(Duration::from_millis(20));
         }
+    }
+}
+
+/// What udisks2 reports about the file system mounted at `root`, for a failure message.
+fn reported(udisks: &Udisks, root: &Path) -> String {
+    match volume_at(&udisks.snapshot(), root) {
+        Some(volume) => format!("{volume:?}"),
+        None => "no volume mounted there".to_owned(),
     }
 }
 
@@ -57,11 +79,16 @@ fn reports_the_file_system(format: MediumFormat, name: &str) {
         // udisks2 reads the mount table on its own schedule, and can list the mount before it
         // has probed the label and file system, so wait for those too.
         let mut snapshot = Snapshot::default();
-        wait_until(context, || {
-            snapshot = udisks.snapshot();
-            volume_at(&snapshot, medium.path())
-                .is_some_and(|volume| !volume.label.is_empty() && !volume.file_system.is_empty())
-        });
+        wait_for(
+            context,
+            || {
+                snapshot = udisks.snapshot();
+                volume_at(&snapshot, medium.path()).is_some_and(|volume| {
+                    !volume.label.is_empty() && !volume.file_system.is_empty()
+                })
+            },
+            || reported(&udisks, medium.path()),
+        );
 
         let volume = volume_at(&snapshot, medium.path()).unwrap();
         assert_eq!(volume.label, "BACKUP-A");
@@ -139,10 +166,14 @@ fn a_real_babawus_medium_is_ready() {
 
             // The status depends on the file system, which udisks2 can report after the mount.
             let mut snapshot = Snapshot::default();
-            wait_until(context, || {
-                snapshot = udisks.snapshot();
-                volume_at(&snapshot, root).is_some_and(|volume| !volume.file_system.is_empty())
-            });
+            wait_for(
+                context,
+                || {
+                    snapshot = udisks.snapshot();
+                    volume_at(&snapshot, root).is_some_and(|volume| !volume.file_system.is_empty())
+                },
+                || reported(&udisks, root),
+            );
             let medium = Medium {
                 drive: Drive::default(),
                 volume: volume_at(&snapshot, root).unwrap().clone(),

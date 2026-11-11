@@ -87,6 +87,35 @@ impl LoopMedium {
 
     fn format_and_mount(&mut self, format: MediumFormat) {
         let device = self.device.clone();
+        self.format(format);
+        // udev looks at a device again when whoever wrote to it closes it, and udisks2 reports
+        // what udev found. On a busy machine that look can come too early, or be lost, and
+        // udisks2 then reports no label and no file system for good. So ask udev to look again,
+        // now that the file system is there, and wait until it has (T-044).
+        sudo(&["udevadm", "trigger", "--action=change", "--settle", &device]);
+        self.mount(format);
+    }
+
+    fn format(&self, format: MediumFormat) {
+        let device = self.device.clone();
+        match format {
+            MediumFormat::ExFat => sudo(&["mkfs.exfat", "-L", LABEL, &device]),
+            MediumFormat::Ext4 => sudo(&[
+                "mkfs.ext4",
+                "-q",
+                "-L",
+                LABEL,
+                "-m",
+                "0",
+                "-E",
+                "lazy_itable_init=0,lazy_journal_init=0",
+                &device,
+            ]),
+        }
+    }
+
+    fn mount(&mut self, format: MediumFormat) {
+        let device = self.device.clone();
         let mount_point = path_str(&self.mount_point).to_owned();
         let owner = format!(
             "{}:{}",
@@ -96,24 +125,12 @@ impl LoopMedium {
 
         match format {
             MediumFormat::ExFat => {
-                sudo(&["mkfs.exfat", "-L", LABEL, &device]);
                 let (uid, gid) = owner.split_once(':').expect("owner is uid:gid");
                 let options = format!("uid={uid},gid={gid}");
                 sudo(&["mount", "-o", &options, &device, &mount_point]);
                 self.mounted = true;
             }
             MediumFormat::Ext4 => {
-                sudo(&[
-                    "mkfs.ext4",
-                    "-q",
-                    "-L",
-                    LABEL,
-                    "-m",
-                    "0",
-                    "-E",
-                    "lazy_itable_init=0,lazy_journal_init=0",
-                    &device,
-                ]);
                 sudo(&["mount", &device, &mount_point]);
                 self.mounted = true;
                 sudo(&["chown", &owner, &mount_point]);
