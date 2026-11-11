@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-051.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-053.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-044, the test that failed now and then, is waiting for review. Next is a full run of the release checklist for 0.1.0, now with a second stick. T-043 waits for its problem to show again.
+The 0.1.0 checklist run (issue 63) has passed. T-051, the one thing it found, is waiting for review; then 0.1.0 is released (T-052). T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -35,6 +35,7 @@ Everything here is done.
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
 | T-043 | Find out why the buttons under "You on this computer" were once drawn squeezed under the line below them, after the setup had been read again in another state. Seen once on the VM while checking T-040 (pull request 55), and not again in four tries; main may have it too. If it can't be made to happen again, close it | Todo | Pull request 55 |
+| T-052 | Release 0.1.0: tag `v0.1.0` on main, and a GitHub release with the `.deb` attached and short notes linking issue 63, the checklist run; then close issue 63 | Todo | Issues: 130 |
 
 ## First version: release
 
@@ -102,3 +103,4 @@ Nothing is waiting for a decision.
 | T-049 | Keep the window's height after leaving "Choose what to back up…": since T-041 that page doesn't scroll as a whole, and while hidden it still set the window's least height, so Cancel made the window grow from 797 to 942 pixels. Each screen now asks only for its own height | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-050 | The name under the elephant in the logo is black with a thinner outline, instead of green with a black one. A change by the user to `assets/BabawusLogo.svg` and `assets/BabawusLogo-plain.svg` | [#61](https://github.com/ziggymax/babawus/pull/61) |
 | T-044 | Find the test that fails now and then. On CI for pull request 61, `exfat_is_reported` timed out: udisks2 never reported the test stick's label and file system. The test sticks are formatted outside udisks2, which relies on udev to look at a device again once it has been written; on a busy machine that look can come too early or be lost. The test helper now asks udev to look again after formatting, and waits for it, and a wait that gives up says what udisks2 reported instead | [#62](https://github.com/ziggymax/babawus/pull/62) |
+| T-051 | After the 0.1.0 checklist run: the "still in use" message names a terminal or a file being copied instead of a file manager window; the checklist makes the stick busy with a terminal in it; and the checklist's texts that changed since it was written ("Add this computer and your account", the partly ticked boxes, the second stick shown after ejecting the first) are brought up to date | [#64](https://github.com/ziggymax/babawus/pull/64) |
