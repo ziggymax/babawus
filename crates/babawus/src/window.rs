@@ -345,10 +345,14 @@ pub fn show(app: &Application) {
     content.append(&Separator::new(Orientation::Vertical));
     content.append(&details_view);
     let backup_page = BackupPage::new();
-    // Each screen asks only for the width it needs itself. Otherwise the widest screen, even a
-    // hidden one, sets the window's least width, which long texts, as in German, push past
-    // what a small screen has.
-    let screens = Stack::builder().hhomogeneous(false).build();
+    // Each screen asks only for the width and height it needs itself. Otherwise the widest and
+    // tallest screens, even hidden ones, set the window's least size: long texts, as in German,
+    // push its width past what a small screen has, and a hidden "Choose what to back up…",
+    // which doesn't scroll as a whole, made the window grow taller after Cancel (T-049).
+    let screens = Stack::builder()
+        .hhomogeneous(false)
+        .vhomogeneous(false)
+        .build();
     screens.add_named(&content, Some("start"));
     screens.add_named(&backup_page.root, Some("backup"));
     let info_page = InfoPage::new();
@@ -1297,6 +1301,21 @@ impl Window {
         );
     }
 
+    /// Shows `message` in a pop-up with OK, and calls `closed` once it is closed.
+    fn tell(&self, message: &str, closed: impl FnOnce() + 'static) {
+        let language = self.language.get();
+        let dialog = AlertDialog::builder()
+            .message(message)
+            .buttons([Text::Ok.get(language)])
+            .cancel_button(0)
+            .default_button(0)
+            .modal(true)
+            .build();
+        dialog.choose(Some(&self.window), None::<&gio::Cancellable>, move |_| {
+            closed()
+        });
+    }
+
     fn setup_unsaved(&self) -> bool {
         if self.choosing.get() && self.choose_page.changed() {
             return true;
@@ -2021,6 +2040,8 @@ impl Window {
             let Some(window) = weak.upgrade() else { return };
             let Some(udisks) = &window.udisks else { return };
             let result = udisks.eject(&drive_id).await;
+            // The stick has left, so there is nothing more to do with it here.
+            let gone = matches!(result, Ok(_) | Err(EjectError::Gone));
             let text = match result {
                 Ok(Ejected::PoweredOff) => Text::Ejected,
                 Ok(Ejected::UnmountedOnly { reason }) => {
@@ -2037,9 +2058,22 @@ impl Window {
                 }
             };
             *window.ejecting.borrow_mut() = None;
-            *window.notice.borrow_mut() = Some(Notice { text, label });
+            *window.notice.borrow_mut() = None;
             window.show_details();
             window.show_backup();
+            // How it went is a pop-up, on whichever screen is showing (Issues.md item 128).
+            // After a successful eject from the verdict screen, the backup is done with too.
+            let language = window.language.get();
+            let message = text.fill(language, &[("label", &label)]);
+            let weak = Rc::downgrade(&window);
+            window.tell(&message, move || {
+                if let Some(window) = weak.upgrade()
+                    && gone
+                    && window.screens.visible_child_name().as_deref() == Some("backup")
+                {
+                    window.back_to_start();
+                }
+            });
         });
     }
 

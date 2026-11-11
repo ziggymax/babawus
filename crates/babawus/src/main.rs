@@ -74,7 +74,7 @@ fn show_already_open(app: &Application, user: &str) {
         .xalign(0.0)
         .build();
     let ok = Button::builder()
-        .label(Text::AlreadyOpenOk.get(language))
+        .label(Text::Ok.get(language))
         .halign(Align::End)
         .build();
     ok.add_css_class("suggested-action");
