@@ -373,3 +373,14 @@ Comparing the requirements with what the configuration and log have to do turned
 
 125. **How the user's buttons fit and wrap.** In German, the four buttons need about 722 pixels, and the details pane had about 712 at 1024 × 768. So Eject wrapped onto a line of its own, and GTK's wrapping row lined the other three up in wide columns.
     - **Decided (2026-11-10):** Both: the stick list narrows from 260 to 240 pixels, so that all four fit on one line at 1024 × 768 in German too, and the buttons wrap like words in a narrower window, each at its own width and close to the one before, instead of in columns.
+
+## Decisions after trying the new look (T-046 to T-048)
+
+The user tried the package built from pull request 59 on the VM: formatting as Ext4, setting up, several backups, and ejecting and plugging back in. Everything worked; these came up.
+
+126. **The title of the name patterns' section.** "Leave out by name" doesn't say what is left out.
+    - **Decided (2026-11-11):** "Files to leave out by name", in German "Dateien nach Namen auslassen" (T-046).
+127. **What the setup page says after saving.** "Saved." on its own is easy to miss the meaning of.
+    - **Decided (2026-11-11):** "Stick setup saved.", in German "Einrichtung des Sticks gespeichert.", using the same word as the page's heading, "Setup of this stick", rather than "configuration" (T-047).
+128. **How the start screen tells how ejecting went.** After Eject, the empty page said "Plug in your backup stick" with "You can pull out BACKUP-A now." in smaller type below it, which read confusingly.
+    - **Decided (2026-11-11):** Every outcome of Eject is a pop-up with an OK button: "You can pull out BACKUP-A now.", or that it is still in use by a program, was already pulled out, or couldn't be ejected. "Ejecting BACKUP-A…" stays in the explanation while it goes on. Once the pop-up is closed, the start screen shows what is plugged in, for example "Plug in your backup stick". The verdict screen's "Eject BACKUP-A" uses the same pop-up, and after a successful eject Babawus goes back to the start screen; after a failed one, the verdict screen stays, so that Eject can be tried again (T-048).

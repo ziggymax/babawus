@@ -48,7 +48,7 @@ texts! {
     StickCantBeUsed: "The stick that is plugged in can't be used yet", "Der eingesteckte Stick kann noch nicht benutzt werden";
     StickCantBeUsedAdvice: "Your poweruser can prepare it.", "Dein Betreuer kann ihn vorbereiten.";
     AlreadyOpenDetail: "Ask them to close it, or switch to their account.", "Bitte die Person, Babawus zu schließen, oder wechsle zu ihrem Konto.";
-    AlreadyOpenOk: "OK", "OK";
+    Ok: "OK", "OK";
     AlreadyOpen: "Babawus is already open for {user} on this computer.", "Babawus ist auf diesem Computer schon für {user} geöffnet.";
     NoUdisks: "Babawus can't see the USB sticks, because the udisks2 service isn't running. Contact your poweruser.", "Babawus kann die USB-Sticks nicht sehen, weil der Dienst udisks2 nicht läuft. Wende dich an deinen Betreuer.";
 
@@ -265,7 +265,7 @@ texts! {
     SetupLinkConfirm: "Link", "Verknüpfen";
     SetupSave: "Save", "Speichern";
     SetupSaveTooltip: "Write the changes to the stick", "Die Änderungen auf den Stick schreiben";
-    SetupSaved: "Saved.", "Gespeichert.";
+    SetupSaved: "Stick setup saved.", "Einrichtung des Sticks gespeichert.";
     SetupSaving: "Saving…", "Wird gespeichert …";
     SetupDiscardQuestion: "Leave without saving?", "Ohne Speichern verlassen?";
     SetupDiscardDetail: "Your changes to the setup of this stick will be lost.", "Deine Änderungen an der Einrichtung dieses Sticks gehen verloren.";
@@ -286,7 +286,7 @@ texts! {
     ChooseNoteLink: "A link, which Babawus doesn't follow", "Eine Verknüpfung, der Babawus nicht folgt";
     ChooseNoteNotText: "Its name isn't valid text, so it can't be chosen on its own", "Sein Name ist kein gültiger Text, deshalb kann es nicht einzeln ausgewählt werden";
     ChooseUnreadable: "This folder can't be read.", "Dieser Ordner kann nicht gelesen werden.";
-    ChoosePatternsSection: "Leave out by name", "Nach Namen auslassen";
+    ChoosePatternsSection: "Files to leave out by name", "Dateien nach Namen auslassen";
     ChoosePatternsDetail: "In any folder. * stands for any characters, and ? for one character.", "In jedem Ordner. * steht für beliebige Zeichen und ? für ein einzelnes Zeichen.";
     ChoosePatternAdd: "Add", "Hinzufügen";
     ChoosePatternRemove: "Remove", "Entfernen";

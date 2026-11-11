@@ -60,7 +60,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Press "Choose what to back up…". → A tree with "Your home folder" open. Hidden folders don't show, except those holding something chosen.
 - [ ] Tick `BabawusTest` and open it. → Everything in it is ticked. `notes.tmp` is crossed out, with "Left out by the name pattern *.tmp". The totals count, then show the files and size, with the free space on the stick.
 - [ ] Open `Letters` and untick `old`. → It is crossed out, "Left out", and the totals go down.
-- [ ] Press "Done", then "Save". → "Saved." The start screen shows stick A as "Ready", "No backup yet".
+- [ ] Press "Done", then "Save". → "Stick setup saved." The start screen shows stick A as "Ready", "No backup yet".
 - [ ] Damage the setup by hand: open `.babawus/babawus_config` on stick A in a text editor, change `older_versions = 10` to `11`, and save. Replug the stick. → "Needs attention". "Change setup…" warns that the setup "was changed outside Babawus, or is damaged", and shows 11. Set it back to 10 and press "Save". → "Ready" again.
 
 ## Backing up
@@ -88,9 +88,9 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 ## Ejecting
 
-- [ ] After a backup that counts ("All good" or "Some files were skipped"), press "Eject BACKUP-A". → "Ejecting BACKUP-A…", then "You can pull out BACKUP-A now." The stick's light goes out, and it leaves the list and the file manager.
-- [ ] Plug it in, and open it in the file manager. Then press "Eject" on the start screen. → "BACKUP-A is still in use by a program, for example an open file or a file manager window. Close it and try again." It stays in the list.
-- [ ] Close the file manager window and press "Eject" again. → It ejects.
+- [ ] After a backup that counts ("All good" or "Some files were skipped"), press "Eject BACKUP-A". → "Ejecting BACKUP-A…", then a pop-up: "You can pull out BACKUP-A now.", with OK. The stick's light goes out, and it leaves the file manager. Press OK. → The start screen, without the stick.
+- [ ] Plug it in, and open it in the file manager. Then press "Eject" on the start screen. → A pop-up: "BACKUP-A is still in use by a program, for example an open file or a file manager window. Close it and try again." Press OK. → It stays in the list.
+- [ ] Close the file manager window and press "Eject" again. → A pop-up: "You can pull out BACKUP-A now." Press OK. → "Plug in your backup stick".
 
 ## Updating (T-025)
 
