@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-050, the logo's name in black, is waiting for review; a new package follows. Every change from the review of the look (T-032) is done. T-043 and T-044 wait for their problems to show again. T-043 and T-044 wait for their problems to show again.
+T-044, the test that failed now and then, is waiting for review. Next is a full run of the release checklist for 0.1.0, now with a second stick. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -35,7 +35,6 @@ Everything here is done.
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
 | T-043 | Find out why the buttons under "You on this computer" were once drawn squeezed under the line below them, after the setup had been read again in another state. Seen once on the VM while checking T-040 (pull request 55), and not again in four tries; main may have it too. If it can't be made to happen again, close it | Todo | Pull request 55 |
-| T-044 | Find the test that fails now and then. A full run with `--include-ignored` reported one failure while checking T-037 and again while checking T-040, but the output wasn't kept, and later runs passed. Run the tests in a loop with `--no-fail-fast`, keep each run's output, and fix the test once it is known | Todo | Pull requests 51 and 55 |
 
 ## First version: release
 
@@ -102,3 +101,4 @@ Nothing is waiting for a decision.
 | T-048 | Say how ejecting went in a pop-up with OK, on the start screen and the verdict screen, instead of a notice on the page; after a successful eject from the verdict screen, go back to the start screen | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-049 | Keep the window's height after leaving "Choose what to back up…": since T-041 that page doesn't scroll as a whole, and while hidden it still set the window's least height, so Cancel made the window grow from 797 to 942 pixels. Each screen now asks only for its own height | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-050 | The name under the elephant in the logo is black with a thinner outline, instead of green with a black one. A change by the user to `assets/BabawusLogo.svg` and `assets/BabawusLogo-plain.svg` | [#61](https://github.com/ziggymax/babawus/pull/61) |
+| T-044 | Find the test that fails now and then. On CI for pull request 61, `exfat_is_reported` timed out: udisks2 never reported the test stick's label and file system. The test sticks are formatted outside udisks2, which relies on udev to look at a device again once it has been written; on a busy machine that look can come too early or be lost. The test helper now asks udev to look again after formatting, and waits for it, and a wait that gives up says what udisks2 reported instead | [#62](https://github.com/ziggymax/babawus/pull/62) |
