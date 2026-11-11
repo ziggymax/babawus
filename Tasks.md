@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-050.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-051.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-T-046 to T-049, from trying the package built from pull request 59, are waiting for review. Every change from the review of the look (T-032) is done. T-043 and T-044 wait for their problems to show again. T-043 and T-044 wait for their problems to show again.
+T-050, the logo's name in black, is waiting for review; a new package follows. Every change from the review of the look (T-032) is done. T-043 and T-044 wait for their problems to show again. T-043 and T-044 wait for their problems to show again.
 
 ## First version: logic
 
@@ -101,3 +101,4 @@ Nothing is waiting for a decision.
 | T-047 | After saving the setup, say "Stick setup saved." instead of "Saved." | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-048 | Say how ejecting went in a pop-up with OK, on the start screen and the verdict screen, instead of a notice on the page; after a successful eject from the verdict screen, go back to the start screen | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-049 | Keep the window's height after leaving "Choose what to back up…": since T-041 that page doesn't scroll as a whole, and while hidden it still set the window's least height, so Cancel made the window grow from 797 to 942 pixels. Each screen now asks only for its own height | [#60](https://github.com/ziggymax/babawus/pull/60) |
+| T-050 | The name under the elephant in the logo is black with a thinner outline, instead of green with a black one. A change by the user to `assets/BabawusLogo.svg` and `assets/BabawusLogo-plain.svg` | [#61](https://github.com/ziggymax/babawus/pull/61) |
