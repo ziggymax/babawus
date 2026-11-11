@@ -153,7 +153,7 @@ texts! {
     Ejecting: "Ejecting {label}…", "{label} wird ausgeworfen …";
     Ejected: "You can pull out {label} now.", "Du kannst {label} jetzt abziehen.";
     EjectedUnmountedOnly: "You can pull out {label} safely now, even if its light stays on.", "Du kannst {label} jetzt gefahrlos abziehen, auch wenn sein Lämpchen noch leuchtet.";
-    EjectBusy: "{label} is still in use by a program, for example an open file or a file manager window. Close it and try again.", "{label} wird noch von einem Programm benutzt, zum Beispiel von einer geöffneten Datei oder einem Dateimanager-Fenster. Schließ es und versuch es noch einmal.";
+    EjectBusy: "{label} is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again.", "{label} wird noch von einem Programm benutzt, zum Beispiel von einem Terminal oder einer Datei, die gerade kopiert wird. Schließ es oder warte, bis es fertig ist, und versuch es dann noch einmal.";
     EjectGone: "{label} has already been removed.", "{label} wurde schon abgezogen.";
     EjectFailed: "{label} could not be ejected. Contact your poweruser.", "{label} konnte nicht ausgeworfen werden. Wende dich an deinen Betreuer.";
 
