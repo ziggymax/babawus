@@ -586,7 +586,7 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         .build();
     pane.append(&pages);
 
-    let logo = icons::image(&icons::logo(), LOGO_SIZE);
+    let logo = icons::image(&icons::logo_with_name(), LOGO_SIZE);
     logo.set_halign(Align::End);
     logo.set_valign(Align::Start);
     logo.set_margin_top(MARGIN / 2);

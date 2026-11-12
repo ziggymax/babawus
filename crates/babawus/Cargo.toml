@@ -23,5 +23,5 @@ depends = "$auto, udisks2, exfatprogs, e2fsprogs, acl"
 assets = [
     ["target/release/babawus", "usr/bin/", "755"],
     ["assets/io.github.ziggymax.Babawus.desktop", "usr/share/applications/", "644"],
-    ["../../assets/BabawusLogo-plain.svg", "usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg", "644"],
+    ["../../assets/BabawusLogo-NoText-plain.svg", "usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg", "644"],
 ]
