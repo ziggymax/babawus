@@ -396,3 +396,8 @@ The user tried the package built from pull request 59 on the VM: formatting as E
 
 131. **Which logo goes where.** The user made a second logo, the elephant without the name below it: `assets/BabawusLogo-NoText.svg`, with `assets/BabawusLogo-NoText-plain.svg` as the plain SVG that Babawus uses.
     - **Decided (2026-11-12):** The logo with the name is only shown in the upper right corner of the start screen, which includes the page shown when no stick is plugged in. Everywhere else shows the logo without the name: the menu icon the package installs (and so the window's icon in the panel), the About pop-up, and the "already open" message. Both SVG files are kept in git, as for the logo with the name.
+
+## Decisions on About (T-054)
+
+132. **How About explains the name.** The user asked for the comment in About to show the letters that spell Babawus in bold. The German comment, "Einfache Sicherung auf USB-Sticks", doesn't spell it.
+    - **Decided (2026-11-12):** The English long form, in title case, with the name's letters in bold: "**Ba**sic **Ba**ckup **w**ith **U**SB **S**torage". It is shown in every language, because it is where the name comes from. In any language other than English, that language's own comment follows on the line below, so that the name is still explained; in German "Einfache Sicherung auf USB-Sticks".

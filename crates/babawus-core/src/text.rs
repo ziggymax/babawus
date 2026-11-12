@@ -39,7 +39,8 @@ texts! {
     MenuAbout: "About Babawus", "Über Babawus";
     AdvancedMarker: "Advanced", "Erweitert";
     AdvancedMarkerTooltip: "The poweruser's actions are shown. Choose Advanced in the menu again to hide them.", "Die Funktionen für deinen Betreuer werden angezeigt. Wähle „Erweitert“ im Menü noch einmal, um sie auszublenden.";
-    AboutComments: "Basic backup with USB storage", "Einfache Sicherung auf USB-Sticks";
+    // In English, the name's long form, which `about_comments` shows in every language.
+    AboutComments: "Basic Backup with USB Storage", "Einfache Sicherung auf USB-Sticks";
     Logo: "Babawus", "Babawus";
     PlugIn: "Plug in your backup stick", "Steck deinen Sicherungs-Stick ein";
     ChooseMedium: "Choose a stick in the list", "Wähle einen Stick in der Liste";
@@ -368,6 +369,50 @@ pub fn size(bytes: u64, language: Language) -> String {
     UNITS[unit].fill(language, &[("size", &number)])
 }
 
+/// The name's long form in parts, each marked whether it is one of the letters that spell
+/// "Babawus" (Issues.md item 132).
+const NAME_LONG_FORM: [(&str, bool); 10] = [
+    ("Ba", true),
+    ("sic ", false),
+    ("Ba", true),
+    ("ckup ", false),
+    ("w", true),
+    ("ith ", false),
+    ("U", true),
+    ("SB ", false),
+    ("S", true),
+    ("torage", false),
+];
+
+/// The comment in About, as Pango markup: the name's long form with the letters that spell
+/// "Babawus" in bold, in every language, because it is where the name comes from. In any other
+/// language than English, that language's own comment follows on the line below (Issues.md
+/// item 132).
+pub fn about_comments(language: Language) -> String {
+    let mut markup: String = NAME_LONG_FORM
+        .iter()
+        .map(|&(part, bold)| {
+            if bold {
+                format!("<b>{part}</b>")
+            } else {
+                part.to_owned()
+            }
+        })
+        .collect();
+    if language != Language::English {
+        markup.push('\n');
+        markup.push_str(&escape_markup(Text::AboutComments.get(language)));
+    }
+    markup
+}
+
+/// `text` with the characters that Pango markup gives a meaning escaped.
+fn escape_markup(text: &str) -> String {
+    text.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -420,6 +465,33 @@ mod tests {
     fn placeholders_are_filled() {
         let text = Text::InProgress.fill(Language::English, &[("user", "anna")]);
         assert_eq!(text, "Backup in progress (by anna)");
+    }
+
+    #[test]
+    fn the_long_form_is_the_english_comment_and_its_bold_letters_spell_the_name() {
+        let text: String = NAME_LONG_FORM.iter().map(|(part, _)| *part).collect();
+        assert_eq!(text, Text::AboutComments.get(Language::English));
+        let name: String = NAME_LONG_FORM
+            .iter()
+            .filter(|(_, bold)| *bold)
+            .map(|(part, _)| *part)
+            .collect();
+        assert_eq!(name.to_lowercase(), "babawus");
+    }
+
+    #[test]
+    fn about_shows_the_long_form_and_below_it_the_language_s_own_comment() {
+        let long_form = "<b>Ba</b>sic <b>Ba</b>ckup <b>w</b>ith <b>U</b>SB <b>S</b>torage";
+        assert_eq!(about_comments(Language::English), long_form);
+        assert_eq!(
+            about_comments(Language::German),
+            format!("{long_form}\nEinfache Sicherung auf USB-Sticks")
+        );
+    }
+
+    #[test]
+    fn markup_characters_are_escaped() {
+        assert_eq!(escape_markup("a < b & c > d"), "a &lt; b &amp; c &gt; d");
     }
 
     #[test]
