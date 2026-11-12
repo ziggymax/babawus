@@ -401,3 +401,8 @@ The user tried the package built from pull request 59 on the VM: formatting as E
 
 132. **How About explains the name.** The user asked for the comment in About to show the letters that spell Babawus in bold. The German comment, "Einfache Sicherung auf USB-Sticks", doesn't spell it.
     - **Decided (2026-11-12):** The English long form, in title case, with the name's letters in bold: "**Ba**sic **Ba**ckup **w**ith **U**SB **S**torage". It is shown in every language, because it is where the name comes from. In any language other than English, that language's own comment follows on the line below, so that the name is still explained; in German "Einfache Sicherung auf USB-Sticks".
+
+## Decisions on the stick's details (T-055)
+
+133. **Where the file system is shown.** The user asked for the start screen's details to name the stick's file system.
+    - **Decided (2026-11-12):** It is the last item of the details line, for every user, not only under Advanced: "Kingston DataTraveler 3.0 · 15.5 GB · 15.5 GB free · exFAT". It is named as people know it, the same in every language: exFAT, Ext4 (as on the format page), FAT, NTFS, and Ext2 or Ext3; any other file system as udisks2 names it, and nothing if udisks2 reports none.

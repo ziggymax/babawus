@@ -51,6 +51,21 @@ fn free_space(root: &Path) -> Option<u64> {
     Some(stats.f_bavail.saturating_mul(stats.f_frsize))
 }
 
+/// The file system that udisks2 calls `id`, named as people know it, the same in every language
+/// (Issues.md item 133). Nothing if udisks2 reports none.
+fn file_system_name(id: &str) -> Option<&str> {
+    Some(match id {
+        "" => return None,
+        "exfat" => "exFAT",
+        "ext4" => "Ext4",
+        "ext3" => "Ext3",
+        "ext2" => "Ext2",
+        "vfat" => "FAT",
+        "ntfs" => "NTFS",
+        other => other,
+    })
+}
+
 /// Whether a backup can be started, at a glance. The shapes differ as well as the colours.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mark {
@@ -192,8 +207,8 @@ pub struct Details {
     pub label: String,
     pub mark: Option<Mark>,
     pub status: String,
-    /// Maker, model, size and free space, for example
-    /// "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free".
+    /// Maker, model, size, free space and file system, for example
+    /// "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free · exFAT".
     pub about: String,
     /// For a Ready medium: when the last backup was, and whether it skipped files.
     pub last_backup: Option<(String, bool)>,
@@ -237,6 +252,9 @@ pub fn details(
     about.push(size(drive.size, language));
     if let Some(free) = checked.and_then(|checked| checked.free) {
         about.push(Text::Free.fill(language, &[("size", &size(free, language))]));
+    }
+    if let Some(name) = file_system_name(&medium.volume.file_system) {
+        about.push(name.to_owned());
     }
     let last_backup = match status {
         Some(Status::Ready { last_backup }) => Some(match last_backup {
