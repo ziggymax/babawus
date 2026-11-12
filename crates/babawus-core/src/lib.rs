@@ -17,6 +17,7 @@ pub mod history_screen;
 pub mod identity;
 pub mod lock;
 pub mod log;
+pub mod log_view;
 pub mod media;
 pub mod medium;
 pub mod names;

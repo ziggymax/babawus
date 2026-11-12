@@ -160,6 +160,9 @@ texts! {
     HistoryHeading: "Backups to this stick", "Sicherungen auf diesen Stick";
     HistoryEmpty: "No backups to this stick yet.", "Noch keine Sicherungen auf diesen Stick.";
     HistoryUnreadable: "The history on this stick can't be read. Go back and try again.", "Der Verlauf auf diesem Stick kann nicht gelesen werden. Geh zurück und versuch es noch einmal.";
+    ShowInLog: "Show in the log", "Im Protokoll zeigen";
+    LogWindowTitle: "Log of {label}", "Protokoll von {label}";
+    LogUnreadable: "The log on this stick can't be read.", "Das Protokoll auf diesem Stick kann nicht gelesen werden.";
     HistoryRunning: "Backup in progress", "Sicherung läuft";
     HistoryToday: "Today, {time}", "Heute, {time}";
     HistoryYesterday: "Yesterday, {time}", "Gestern, {time}";

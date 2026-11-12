@@ -8,10 +8,14 @@ use babawus_core::history_screen::HistoryRow;
 use babawus_core::settings::Language;
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use gtk4::gdk::BUTTON_SECONDARY;
 use gtk4::prelude::*;
 use gtk4::{
-    Align, Box, Button, Image, Label, ListBox, Orientation, PolicyType, ScrolledWindow,
-    SelectionMode, Separator, Spinner,
+    Align, Box, Button, GestureClick, Image, Label, ListBox, Orientation, PolicyType, PopoverMenu,
+    ScrolledWindow, SelectionMode, Separator, Spinner, gdk, gio, graphene,
 };
 
 use crate::icons;
@@ -22,6 +26,11 @@ const PICTURE_SIZE: i32 = 24;
 
 pub struct InfoPage {
     pub root: Box,
+    /// The run of each row of the history, in order, while right-clicking a row offers the log.
+    /// Empty otherwise (Issues.md item 135).
+    log_runs: Rc<RefCell<Vec<String>>>,
+    /// "Show in the log", in the current language.
+    log_label: Rc<RefCell<String>>,
     title: Label,
     heading: Label,
     loading: Box,
@@ -56,6 +65,48 @@ impl InfoPage {
             .build();
         list.add_css_class("boxed-list");
         list.set_show_separators(true);
+        let log_runs: Rc<RefCell<Vec<String>>> = Rc::default();
+        let log_label: Rc<RefCell<String>> = Rc::default();
+        // "Show in the log", at the pointer, for the run that was right-clicked.
+        let log_menu = PopoverMenu::from_model(None::<&gio::MenuModel>);
+        log_menu.set_has_arrow(false);
+        log_menu.set_halign(Align::Start);
+        let right_click = GestureClick::builder().button(BUTTON_SECONDARY).build();
+        let runs = log_runs.clone();
+        let label_text = log_label.clone();
+        let clicked_list = list.clone();
+        let shown_menu = log_menu.clone();
+        right_click.connect_pressed(move |_, _, x, y| {
+            let Some(row) = clicked_list.row_at_y(y as i32) else {
+                return;
+            };
+            let runs = runs.borrow();
+            let Some(run_id) = usize::try_from(row.index())
+                .ok()
+                .and_then(|index| runs.get(index))
+            else {
+                return;
+            };
+            let menu = gio::Menu::new();
+            let item = gio::MenuItem::new(Some(label_text.borrow().as_str()), None);
+            item.set_action_and_target_value(Some("win.show-in-log"), Some(&run_id.to_variant()));
+            menu.append_item(&item);
+            shown_menu.set_menu_model(Some(&menu));
+            // The menu hangs from the page, because the list removes all its children when
+            // it is filled again.
+            let Some(parent) = shown_menu.parent() else {
+                return;
+            };
+            let Some(point) =
+                clicked_list.compute_point(&parent, &graphene::Point::new(x as f32, y as f32))
+            else {
+                return;
+            };
+            let at = gdk::Rectangle::new(point.x() as i32, point.y() as i32, 1, 1);
+            shown_menu.set_pointing_to(Some(&at));
+            shown_menu.popup();
+        });
+        list.add_controller(right_click);
         let left_out_heading = label(Some("babawus-next-step"));
         let left_out = label(None);
         left_out.set_margin_start(SPACING);
@@ -73,6 +124,10 @@ impl InfoPage {
         page.append(&loading);
         page.append(&intro);
         page.append(&list);
+        log_menu.set_parent(&page);
+        // A popover isn't removed with the widget it hangs from, so it is let go of here.
+        let menu = log_menu.clone();
+        page.connect_destroy(move |_| menu.unparent());
         page.append(&left_out_heading);
         page.append(&left_out);
         let scroll = ScrolledWindow::builder()
@@ -99,6 +154,8 @@ impl InfoPage {
 
         Self {
             root,
+            log_runs,
+            log_label,
             title,
             heading,
             loading,
@@ -119,6 +176,7 @@ impl InfoPage {
         self.back
             .set_tooltip_text(Some(Text::BackTooltip.get(language)));
         self.loading.set_visible(false);
+        self.log_runs.borrow_mut().clear();
         self.list.remove_all();
         self.list.set_visible(false);
         set_optional(&self.intro, None);
@@ -133,14 +191,25 @@ impl InfoPage {
         self.loading.set_visible(true);
     }
 
-    /// Shows the history. `rows` is `None` if the log could not be read.
-    pub fn show_history(&self, medium: &str, rows: Option<&[HistoryRow]>, language: Language) {
+    /// Shows the history. `rows` is `None` if the log could not be read. With `log_menu`,
+    /// right-clicking a run offers to show it in the log (Issues.md item 135).
+    pub fn show_history(
+        &self,
+        medium: &str,
+        rows: Option<&[HistoryRow]>,
+        log_menu: bool,
+        language: Language,
+    ) {
         self.start(medium, Text::HistoryHeading, language);
         let rows = match rows {
             None => return set_optional(&self.intro, Some(Text::HistoryUnreadable.get(language))),
             Some([]) => return set_optional(&self.intro, Some(Text::HistoryEmpty.get(language))),
             Some(rows) => rows,
         };
+        if log_menu {
+            *self.log_runs.borrow_mut() = rows.iter().map(|row| row.run_id.clone()).collect();
+            *self.log_label.borrow_mut() = Text::ShowInLog.get(language).to_owned();
+        }
         for row in rows {
             let mark = icons::image(&icons::verdict_mark(row.mark), PICTURE_SIZE);
             mark.set_valign(Align::Start);

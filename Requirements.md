@@ -223,6 +223,14 @@ As a user I want to be able to view the history of backups made on a medium, in 
 
 "Show history" fills the window with the runs on the medium, newest first. Each run shows the verdict with its mark (as on the verdict screen), when it started ("Today, 14:03", "Yesterday, 09:12" or "2026-11-03, 17:54", counting calendar days in local time), the reason for any verdict but "All good", what was copied (files and bytes), how many files were skipped, and whose run it was ("By anna on laptop"). Every run on the medium is listed, whichever computer or account made it. A run that is still going, by whoever holds the medium's lock, shows "Backup in progress". "Back" returns to the start screen.
 
+### See a stick's log
+
+As a poweruser I want to see the log on a medium laid out clearly, starting from a run in the history, so that I can look into what happened in that run and around it without opening the file by hand (Issues.md item 135).
+
+While Advanced is on, right-clicking a run in the history shows a small menu at the pointer with "Show in the log". Without Advanced, right-clicking does nothing. "Show in the log" opens a window of its own, "Log of BACKUP-A", which isn't modal: the main window can be used while it is open. It shows the whole log, one row per line, as close to the file as possible, in a fixed-width font: the timestamp as written, the first 8 digits of the run ID, the entry type, the `key=value` pairs as "key value", and any closing English text, dimmed. `ERROR` is red, `START` blue, and `END` takes the colour of its verdict's mark. Each run's lines are shaded alike, alternating from run to run, and the chosen run's lines are highlighted; if they aren't in view, the window scrolls to them. Garbled or incomplete lines are shown dimmed, as they are in the file. Long lines don't wrap: the window scrolls sideways too.
+
+There is at most one log window per medium: "Show in the log" for another run of the same medium moves the highlight there and brings the window to the front. While it is open, the window follows the log: when the file changes, for example during a backup, it is read again after a short pause, keeping its place and its highlight. It closes by itself when its medium is ejected or pulled out, and when Babawus closes. If the log can't be read, the window says "The log on this stick can't be read."
+
 ### Add a computer or user account to a medium
 
 As a poweruser I want to add a computer or a user account to a medium, choosing which files and folders to back up for it, without losing any backups already on the medium. I do this on that computer, logged in as that user. Babawus records the computer's ID (see "Identifying a computer") and suggests a folder name for it that is not yet used on the medium. That way several computers and accounts can share a medium.

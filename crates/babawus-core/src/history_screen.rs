@@ -15,6 +15,8 @@ use crate::verdict_screen::{VerdictMark, copied_text, files_text, reason_text, v
 /// One run in the history.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HistoryRow {
+    /// The run's ID, so that the log window can find its lines.
+    pub run_id: String,
     pub mark: VerdictMark,
     /// The verdict, for example "All good".
     pub verdict: String,
@@ -52,6 +54,7 @@ pub fn history(
             let when = when_text(clock(run.started), today, language);
             if running {
                 return HistoryRow {
+                    run_id: run.id.clone(),
                     mark: VerdictMark::Attention,
                     verdict: Text::HistoryRunning.get(language).to_owned(),
                     when,
@@ -70,6 +73,7 @@ pub fn history(
                 Text::HistorySkipped.fill(language, &[("files", &files)])
             });
             HistoryRow {
+                run_id: run.id.clone(),
                 mark: VerdictMark::of(verdict),
                 verdict: verdict_title(verdict).get(language).to_owned(),
                 when,

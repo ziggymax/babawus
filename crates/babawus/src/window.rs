@@ -49,6 +49,7 @@ use crate::choose_page::ChoosePage;
 use crate::format_page::FormatPage;
 use crate::icons;
 use crate::info_page::InfoPage;
+use crate::log_window::LogWindow;
 use crate::setup_page::{Instead, SetupEvent, SetupPage};
 
 const MARGIN: i32 = 24;
@@ -264,6 +265,9 @@ enum InfoView {
 struct InfoState {
     /// The label of the medium.
     label: String,
+    /// The udisks2 object path of the medium's file system, and where it is mounted.
+    object_path: String,
+    root: PathBuf,
     view: InfoView,
     /// Counts the screens opened, so that what an older one read is dropped.
     generation: u64,
@@ -320,6 +324,9 @@ struct Window {
     ejecting: RefCell<Option<String>>,
     /// A stick that is plugged in but not listed, for the empty page.
     unlisted: Cell<Option<Unlisted>>,
+    /// The open log windows, by the udisks2 object path of their medium's file system: at most
+    /// one per stick (Issues.md item 135).
+    log_windows: RefCell<HashMap<String, Rc<LogWindow>>>,
 }
 
 /// Opens the start screen.
@@ -448,6 +455,7 @@ pub fn show(app: &Application) {
         notice: RefCell::new(None),
         ejecting: RefCell::new(None),
         unlisted: Cell::new(None),
+        log_windows: RefCell::new(HashMap::new()),
     });
     *setup_events.borrow_mut() = Rc::downgrade(&this_window);
     this_window.connect_signals();
@@ -466,7 +474,10 @@ pub fn show(app: &Application) {
     // references, so this is the one strong one.
     let state = RefCell::new(Some(this_window.clone()));
     this_window.window.connect_destroy(move |_| {
-        state.take();
+        // The log windows close with Babawus, which would otherwise go on running for them.
+        if let Some(window) = state.take() {
+            window.close_log_windows();
+        }
     });
     this_window.window.present();
 }
@@ -687,6 +698,9 @@ impl Window {
                 .as_ref()
                 .is_some_and(|backup| backup.running.is_some());
             if !running {
+                // The log windows close with Babawus, which would otherwise go on running for
+                // them.
+                window.close_log_windows();
                 return glib::Propagation::Proceed;
             }
             window.ask_to_stop(true);
@@ -777,6 +791,18 @@ impl Window {
             }
         });
         self.window.add_action(&start);
+
+        // "Show in the log", for a run in the history, by its run ID.
+        let show_in_log = gio::SimpleAction::new("show-in-log", Some(glib::VariantTy::STRING));
+        let weak = Rc::downgrade(self);
+        show_in_log.connect_activate(move |_, parameter| {
+            if let Some(window) = weak.upgrade()
+                && let Some(run_id) = parameter.and_then(|parameter| parameter.str())
+            {
+                window.show_in_log(run_id);
+            }
+        });
+        self.window.add_action(&show_in_log);
 
         let about = gio::SimpleAction::new("about", None);
         let weak = Rc::downgrade(self);
@@ -909,6 +935,20 @@ impl Window {
             *self.notice.borrow_mut() = None;
         }
         let to_check: Vec<Medium> = media.iter().map(|(medium, _)| medium.clone()).collect();
+        // A log window closes when its stick has gone (Issues.md item 135).
+        let gone: Vec<Rc<LogWindow>> = {
+            let mut windows = self.log_windows.borrow_mut();
+            let paths: HashSet<String> = media.iter().map(path).collect();
+            let gone: Vec<String> = windows
+                .keys()
+                .filter(|key| !paths.contains(*key))
+                .cloned()
+                .collect();
+            gone.iter().filter_map(|key| windows.remove(key)).collect()
+        };
+        for log_window in gone {
+            log_window.window.close();
+        }
         *self.media.borrow_mut() = media;
         self.update_rows();
         self.show_details();
@@ -1165,6 +1205,53 @@ impl Window {
         });
     }
 
+    /// Closes every log window.
+    fn close_log_windows(&self) {
+        let open: Vec<Rc<LogWindow>> = self
+            .log_windows
+            .borrow_mut()
+            .drain()
+            .map(|(_, open)| open)
+            .collect();
+        for log_window in open {
+            log_window.window.close();
+        }
+    }
+
+    /// Shows the run `run_id` of the history's medium in its log window, which opens if it
+    /// isn't open yet.
+    fn show_in_log(self: &Rc<Self>, run_id: &str) {
+        let Some((label, object_path, root)) = self.info.borrow().as_ref().map(|info| {
+            (
+                info.label.clone(),
+                info.object_path.clone(),
+                info.root.clone(),
+            )
+        }) else {
+            return;
+        };
+        let open = self.log_windows.borrow().get(&object_path).cloned();
+        if let Some(log_window) = open {
+            log_window.show_run(run_id);
+            return;
+        }
+        let Some(app) = self.window.application() else {
+            return;
+        };
+        let log_window = LogWindow::open(&app, &label, root, run_id, self.language.get());
+        let weak = Rc::downgrade(self);
+        let key = object_path.clone();
+        log_window.window.connect_close_request(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.log_windows.borrow_mut().remove(&key);
+            }
+            glib::Propagation::Proceed
+        });
+        self.log_windows
+            .borrow_mut()
+            .insert(object_path, log_window);
+    }
+
     /// Opens "What's backed up" for the selected medium, and reads it off the main thread.
     fn open_coverage(self: &Rc<Self>) {
         let Some(medium) = self.selected_medium() else {
@@ -1203,6 +1290,8 @@ impl Window {
         *self.notice.borrow_mut() = None;
         *self.info.borrow_mut() = Some(InfoState {
             label: medium.volume.label.clone(),
+            object_path: medium.volume.object_path.clone(),
+            root: medium.root.clone(),
             view,
             generation,
         });
@@ -1241,7 +1330,7 @@ impl Window {
                     let now = SystemTime::now();
                     history(runs, in_progress.as_deref(), now, local_clock, language)
                 });
-                page.show_history(&info.label, rows.as_deref(), language);
+                page.show_history(&info.label, rows.as_deref(), self.advanced.get(), language);
             }
             InfoView::Coverage(None) => {
                 page.show_loading(&info.label, Text::CoverageHeading, language);

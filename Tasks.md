@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057; T-057 is left, in "Next version" below. T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done; nothing more is planned yet. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -42,11 +42,7 @@ Everything here is done.
 
 ## Next version
 
-From the user's testing of 0.1.0 (2026-11-12). Each task's design questions are asked when it starts.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-057 | A log window for the poweruser: right-clicking a run in the history offers to show the log. A window of its own, not modal, shows the whole log nicely laid out and scrollable, with the lines of that run highlighted. It stays open until closed, and follows changes to the log while it is open | Todo | User's testing of 0.1.0, item A |
+From the user's testing of 0.1.0 (2026-11-12). Everything here is done.
 
 ## Needs a decision
 
@@ -116,3 +112,4 @@ Nothing is waiting for a decision.
 | T-054 | About explains the name: "**Ba**sic **Ba**ckup **w**ith **U**SB **S**torage", in title case with the letters that spell Babawus in bold, in every language; in German "Einfache Sicherung auf USB-Sticks" follows on the line below (Issues.md item 132) | [#67](https://github.com/ziggymax/babawus/pull/67) |
 | T-055 | The stick's details at the top of the start screen also name its file system, for every user: "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free · exFAT" (Issues.md item 133) | [#68](https://github.com/ziggymax/babawus/pull/68) |
 | T-056 | The start screen's new layout, after the user's mock-ups: every stick in the list is framed and has its own round Eject button instead of a status mark; the selected Babawus stick has a large green "Start backup" right below its row; and the details' buttons, the user's and then the poweruser's on one row, come right after the texts, below a thin line (Issues.md item 134) | [#69](https://github.com/ziggymax/babawus/pull/69) |
+| T-057 | A log window for the poweruser: with Advanced on, right-clicking a run in the history offers "Show in the log", which opens a window of its own with the whole log one row per line and the run's lines highlighted. It follows changes to the log, and closes when its stick goes or Babawus closes (Issues.md item 135) | [#70](https://github.com/ziggymax/babawus/pull/70) |
