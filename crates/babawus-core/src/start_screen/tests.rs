@@ -113,7 +113,7 @@ fn the_details_say_what_the_medium_is() {
     assert_eq!(details.mark, Some(Mark::Ready));
     assert_eq!(
         details.about,
-        "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free"
+        "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free · exFAT"
     );
     assert_eq!(details.explanation, None);
 }
@@ -121,8 +121,33 @@ fn the_details_say_what_the_medium_is() {
 #[test]
 fn the_free_space_is_left_out_until_it_is_known() {
     let details = details_of(None, false);
-    assert_eq!(details.about, "Kingston DataTraveler 3.0 · 15.5 GB");
+    assert_eq!(details.about, "Kingston DataTraveler 3.0 · 15.5 GB · exFAT");
     assert_eq!(details.status, "Checking…");
+}
+
+#[test]
+fn file_systems_are_named_as_people_know_them() {
+    assert_eq!(file_system_name("exfat"), Some("exFAT"));
+    assert_eq!(file_system_name("ext4"), Some("Ext4"));
+    assert_eq!(file_system_name("ext3"), Some("Ext3"));
+    assert_eq!(file_system_name("ext2"), Some("Ext2"));
+    assert_eq!(file_system_name("vfat"), Some("FAT"));
+    assert_eq!(file_system_name("ntfs"), Some("NTFS"));
+    assert_eq!(file_system_name("btrfs"), Some("btrfs"));
+    assert_eq!(file_system_name(""), None);
+}
+
+#[test]
+fn a_medium_without_a_file_system_names_none() {
+    let mut medium = medium("sdb", "BACKUP-A");
+    medium.volume.file_system = String::new();
+    let shown = Shown {
+        medium: &medium,
+        checked: None,
+        formattable: true,
+    };
+    let details = details(&shown, now(), utc_clock, EN, false);
+    assert_eq!(details.about, "Kingston DataTraveler 3.0 · 15.5 GB");
 }
 
 #[test]
