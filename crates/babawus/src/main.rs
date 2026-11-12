@@ -3,6 +3,7 @@ mod choose_page;
 mod format_page;
 mod icons;
 mod info_page;
+mod log_window;
 mod scroll;
 mod setup_page;
 mod window;

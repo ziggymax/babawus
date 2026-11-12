@@ -70,6 +70,7 @@ fn a_good_run_shows_what_was_copied_and_no_reason() {
     assert_eq!(
         rows[0],
         HistoryRow {
+            run_id: "0123456789abcdef".to_owned(),
             mark: VerdictMark::Good,
             verdict: "All good".to_owned(),
             when: "Today, 11:00".to_owned(),

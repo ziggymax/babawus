@@ -227,9 +227,9 @@ enum Parsed {
     },
 }
 
-struct Line<'a> {
+pub(crate) struct Line<'a> {
     time: SystemTime,
-    run_id: &'a str,
+    pub(crate) run_id: &'a str,
     parsed: Parsed,
 }
 
@@ -252,7 +252,7 @@ fn parse_stats(pairs: &HashMap<&str, &str>) -> Option<Stats> {
 }
 
 /// Reads a line, without its line ending. Returns `None` for a garbled line.
-fn parse_line(line: &[u8]) -> Option<Line<'_>> {
+pub(crate) fn parse_line(line: &[u8]) -> Option<Line<'_>> {
     let mut fields = str::from_utf8(line).ok()?.split('\t');
     let time = parse_log_timestamp(fields.next()?)?;
     let run_id = fields.next().filter(|id| is_run_id(id))?;
@@ -343,7 +343,7 @@ pub fn read_runs(medium: &dyn FileSystem, root: &Path) -> io::Result<Vec<Run>> {
     Ok(parse_runs(&read_log(medium, root)?))
 }
 
-fn read_log(medium: &dyn FileSystem, root: &Path) -> io::Result<Vec<u8>> {
+pub(crate) fn read_log(medium: &dyn FileSystem, root: &Path) -> io::Result<Vec<u8>> {
     match read_file(medium, &root.join(LOG_FILE)) {
         Err(error) if error.kind() == ErrorKind::NotFound => Ok(Vec::new()),
         contents => contents,

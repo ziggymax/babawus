@@ -70,6 +70,10 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Open `.babawus/babawus_log.txt` on stick A in a text editor. → The run's start entry, with `account`, `version` and `hostname`; an `ERROR` entry for each skipped file, with codes such as `NAME_INVALID_CHARS` and `UNREADABLE`; and the end entry with `verdict=SKIPPED`. Paste the run's lines into the issue.
 - [ ] Press "Back", then "Start backup" again. → "Some files were skipped" again, for the same two files, and it is quick, because nothing else changed.
 - [ ] Press "Show history". → Both runs, newest first, each with the time, the verdict, the reason, what was copied, how many were skipped, and whose run it was.
+- [ ] Right-click the older run. → Nothing happens. Turn on Advanced, and right-click it again. → A menu with "Show in the log". Choose it. → A window "Log of BACKUP-A" shows the log in a fixed-width font, one row per line, with the older run's lines highlighted and its `ERROR` lines in red.
+- [ ] Right-click the newer run and choose "Show in the log". → The same window comes to the front, with the newer run highlighted instead.
+- [ ] Leave the log window open, press "Back" and "Start backup". → When it has finished, the log window shows the new run's lines too, and the highlight hasn't moved.
+- [ ] Close Babawus. → The log window closes with it. Advanced is off again when Babawus next starts.
 - [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders and the name patterns.
 - [ ] Set up stick B as for stick A, with `BabawusTest` ticked, and back up to it once. → `meeting: notes.txt` is backed up there, because Ext4 can store the name. Only `secret.txt` is skipped.
 

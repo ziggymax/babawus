@@ -416,3 +416,13 @@ The user tried the package built from pull request 59 on the VM: formatting as E
         - The poweruser's buttons, "Prepare…" and "Change setup…", go on the same row as the user's, after them, wrapping like words in a narrow window. They no longer have a row and a line of their own; this replaces part of `ui-review/UiReview.md`'s start screen decision (T-038).
         - The Eject button of a stick that isn't selected ejects that stick at once, and the selection stays where it was. While a stick is being ejected, every Eject button is greyed out.
         - If the selected stick has none of the remaining buttons, the line below the texts isn't shown either.
+
+## Decisions on the log window (T-057)
+
+135. **A log window for the poweruser.** The user asked for a "pretty listing" of a stick's log, opened from a run in the history, with that run's lines highlighted, in a window of its own that isn't modal and follows changes to the log.
+    - **Decided (2026-11-12):**
+        - Right-clicking a run in the history offers it only while Advanced is on; otherwise right-clicking does nothing. The offer is a small menu at the pointer with one item, "Show in the log".
+        - The window shows the log one row per line, as close to the file as possible, in a fixed-width font: the timestamp as written, the first 8 digits of the run ID, the entry type, the `key=value` pairs as "key value", and any closing English text, dimmed. `ERROR` is red, and `END` takes the colour of its verdict's mark. Each run's lines are shaded alike, alternating from run to run, and the clicked run's lines are highlighted, with the window scrolled to them. Garbled or incomplete lines are shown dimmed, as they are in the file, so that nothing is hidden.
+        - The window follows the log: when the file changes, it is read again, the highlight stays on the same run, and the view keeps its place.
+        - When the stick is ejected or pulled out, its log window closes by itself.
+    - **Decided by Claude, as the obvious defaults (2026-11-12):** there is at most one log window per stick; choosing "Show in the log" for another run of that stick moves the highlight and brings the window to the front. The window is titled "Log of BACKUP-A", opens at a size of its own, and closes when Babawus does. Its texts are in the language chosen when it opened. Long lines don't wrap: the window scrolls sideways too.
