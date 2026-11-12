@@ -32,7 +32,7 @@ use babawus_core::setup_screen::{
     self, Editor, Here, HereAction, Opened, SaveError, overview, save_error_text,
 };
 use babawus_core::start_screen::{self, Action, Checked, Shown, Unlisted};
-use babawus_core::text::Text;
+use babawus_core::text::{self, Text};
 use babawus_core::time::local_clock;
 use babawus_core::udisks::{EjectError, Ejected, Udisks};
 use babawus_core::verdict_screen::{Context, verdict_screen};
@@ -780,13 +780,15 @@ impl Window {
             .modal(true)
             .program_name("Babawus")
             .version(babawus_core::VERSION)
-            .comments(Text::AboutComments.get(language))
+            .comments(text::about_comments(language))
             .logo(&icons::logo())
             .website("https://github.com/ziggymax/babawus")
             .build();
         // GTK gives the first selectable text the focus, which selects all of it: the name.
         // Nothing in the dialog needs copying (`ui-review/UiReview.md` W05).
         unselectable(dialog.upcast_ref());
+        // The comment is markup, which `AboutDialog` would show as it is (Issues.md item 132).
+        use_markup_for(dialog.upcast_ref(), &text::about_comments(language));
         dialog.present();
     }
 
@@ -2282,6 +2284,20 @@ impl Window {
 }
 
 /// Makes every label inside `widget` unselectable.
+/// Makes the label under `widget` that shows `markup` as plain text show it as markup.
+fn use_markup_for(widget: &gtk4::Widget, markup: &str) {
+    if let Some(label) = widget.downcast_ref::<Label>()
+        && label.label() == markup
+    {
+        label.set_use_markup(true);
+    }
+    let mut child = widget.first_child();
+    while let Some(current) = child {
+        use_markup_for(&current, markup);
+        child = current.next_sibling();
+    }
+}
+
 fn unselectable(widget: &gtk4::Widget) {
     if let Some(label) = widget.downcast_ref::<Label>() {
         label.set_selectable(false);
