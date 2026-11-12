@@ -66,14 +66,6 @@ fn actions(details: &Details) -> Vec<Action> {
     details.buttons.iter().map(|button| button.action).collect()
 }
 
-fn button(details: &Details, action: Action) -> &Button {
-    details
-        .buttons
-        .iter()
-        .find(|button| button.action == action)
-        .unwrap()
-}
-
 #[test]
 fn marks_group_the_statuses_by_what_can_be_done() {
     assert_eq!(Mark::of(&Status::Ready { last_backup: None }), Mark::Ready);
@@ -92,9 +84,10 @@ fn a_row_shows_a_spinner_and_a_grey_stick_until_it_is_checked() {
     let medium = medium("sdb", "BACKUP-A");
     let row = row(&medium, None, EN);
     assert_eq!(row.label, "BACKUP-A");
-    assert_eq!(row.mark, None);
+    assert!(row.checking);
     assert!(!row.babawus);
     assert_eq!(row.tooltip, "Checking…");
+    assert_eq!(row.eject_tooltip, "Make this stick safe to pull out");
 }
 
 #[test]
@@ -189,55 +182,56 @@ fn any_other_status_explains_what_to_do() {
 }
 
 #[test]
-fn start_backup_is_always_shown_but_only_works_on_a_ready_medium() {
+fn start_backup_is_shown_for_a_babawus_medium_but_only_works_when_it_is_ready() {
+    let details = details_of(Some(&ready(None)), false);
+    let start = details.start_backup.unwrap();
+    assert!(start.enabled);
+    assert_eq!(start.tooltip, "Back up your files to this stick");
+
     let details = details_of(Some(&checked(Status::NeedsAttention)), false);
-    let start = button(&details, Action::StartBackup);
+    let start = details.start_backup.unwrap();
     assert!(!start.enabled);
     assert_eq!(start.tooltip, "No backup can start: Needs attention");
-    let details = details_of(None, false);
-    assert!(!button(&details, Action::StartBackup).enabled);
+}
+
+#[test]
+fn start_backup_is_not_shown_for_another_medium_or_until_it_is_checked() {
+    assert_eq!(details_of(None, false).start_backup, None);
+    let other = checked(Status::NotBackupMedium);
+    assert_eq!(details_of(Some(&other), false).start_backup, None);
 }
 
 #[test]
 fn the_users_actions_appear_when_they_apply() {
     let details = details_of(Some(&ready(None)), false);
-    let all = vec![
-        Action::StartBackup,
-        Action::ShowHistory,
-        Action::WhatsBackedUp,
-        Action::Eject,
-    ];
-    assert_eq!(actions(&details), all);
+    assert_eq!(
+        actions(&details),
+        [Action::ShowHistory, Action::WhatsBackedUp]
+    );
 
     let no_history = Checked {
         has_history: false,
         ..checked(Status::NotBackupMedium)
     };
     let details = details_of(Some(&no_history), false);
-    assert_eq!(actions(&details), [Action::StartBackup, Action::Eject]);
+    assert_eq!(actions(&details), []);
 }
 
 #[test]
 fn the_poweruser_actions_only_appear_with_advanced() {
     let details = details_of(Some(&checked(Status::NotSetUp)), true);
-    let all = [
-        Action::StartBackup,
-        Action::ShowHistory,
-        Action::Eject,
-        Action::Prepare,
-        Action::ChangeSetup,
-    ];
+    let all = [Action::ShowHistory, Action::Prepare, Action::ChangeSetup];
     assert_eq!(actions(&details), all);
     let details = details_of(Some(&checked(Status::NotBackupMedium)), true);
     assert!(!actions(&details).contains(&Action::ChangeSetup));
 }
 
 #[test]
-fn every_action_on_a_ready_medium_can_be_used() {
+fn every_action_on_a_ready_medium_has_its_own_tooltip() {
     let details = details_of(Some(&ready(None)), true);
     for button in &details.buttons {
-        assert!(button.enabled, "{:?}", button.action);
         assert_ne!(button.tooltip, "Not yet available");
+        assert!(!button.tooltip.is_empty(), "{:?}", button.action);
     }
 }
 
@@ -291,13 +285,13 @@ fn a_stick_open_for_another_account_says_so_and_offers_nothing_to_change_it() {
             .unwrap()
             .contains("pull it out and plug it back in")
     );
-    assert_eq!(actions(&details), [Action::StartBackup, Action::Eject]);
-    assert!(!button(&details, Action::StartBackup).enabled);
+    assert_eq!(actions(&details), []);
+    assert_eq!(details.start_backup, None, "what is on it is unknown");
 
     let medium = medium("sdb", "BACKUP-A");
     let row = row(&medium, Some(&other), EN);
     assert!(!row.babawus, "what is on it is unknown");
-    assert_eq!(row.mark, Some(Mark::Attention));
+    assert!(!row.checking);
 }
 
 /// A snapshot with the stick of `medium("sdb", "BACKUP-A")`, its whole disk and partition, and

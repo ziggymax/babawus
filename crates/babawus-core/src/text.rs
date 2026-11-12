@@ -83,7 +83,6 @@ texts! {
     ShowHistoryTooltip: "See when backups to this stick ran, and how they went", "Sehen, wann auf diesen Stick gesichert wurde und wie es lief";
     WhatsBackedUp: "What's backed up", "Was wird gesichert";
     WhatsBackedUpTooltip: "See which of your files and folders are backed up to this stick", "Sehen, welche deiner Dateien und Ordner auf diesen Stick gesichert werden";
-    Eject: "Eject", "Auswerfen";
     EjectTooltip: "Make this stick safe to pull out", "Den Stick so vorbereiten, dass du ihn gefahrlos abziehen kannst";
     Prepare: "Prepare…", "Vorbereiten …";
     PrepareTooltip: "Erase this stick and set it up for backups with Babawus", "Diesen Stick löschen und für Sicherungen mit Babawus einrichten";

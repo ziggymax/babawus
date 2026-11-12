@@ -68,9 +68,9 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 
 As a user I want to be able to simply start Babawus by clicking on an icon in a menu or the desktop. Babawus should then start and show me a list with the current status of attached media: which media they are, and whether they are ready for me to back up to. That way I can see if Babawus is ready to start a backup.
 
-The window is titled "Backup". The list of media is on the left. The details of the selected medium are on the right, with the actions for it below them. A menu button in the title bar holds Language, Advanced and About. About shows the logo without the name, the version, and where the name comes from: "**Ba**sic **Ba**ckup **w**ith **U**SB **S**torage", with the letters that spell Babawus in bold, in every language; in any language other than English, that language's own comment follows on the line below, for example "Einfache Sicherung auf USB-Sticks" (Issues.md item 132). The window is uncluttered. It opens at 1024 × 768, title bar included, which assumes a screen of at least Full HD (1920 × 1080); at that size no page needs scrolling to reach its buttons or read its text (Issues.md item 118). It can be made smaller, down to what each screen needs, and a page that scrolls then starts at the top whenever it opens or changes part. Every control has a tooltip.
+The window is titled "Backup". The list of media is on the left. The details of the selected medium are on the right, with the actions for it right below its texts. A menu button in the title bar holds Language, Advanced and About. About shows the logo without the name, the version, and where the name comes from: "**Ba**sic **Ba**ckup **w**ith **U**SB **S**torage", with the letters that spell Babawus in bold, in every language; in any language other than English, that language's own comment follows on the line below, for example "Einfache Sicherung auf USB-Sticks" (Issues.md item 132). The window is uncluttered. It opens at 1024 × 768, title bar included, which assumes a screen of at least Full HD (1920 × 1080); at that size no page needs scrolling to reach its buttons or read its text (Issues.md item 118). It can be made smaller, down to what each screen needs, and a page that scrolls then starts at the top whenever it opens or changes part. Every control has a tooltip.
 
-The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row shows only a large picture of a stick, the medium's label in bold (for example **BACKUP-A**), and a mark (Issues.md item 120). Everything else is in the details. The stick is in colour for a Babawus medium and grey for anything else. The mark shows at a glance whether a backup can be started. Its shape differs as well as its colour, so it can be read without telling colours apart:
+The list has one row for each mounted file system on a USB medium (as defined in "Formatting a medium"). Media that are not mounted are not shown, because Babawus never mounts media. Each row is framed, and shows only a large picture of a stick, the medium's label in bold (for example **BACKUP-A**), and a round Eject button (Issues.md items 120 and 134). The selected Babawus medium's row also has a large green "Start backup" button below them (see "The actions"). Everything else is in the details. The stick is in colour for a Babawus medium and grey for anything else. The details show the status with a mark, which shows at a glance whether a backup can be started. Its shape differs as well as its colour, so it can be read without telling colours apart:
 
 | Status | When | Mark |
 |---|---|---|
@@ -82,7 +82,7 @@ The list has one row for each mounted file system on a USB medium (as defined in
 | Open for another account | Mounted for another account, so that this account can't reach it, for example at `/media/anna/BACKUP-A` after Anna logged out. What is on it is unknown, so the stick is grey, and neither "Prepare…" nor "Change setup…" is offered. The details say "This stick is still open for another account on this computer, so Babawus can't look at it. If nobody else is using it, pull it out and plug it back in." (Issues.md item 110) | Amber "!" |
 | Not a backup medium | Anything else | Grey cross |
 
-Working out a status reads the medium, so it happens off the main thread. Until it is known, the row shows a small spinner in place of the mark, and the details say "Checking…".
+Working out a status reads the medium, so it happens off the main thread. Until it is known, the row shows a small spinner before its Eject button, and the details say "Checking…" with a spinner in place of the mark.
 
 **Selecting.** Clicking a row selects it, and never starts anything. If nothing is selected and exactly one medium is Ready, that medium is selected, so the usual case needs only a press on "Start backup". The selection follows the medium while the list changes. When the selected medium is removed, nothing is selected.
 
@@ -90,18 +90,23 @@ Working out a status reads the medium, so it happens off the main thread. Until 
 
 **The empty page.** With nothing selected, the details only say "Plug in your backup stick", or "Choose a stick in the list" if the list isn't empty. When a USB stick is plugged in but not listed, they say instead "The stick isn't opened", with "Pull it out and plug it back in." below it, for a stick whose file system isn't mounted; or "The stick that is plugged in can't be used yet", with "Your poweruser can prepare it.", for a stick with no file system Babawus can open (Issues.md item 121).
 
-**The actions** for the selected medium:
+**The actions** (Issues.md item 134). In the list:
 
 | Action | Shown for | Role |
 |---|---|---|
-| Start backup | Every medium. It only works on a Ready medium: otherwise it is greyed out, and its tooltip says why | User |
+| Start backup | The selected medium, below its row, once it is known to be a Babawus medium; so at most one shows. It only works on a Ready medium: otherwise it is greyed out, and its tooltip says why | User |
+| Eject | Every medium, as a round button in its row. It ejects that medium, whether it is selected or not, and leaves the selection as it was. While a medium is being ejected, every Eject button is greyed out (see "Offer to eject media after a successful backup operation") | User |
+
+Below the selected medium's details:
+
+| Action | Shown for | Role |
+|---|---|---|
 | Show history | A Babawus medium whose log has at least one run (see "View the history of a medium") | User |
 | What's backed up | A Ready medium (see "See which files and folders a medium covers") | User |
-| Eject | Every medium (see "Offer to eject media after a successful backup operation") | User |
 | Prepare… | A medium that may be formatted (see "Format USB media") | Poweruser |
 | Change setup… | A Babawus medium (see "Configure USB media") | Poweruser |
 
-The buttons keep their own width. At 1024 × 768 the user's four fit on one line, in German too; when there isn't room, they wrap like words, each close to the one before (Issues.md item 125). Eject comes last among the user's buttons, after a small gap. The poweruser's buttons sit on a row of their own, below a thin line.
+These buttons come right after the details' texts, below a thin line, which isn't shown when there are no buttons. They keep their own width, the user's first and then the poweruser's, on one row; when there isn't room, they wrap like words, each close to the one before (Issues.md items 125 and 134).
 
 **Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 

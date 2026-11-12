@@ -16,6 +16,7 @@ const LOGO_WITH_NAME: &[u8] = include_bytes!("../../../assets/BabawusLogo-plain.
 const LOGO: &[u8] = include_bytes!("../../../assets/BabawusLogo-NoText-plain.svg");
 const STICK_BABAWUS: &[u8] = include_bytes!("../assets/ui/stick-babawus.svg");
 const STICK_OTHER: &[u8] = include_bytes!("../assets/ui/stick-other.svg");
+const EJECT: &[u8] = include_bytes!("../assets/ui/eject.svg");
 const MARK_READY: &[u8] = include_bytes!("../assets/ui/mark-ready.svg");
 const MARK_ATTENTION: &[u8] = include_bytes!("../assets/ui/mark-attention.svg");
 const MARK_UNUSABLE: &[u8] = include_bytes!("../assets/ui/mark-unusable.svg");
@@ -36,6 +37,11 @@ pub fn logo() -> Texture {
 
 pub fn stick(babawus: bool) -> Texture {
     texture(if babawus { STICK_BABAWUS } else { STICK_OTHER }, 48)
+}
+
+/// The eject symbol in its own white circle, for each row of the stick list.
+pub fn eject() -> Texture {
+    texture(EJECT, 36)
 }
 
 pub fn mark(mark: Mark) -> Texture {

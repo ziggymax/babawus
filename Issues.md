@@ -406,3 +406,13 @@ The user tried the package built from pull request 59 on the VM: formatting as E
 
 133. **Where the file system is shown.** The user asked for the start screen's details to name the stick's file system.
     - **Decided (2026-11-12):** It is the last item of the details line, for every user, not only under Advanced: "Kingston DataTraveler 3.0 · 15.5 GB · 15.5 GB free · exFAT". It is named as people know it, the same in every language: exFAT, Ext4 (as on the format page), FAT, NTFS, and Ext2 or Ext3; any other file system as udisks2 names it, and nothing if udisks2 reports none.
+
+## Decisions on the start screen's new layout (T-056)
+
+134. **Start backup and Eject in the stick list.** The user drew two mock-ups of the start screen after trying 0.1.0, one for a user and one with Advanced on. Every stick in the list has its own round Eject button, and the selected Babawus stick has a large "Start backup" button right below its row. The details on the right keep their texts, and the remaining buttons come right after the texts, below a thin line.
+    - **Decided (2026-11-12):**
+        - The status mark in each row (the tick, "!" or cross) is dropped: Eject takes its place. The selected stick's status and mark are in the details, as before. A spinner still shows in a row while its stick is being checked.
+        - "Start backup" shows only under the selected stick, and only once it is known to be a Babawus stick. If no backup can start, for example while another account is backing up to it or when it isn't set up for this account, the button is greyed out, and its tooltip says why, as before.
+        - The poweruser's buttons, "Prepare…" and "Change setup…", go on the same row as the user's, after them, wrapping like words in a narrow window. They no longer have a row and a line of their own; this replaces part of `ui-review/UiReview.md`'s start screen decision (T-038).
+        - The Eject button of a stick that isn't selected ejects that stick at once, and the selection stays where it was. While a stick is being ejected, every Eject button is greyed out.
+        - If the selected stick has none of the remaining buttons, the line below the texts isn't shown either.
