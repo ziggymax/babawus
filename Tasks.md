@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, in "Next version" below. T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057; T-054 to T-057 are left, in "Next version" below. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -46,7 +46,6 @@ From the user's testing of 0.1.0 (2026-11-12). Each task's design questions are 
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-053 | The new logos: the one with the name (`assets/BabawusLogo-plain.svg`) only in the upper right corner of the start screen; the one without (`assets/BabawusLogo-NoText-plain.svg`, not yet in git, with `BabawusLogo-NoText.svg` as its Inkscape source) everywhere else: the menu icon the package installs, the About pop-up, and the "already open" window | Todo | User's testing of 0.1.0, item D |
 | T-054 | About: the comment "Basic backup with USB storage" with the letters that spell the name in bold: **Ba**sic **Ba**ckup **w**ith **U**SB **S**torage. Open: the capitals, and what the German text does, since "Einfache Sicherung auf USB-Sticks" doesn't spell it | Todo | User's testing of 0.1.0, item C |
 | T-055 | The stick's details at the top of the start screen also name its file system, for example "Kingston DataTraveler 3.0 · 15.5 GB · 15.5 GB free · exFAT" | Todo | User's testing of 0.1.0, item B |
 | T-056 | The start screen's new layout, after the user's two mock-ups: every stick in the list has its own Eject button; the selected Babawus stick has a large "Start backup" button right below its row, so at most one shows, and another stick shows none; the details on the right keep their texts and the remaining buttons (and the poweruser's), placed right after the texts, below a thin line | Todo | User's testing of 0.1.0, item E |
@@ -116,3 +115,4 @@ Nothing is waiting for a decision.
 | T-044 | Find the test that fails now and then. On CI for pull request 61, `exfat_is_reported` timed out: udisks2 never reported the test stick's label and file system. The test sticks are formatted outside udisks2, which relies on udev to look at a device again once it has been written; on a busy machine that look can come too early or be lost. The test helper now asks udev to look again after formatting, and waits for it, and a wait that gives up says what udisks2 reported instead | [#62](https://github.com/ziggymax/babawus/pull/62) |
 | T-051 | After the 0.1.0 checklist run: the "still in use" message names a terminal or a file being copied instead of a file manager window; the checklist makes the stick busy with a terminal in it; and the checklist's texts that changed since it was written ("Add this computer and your account", the partly ticked boxes, the second stick shown after ejecting the first) are brought up to date | [#64](https://github.com/ziggymax/babawus/pull/64) |
 | T-052 | Release 0.1.0: the tag `v0.1.0` on main at #64, and a [GitHub release](https://github.com/ziggymax/babawus/releases/tag/v0.1.0) with the `.deb` and notes linking issue 63, the checklist run, which is closed | [#65](https://github.com/ziggymax/babawus/pull/65) |
+| T-053 | The new logos: the one with the name only in the upper right corner of the start screen; the one without, `assets/BabawusLogo-NoText-plain.svg`, for the menu icon the package installs, the About pop-up and the "already open" message (Issues.md item 131) | [#66](https://github.com/ziggymax/babawus/pull/66) |

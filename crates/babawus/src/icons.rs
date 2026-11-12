@@ -10,7 +10,10 @@ use gtk4::gdk::Texture;
 use gtk4::gdk_pixbuf::Pixbuf;
 use gtk4::{Image, gio, glib};
 
-const LOGO: &[u8] = include_bytes!("../../../assets/BabawusLogo-plain.svg");
+/// The logo with the name below the elephant, for the start screen only.
+const LOGO_WITH_NAME: &[u8] = include_bytes!("../../../assets/BabawusLogo-plain.svg");
+/// The elephant alone, for everywhere else, such as About.
+const LOGO: &[u8] = include_bytes!("../../../assets/BabawusLogo-NoText-plain.svg");
 const STICK_BABAWUS: &[u8] = include_bytes!("../assets/ui/stick-babawus.svg");
 const STICK_OTHER: &[u8] = include_bytes!("../assets/ui/stick-other.svg");
 const MARK_READY: &[u8] = include_bytes!("../assets/ui/mark-ready.svg");
@@ -21,6 +24,12 @@ const MARK_FAILED: &[u8] = include_bytes!("../assets/ui/mark-failed.svg");
 /// Drawn at twice the size shown, so that it stays sharp on a screen with scaling.
 const SCALE: i32 = 2;
 
+/// The logo with the name, for the upper right corner of the start screen.
+pub fn logo_with_name() -> Texture {
+    texture(LOGO_WITH_NAME, 64)
+}
+
+/// The logo without the name, for every other place.
 pub fn logo() -> Texture {
     texture(LOGO, 64)
 }

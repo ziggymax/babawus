@@ -391,3 +391,8 @@ The user tried the package built from pull request 59 on the VM: formatting as E
     - **Decided (2026-11-11):** The checklist makes the stick busy with a terminal whose current folder is on the stick (`cd` into it), which reliably keeps it in use. The message no longer names a file manager: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again.", in English and German, and Requirements.md says the same (T-051).
 130. **When and how 0.1.0 is released.** The checklist run (issue 63) passed, apart from the "still in use" step of item 129.
     - **Decided (2026-11-11):** T-051 is fixed first, so that 0.1.0 has the right wording; the rest of the run doesn't need repeating for it. 0.1.0 is then published as a git tag `v0.1.0` on main and a GitHub release with the `.deb` attached and short notes, linking issue 63 (T-052).
+
+## Decisions on the logos (T-053)
+
+131. **Which logo goes where.** The user made a second logo, the elephant without the name below it: `assets/BabawusLogo-NoText.svg`, with `assets/BabawusLogo-NoText-plain.svg` as the plain SVG that Babawus uses.
+    - **Decided (2026-11-12):** The logo with the name is only shown in the upper right corner of the start screen, which includes the page shown when no stick is plugged in. Everywhere else shows the logo without the name: the menu icon the package installs (and so the window's icon in the panel), the About pop-up, and the "already open" message. Both SVG files are kept in git, as for the logo with the name.
