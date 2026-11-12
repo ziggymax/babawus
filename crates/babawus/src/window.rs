@@ -66,8 +66,8 @@ const LOGO_ROOM: i32 = LOGO_SIZE + MARGIN;
 const STICK_SIZE: i32 = 48;
 /// The size of the marks in the explanation, close to the height of its text.
 const MARK_SIZE: i32 = 18;
-/// The size of the eject symbol on each row's Eject button.
-const EJECT_SIZE: i32 = 24;
+/// The size of each row's Eject button, whose picture has a circle of its own.
+const EJECT_SIZE: i32 = 36;
 
 const CSS: &str = "
 .babawus-row-label { font-weight: bold; }
@@ -76,14 +76,18 @@ const CSS: &str = "
     border-radius: 8px;
     margin: 3px 6px;
 }
+/* The picture draws the button's circle itself. */
 .babawus-eject {
-    background: white;
-    color: #444444;
-    border: 2px solid alpha(#444444, 0.6);
-    min-width: 36px;
-    min-height: 36px;
-    padding: 2px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
 }
+.babawus-eject:hover { opacity: 0.85; }
+.babawus-eject:active { opacity: 0.7; }
+.babawus-eject:disabled { opacity: 0.4; }
 /* Green on the selected row too, whose colours would otherwise win (Issues.md item 134). */
 .babawus-start-backup {
     font-size: 18pt;
@@ -2367,8 +2371,7 @@ fn new_row(object_path: &str) -> RowWidgets {
     let label = Label::builder().xalign(0.0).hexpand(true).build();
     label.add_css_class("babawus-row-label");
     let spinner = Spinner::builder().spinning(true).build();
-    let eject_symbol = Image::from_icon_name("media-eject-symbolic");
-    eject_symbol.set_pixel_size(EJECT_SIZE);
+    let eject_symbol = icons::image(&icons::eject(), EJECT_SIZE);
     let eject = Button::builder()
         .child(&eject_symbol)
         .valign(Align::Center)
