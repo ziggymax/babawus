@@ -90,16 +90,18 @@ impl Mark {
     }
 }
 
-/// A row of the media list.
+/// A row of the media list. Each row has an Eject button; the status and its mark are only in
+/// the details (Issues.md item 134).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Row {
     pub label: String,
     /// A Babawus medium, so its stick is in colour. Grey until it has been checked.
     pub babawus: bool,
-    /// Nothing while the medium is being checked: a spinner is shown instead.
-    pub mark: Option<Mark>,
+    /// The medium is being checked, so a spinner is shown.
+    pub checking: bool,
     /// The status in plain words.
     pub tooltip: String,
+    pub eject_tooltip: String,
 }
 
 /// The status in plain words.
@@ -137,29 +139,27 @@ pub fn row(medium: &Medium, checked: Option<&Checked>, language: Language) -> Ro
     Row {
         label: medium.volume.label.clone(),
         babawus: status.is_some_and(Status::is_babawus),
-        mark: status.map(Mark::of),
+        checking: status.is_none(),
         tooltip: status_text(status, language),
+        eject_tooltip: Text::EjectTooltip.get(language).to_owned(),
     }
 }
 
-/// An action for the selected medium.
+/// An action for the selected medium, below its details. "Start backup" is below the
+/// medium's row in the list instead, and each row has its own Eject (Issues.md item 134).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Action {
-    StartBackup,
     ShowHistory,
     WhatsBackedUp,
-    Eject,
     Prepare,
     ChangeSetup,
 }
 
 impl Action {
-    /// The order on the screen.
-    pub const ALL: [Self; 6] = [
-        Self::StartBackup,
+    /// The order on the screen: the user's, then the poweruser's.
+    pub const ALL: [Self; 4] = [
         Self::ShowHistory,
         Self::WhatsBackedUp,
-        Self::Eject,
         Self::Prepare,
         Self::ChangeSetup,
     ];
@@ -171,10 +171,8 @@ impl Action {
 
     pub fn label(self, language: Language) -> &'static str {
         match self {
-            Self::StartBackup => Text::StartBackup,
             Self::ShowHistory => Text::ShowHistory,
             Self::WhatsBackedUp => Text::WhatsBackedUp,
-            Self::Eject => Text::Eject,
             Self::Prepare => Text::Prepare,
             Self::ChangeSetup => Text::ChangeSetup,
         }
@@ -183,10 +181,8 @@ impl Action {
 
     fn tooltip(self) -> Text {
         match self {
-            Self::StartBackup => Text::StartBackupTooltip,
             Self::ShowHistory => Text::ShowHistoryTooltip,
             Self::WhatsBackedUp => Text::WhatsBackedUpTooltip,
-            Self::Eject => Text::EjectTooltip,
             Self::Prepare => Text::PrepareTooltip,
             Self::ChangeSetup => Text::ChangeSetupTooltip,
         }
@@ -197,7 +193,15 @@ impl Action {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Button {
     pub action: Action,
+    pub tooltip: String,
+}
+
+/// The "Start backup" button below the selected medium's row.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StartBackup {
+    /// Only a Ready medium can be backed up to. Otherwise the button is greyed out.
     pub enabled: bool,
+    /// What it does, or why no backup can start.
     pub tooltip: String,
 }
 
@@ -214,6 +218,8 @@ pub struct Details {
     pub last_backup: Option<(String, bool)>,
     /// For any other status: what it means and what to do.
     pub explanation: Option<String>,
+    /// Only for a medium known to be a Babawus medium (Issues.md item 134).
+    pub start_backup: Option<StartBackup>,
     /// The actions shown, in order.
     pub buttons: Vec<Button>,
 }
@@ -272,7 +278,6 @@ pub fn details(
         .into_iter()
         .filter(|action| advanced || !action.for_poweruser())
         .filter(|action| match action {
-            Action::StartBackup | Action::Eject => true,
             Action::ShowHistory => checked.is_some_and(|checked| checked.has_history),
             Action::WhatsBackedUp => ready,
             // What is on a stick open for another account is unknown, so it isn't offered
@@ -280,21 +285,20 @@ pub fn details(
             Action::Prepare => formattable && !matches!(status, Some(Status::OtherAccount)),
             Action::ChangeSetup => babawus,
         })
-        .map(|action| {
-            let can_start = action != Action::StartBackup || ready;
-            let tooltip = if !can_start {
-                let reason = status_text(status, language);
-                Text::CantStart.fill(language, &[("reason", &reason)])
-            } else {
-                action.tooltip().get(language).to_owned()
-            };
-            Button {
-                action,
-                enabled: can_start,
-                tooltip,
-            }
+        .map(|action| Button {
+            action,
+            tooltip: action.tooltip().get(language).to_owned(),
         })
         .collect();
+    let start_backup = babawus.then(|| StartBackup {
+        enabled: ready,
+        tooltip: if ready {
+            Text::StartBackupTooltip.get(language).to_owned()
+        } else {
+            let reason = status_text(status, language);
+            Text::CantStart.fill(language, &[("reason", &reason)])
+        },
+    });
     Details {
         label: medium.volume.label.clone(),
         mark: status.map(Mark::of),
@@ -302,6 +306,7 @@ pub fn details(
         about: about.join(" · "),
         last_backup,
         explanation: status.and_then(|status| explanation(status, language)),
+        start_backup,
         buttons,
     }
 }

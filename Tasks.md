@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057; T-056 and T-057 are left, in "Next version" below. T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057; T-057 is left, in "Next version" below. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -46,7 +46,6 @@ From the user's testing of 0.1.0 (2026-11-12). Each task's design questions are 
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-056 | The start screen's new layout, after the user's two mock-ups: every stick in the list has its own Eject button; the selected Babawus stick has a large "Start backup" button right below its row, so at most one shows, and another stick shows none; the details on the right keep their texts and the remaining buttons (and the poweruser's), placed right after the texts, below a thin line | Todo | User's testing of 0.1.0, item E |
 | T-057 | A log window for the poweruser: right-clicking a run in the history offers to show the log. A window of its own, not modal, shows the whole log nicely laid out and scrollable, with the lines of that run highlighted. It stays open until closed, and follows changes to the log while it is open | Todo | User's testing of 0.1.0, item A |
 
 ## Needs a decision
@@ -116,3 +115,4 @@ Nothing is waiting for a decision.
 | T-053 | The new logos: the one with the name only in the upper right corner of the start screen; the one without, `assets/BabawusLogo-NoText-plain.svg`, for the menu icon the package installs, the About pop-up and the "already open" message (Issues.md item 131) | [#66](https://github.com/ziggymax/babawus/pull/66) |
 | T-054 | About explains the name: "**Ba**sic **Ba**ckup **w**ith **U**SB **S**torage", in title case with the letters that spell Babawus in bold, in every language; in German "Einfache Sicherung auf USB-Sticks" follows on the line below (Issues.md item 132) | [#67](https://github.com/ziggymax/babawus/pull/67) |
 | T-055 | The stick's details at the top of the start screen also name its file system, for every user: "Kingston DataTraveler 3.0 · 15.5 GB · 9.8 GB free · exFAT" (Issues.md item 133) | [#68](https://github.com/ziggymax/babawus/pull/68) |
+| T-056 | The start screen's new layout, after the user's mock-ups: every stick in the list is framed and has its own round Eject button instead of a status mark; the selected Babawus stick has a large green "Start backup" right below its row; and the details' buttons, the user's and then the poweruser's on one row, come right after the texts, below a thin line (Issues.md item 134) | [#69](https://github.com/ziggymax/babawus/pull/69) |

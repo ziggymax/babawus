@@ -66,11 +66,35 @@ const LOGO_ROOM: i32 = LOGO_SIZE + MARGIN;
 const STICK_SIZE: i32 = 48;
 /// The size of the marks in the explanation, close to the height of its text.
 const MARK_SIZE: i32 = 18;
-/// The extra space before Eject, so that it stays apart from the other buttons.
-const EJECT_GAP: i32 = 16;
+/// The size of the eject symbol on each row's Eject button.
+const EJECT_SIZE: i32 = 24;
 
 const CSS: &str = "
 .babawus-row-label { font-weight: bold; }
+.babawus-stick-row {
+    border: 1px solid alpha(currentColor, 0.5);
+    border-radius: 8px;
+    margin: 3px 6px;
+}
+.babawus-eject {
+    background: white;
+    color: #444444;
+    border: 2px solid alpha(#444444, 0.6);
+    min-width: 36px;
+    min-height: 36px;
+    padding: 2px;
+}
+/* Green on the selected row too, whose colours would otherwise win (Issues.md item 134). */
+.babawus-start-backup {
+    font-size: 18pt;
+    padding: 4px 12px;
+    border: 2px solid white;
+    background: #6db442;
+    color: white;
+}
+.babawus-start-backup:hover { background: #5fa138; }
+.babawus-start-backup:active { background: #538f30; }
+.babawus-start-backup:disabled { background: #a8c99a; color: #f2f2f2; }
 .babawus-title { font-size: 20pt; font-weight: bold; }
 .babawus-status { font-size: 13pt; }
 .babawus-last-backup { font-size: 13pt; }
@@ -95,13 +119,15 @@ struct Notice {
     label: String,
 }
 
-/// One row of the media list.
+/// One row of the media list: the stick, its label and its Eject button, and below them
+/// "Start backup" while it is the selected Babawus stick (Issues.md item 134).
 struct RowWidgets {
     row: ListBoxRow,
     stick: Image,
     label: Label,
-    mark: Image,
     spinner: Spinner,
+    eject: Button,
+    start_backup: Button,
 }
 
 /// The parts of the details that change.
@@ -124,9 +150,8 @@ struct DetailsWidgets {
     skipped: Image,
     explanation: Label,
     buttons: HashMap<Action, Button>,
-    poweruser: Box,
-    /// The line above the poweruser's buttons.
-    poweruser_line: Separator,
+    /// The line between the texts and the buttons, hidden when there are no buttons.
+    buttons_line: Separator,
     /// A notice in the explanation, such as "Ejecting BACKUP-A…".
     notice: Label,
     logo: Image,
@@ -507,27 +532,17 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     explained.append(&explanation);
     explained.append(&notice);
 
-    // Both rows wrap like words when the window is narrow, or the texts are long, as in German,
-    // so that the window needn't grow.
+    // The user's buttons, then the poweruser's, on one row that wraps like words when the
+    // window is narrow, or the texts are long, as in German, so that the window needn't grow
+    // (Issues.md item 134).
     let actions = action_row();
-    let poweruser = action_row();
     let mut buttons = HashMap::new();
     for action in Action::ALL {
         let button = Button::builder().halign(Align::Start).build();
-        if action == Action::StartBackup {
-            button.add_css_class("suggested-action");
-        }
-        if action.for_poweruser() {
-            poweruser.append(&button);
-        } else {
-            if action == Action::Eject {
-                button.set_margin_start(EJECT_GAP);
-            }
-            actions.append(&button);
-        }
+        actions.append(&button);
         buttons.insert(action, button);
     }
-    let poweruser_line = Separator::new(Orientation::Horizontal);
+    let buttons_line = Separator::new(Orientation::Horizontal);
 
     let medium_page = Box::builder()
         .orientation(Orientation::Vertical)
@@ -536,12 +551,8 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     medium_page.append(&heading);
     medium_page.append(&Separator::new(Orientation::Horizontal));
     medium_page.append(&explained);
-    let spacer = Box::builder().vexpand(true).build();
-    medium_page.append(&spacer);
-    medium_page.append(&Separator::new(Orientation::Horizontal));
+    medium_page.append(&buttons_line);
     medium_page.append(&actions);
-    medium_page.append(&poweruser_line);
-    medium_page.append(&poweruser);
 
     let plug_in = Label::builder()
         .wrap(true)
@@ -609,8 +620,7 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         skipped,
         explanation,
         buttons,
-        poweruser,
-        poweruser_line,
+        buttons_line,
         notice,
         logo,
     };
@@ -732,6 +742,37 @@ impl Window {
             window.set_texts();
         });
         self.window.add_action(&advanced);
+
+        // Each row's Eject, with the object path of its medium's file system (Issues.md
+        // item 134).
+        let eject = gio::SimpleAction::new("eject-stick", Some(glib::VariantTy::STRING));
+        let weak = Rc::downgrade(self);
+        eject.connect_activate(move |_, parameter| {
+            let Some(window) = weak.upgrade() else { return };
+            let Some(object_path) = parameter.and_then(|parameter| parameter.str()) else {
+                return;
+            };
+            let medium = window
+                .media
+                .borrow()
+                .iter()
+                .find(|(medium, _)| medium.volume.object_path == object_path)
+                .map(|(medium, _)| medium.clone());
+            if let Some(medium) = medium {
+                window.eject_drive(medium.drive.id, medium.volume.label);
+            }
+        });
+        self.window.add_action(&eject);
+
+        // "Start backup", below the selected medium's row.
+        let start = gio::SimpleAction::new("start-backup", None);
+        let weak = Rc::downgrade(self);
+        start.connect_activate(move |_, _| {
+            if let Some(window) = weak.upgrade() {
+                window.start_backup();
+            }
+        });
+        self.window.add_action(&start);
 
         let about = gio::SimpleAction::new("about", None);
         let weak = Rc::downgrade(self);
@@ -943,11 +984,9 @@ impl Window {
             row.label.set_label(&shown.label);
             row.stick.set_paintable(Some(&icons::stick(shown.babawus)));
             row.row.set_tooltip_text(Some(&shown.tooltip));
-            row.spinner.set_visible(shown.mark.is_none());
-            row.mark.set_visible(shown.mark.is_some());
-            if let Some(mark) = shown.mark {
-                row.mark.set_paintable(Some(&icons::mark(mark)));
-            }
+            row.spinner.set_visible(shown.checking);
+            row.eject.set_tooltip_text(Some(&shown.eject_tooltip));
+            row.start_backup.set_label(Text::StartBackup.get(language));
         }
         let selected = self.selected.borrow().clone();
         let selected = start_screen::selection(&media, selected.as_deref())
@@ -978,6 +1017,13 @@ impl Window {
         for label in [&widgets.notice, &widgets.empty_notice] {
             label.set_label(notice.as_deref().unwrap_or_default());
             label.set_visible(notice.is_some());
+        }
+        // Only one stick is ejected at a time. "Start backup" shows again below the selected
+        // stick further down, if it is a Babawus stick.
+        let ejecting = self.ejecting.borrow().is_some();
+        for row in self.rows.borrow().iter() {
+            row.eject.set_sensitive(!ejecting);
+            row.start_backup.set_visible(false);
         }
         let media = self.media.borrow();
         let selected = self.selected.borrow();
@@ -1045,27 +1091,32 @@ impl Window {
         widgets
             .explanation
             .set_visible(details.explanation.is_some());
-        let ejecting = self.ejecting.borrow().is_some();
         for (action, button) in &widgets.buttons {
             match details.buttons.iter().find(|shown| shown.action == *action) {
                 Some(shown) => {
                     button.set_visible(true);
-                    let busy = *action == Action::Eject && ejecting;
-                    button.set_sensitive(shown.enabled && !busy);
                     button.set_tooltip_text(Some(&shown.tooltip));
                 }
                 None => button.set_visible(false),
             }
         }
-        widgets.poweruser.set_visible(self.advanced.get());
-        widgets.poweruser_line.set_visible(self.advanced.get());
+        widgets
+            .buttons_line
+            .set_visible(!details.buttons.is_empty());
+        let rows = self.rows.borrow();
+        let row = rows
+            .iter()
+            .find(|row| row.row.widget_name() == medium.volume.object_path.as_str());
+        if let (Some(row), Some(start)) = (row, &details.start_backup) {
+            row.start_backup.set_visible(true);
+            row.start_backup.set_sensitive(start.enabled);
+            row.start_backup.set_tooltip_text(Some(&start.tooltip));
+        }
     }
 
     fn act(self: &Rc<Self>, action: Action) {
         // The buttons for the other actions are greyed out until their screens are built.
         match action {
-            Action::StartBackup => self.start_backup(),
-            Action::Eject => self.eject(),
             Action::ShowHistory => self.open_history(),
             Action::WhatsBackedUp => self.open_coverage(),
             Action::Prepare => self.open_format(),
@@ -2018,12 +2069,6 @@ impl Window {
         self.show_screen("start");
     }
 
-    fn eject(self: &Rc<Self>) {
-        if let Some(medium) = self.selected_medium() {
-            self.eject_drive(medium.drive.id, medium.volume.label);
-        }
-    }
-
     /// Ejects the drive with the udisks2 drive ID `drive_id`, whose medium is labelled `label`,
     /// and says how it went, on whichever screen is showing.
     fn eject_drive(self: &Rc<Self>, drive_id: String, label: String) {
@@ -2283,7 +2328,6 @@ impl Window {
     }
 }
 
-/// Makes every label inside `widget` unselectable.
 /// Makes the label under `widget` that shows `markup` as plain text show it as markup.
 fn use_markup_for(widget: &gtk4::Widget, markup: &str) {
     if let Some(label) = widget.downcast_ref::<Label>()
@@ -2298,6 +2342,7 @@ fn use_markup_for(widget: &gtk4::Widget, markup: &str) {
     }
 }
 
+/// Makes every label inside `widget` unselectable.
 fn unselectable(widget: &gtk4::Widget) {
     if let Some(label) = widget.downcast_ref::<Label>() {
         label.set_selectable(false);
@@ -2321,27 +2366,50 @@ fn new_row(object_path: &str) -> RowWidgets {
     let stick = icons::image(&icons::stick(false), STICK_SIZE);
     let label = Label::builder().xalign(0.0).hexpand(true).build();
     label.add_css_class("babawus-row-label");
-    let mark = icons::image(&icons::mark(start_screen::Mark::Ready), 24);
     let spinner = Spinner::builder().spinning(true).build();
-    let content = Box::builder()
+    let eject_symbol = Image::from_icon_name("media-eject-symbolic");
+    eject_symbol.set_pixel_size(EJECT_SIZE);
+    let eject = Button::builder()
+        .child(&eject_symbol)
+        .valign(Align::Center)
+        .action_name("win.eject-stick")
+        .action_target(&object_path.to_variant())
+        .build();
+    eject.add_css_class("circular");
+    eject.add_css_class("babawus-eject");
+    let stick_line = Box::builder()
         .orientation(Orientation::Horizontal)
         .spacing(SPACING)
+        .build();
+    stick_line.append(&stick);
+    stick_line.append(&label);
+    stick_line.append(&spinner);
+    stick_line.append(&eject);
+    let start_backup = Button::builder()
+        .action_name("win.start-backup")
+        .visible(false)
+        .build();
+    start_backup.add_css_class("suggested-action");
+    start_backup.add_css_class("babawus-start-backup");
+    let content = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(8)
         .margin_top(8)
         .margin_bottom(8)
         .margin_start(4)
         .margin_end(4)
         .build();
-    content.append(&stick);
-    content.append(&label);
-    content.append(&mark);
-    content.append(&spinner);
+    content.append(&stick_line);
+    content.append(&start_backup);
     let row = ListBoxRow::builder().child(&content).build();
+    row.add_css_class("babawus-stick-row");
     row.set_widget_name(object_path);
     RowWidgets {
         row,
         stick,
         label,
-        mark,
         spinner,
+        eject,
+        start_backup,
     }
 }

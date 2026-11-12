@@ -36,15 +36,15 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 ## Formatting (Advanced)
 
-- [ ] Plug in stick A. → It appears in the list, with a grey stick, if it isn't a Babawus medium yet.
-- [ ] Choose Menu → Advanced. → The title bar shows an orange "Advanced" marker, and "Prepare…" and, for a Babawus medium, "Change setup…" appear.
+- [ ] Plug in stick A. → It appears in the list, with a grey stick and its own round Eject button, if it isn't a Babawus medium yet. Select it. → No "Start backup" below it.
+- [ ] Choose Menu → Advanced. → The title bar shows an orange "Advanced" marker, and "Prepare…" and, for a Babawus medium, "Change setup…" appear, on the same row as the user's buttons, after them.
 - [ ] Press "Prepare…". → "Prepare a stick" lists stick A with its maker, size and what is on it, and no internal disks. Stick A is chosen, a name such as "BACKUP-A" is filled in, and exFAT is chosen. The warning names the stick and what will be erased. "Erase and format" is greyed out.
 - [ ] Type a name with a space in it. → "Use 1 to 11 letters, digits and dashes, with no spaces." shows, and the button stays greyed out. Put the suggested name back.
 - [ ] Tick "I understand that everything on this stick will be erased". → "Erase and format" turns red, and can be pressed.
 - [ ] Press "Erase and format". → "Formatting BACKUP-A…", with no way back and the window can't be closed. After a few seconds: "BACKUP-A is ready", with a green tick.
-- [ ] Press "Back". → The start screen, with stick A selected, showing "Not set up for you" and an amber "!".
+- [ ] Press "Back". → The start screen, with stick A selected, showing "Not set up for you" and an amber "!", and a greyed-out green "Start backup" below stick A's row, whose tooltip says why.
 - [ ] Format stick B the same way, but choose Ext4. → "Ext4 asks for your password while formatting." shows below Ext4. It asks for your password, takes longer (about a minute for 16 GB), then "… is ready". (On the development VM it doesn't ask: see "Polkit" in DevEnvSetup.md.)
-- [ ] Without administrator rights (T-024): close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only "Start backup" (greyed out) and "Eject", also with Advanced on.
+- [ ] Without administrator rights (T-024): close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only their Eject buttons: no "Start backup" and no buttons in the details, also with Advanced on.
 - [ ] Pull out both sticks and plug them back in. → Both show "Not set up for you".
 - [ ] Turn Advanced on, and press "Prepare…". → Ext4 is greyed out, with "Only an administrator can choose Ext4, …" below it.
 - [ ] Format stick A with exFAT. → No password is asked for, and "BACKUP-A is ready".
@@ -89,8 +89,9 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 ## Ejecting
 
 - [ ] After a backup that counts ("All good" or "Some files were skipped"), press "Eject BACKUP-A". → "Ejecting BACKUP-A…", then a pop-up: "You can pull out BACKUP-A now.", with OK. The stick's light goes out, and it leaves the file manager. Press OK. → The start screen, without the stick.
-- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press "Eject" on the start screen. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again." Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See Issues.md item 129.)
+- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again." Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See Issues.md item 129.)
 - [ ] In the terminal, leave the stick (`cd ~`), and press "Eject" again. → A pop-up: "You can pull out BACKUP-A now." Press OK. → The start screen, without stick A.
+- [ ] With both sticks plugged in and stick A selected, press stick B's Eject button. → A pop-up: "You can pull out BACKUP-B now." Press OK. → Stick B has left the list, and stick A is still selected, with "Start backup" below it.
 
 ## Updating (T-025)
 
