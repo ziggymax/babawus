@@ -279,7 +279,7 @@ fn a_changed_file_keeps_its_old_copy_under_a_utc_name() {
 fn the_older_versions_setting_is_used_and_counted() {
     let setup = Setup::new();
     let mut changed = config();
-    changed.older_versions = 1;
+    changed.computers[0].accounts[0].older_versions = 1;
     setup.save(&changed);
     setup.run();
     let mut time = NOW;
@@ -399,7 +399,7 @@ fn the_files_in_a_skipped_folder_are_counted() {
 fn a_failed_prune_is_logged_and_does_not_change_the_verdict() {
     let setup = Setup::new();
     let mut changed = config();
-    changed.older_versions = 1;
+    changed.computers[0].accounts[0].older_versions = 1;
     setup.save(&changed);
     setup.run();
     let name = OsStr::new("a.txt");

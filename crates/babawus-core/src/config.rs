@@ -8,6 +8,7 @@ use std::collections::HashSet;
 use std::ffi::{OsStr, OsString};
 use std::io::{self, ErrorKind};
 use std::path::{Component, Path, PathBuf};
+use std::time::SystemTime;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -19,13 +20,21 @@ use crate::log::{account_name, rename_account};
 use crate::medium::{BACKUP_FOLDER, CONFIG_FILE, read_file, replace_file};
 use crate::names::{fold, name_problem};
 use crate::scan::{Selection, account_folder};
+use crate::time::{log_timestamp, parse_log_timestamp, parse_utc_timestamp, utc_timestamp};
 use crate::versions::{Format, fits_on};
 
-/// The newest format this Babawus understands.
+/// The newest format this Babawus understands. A file in the layout of 0.1.0, which had no
+/// `[babawus]` table, is damaged: there were no real users yet (Issues.md item 136).
 pub const FORMAT: u32 = 1;
 
-const DEFAULT_OLDER_VERSIONS: u32 = 10;
-const OLDER_VERSIONS: std::ops::RangeInclusive<u32> = 1..=99;
+/// The table that says which Babawus wrote the file, and when.
+const HEADER_TABLE: &str = "[babawus]";
+
+pub const DEFAULT_OLDER_VERSIONS: u32 = 10;
+pub const OLDER_VERSIONS: std::ops::RangeInclusive<u32> = 1..=99;
+pub const DEFAULT_RUN_CHECK_DAYS: u32 = 7;
+/// 0 means never remind (Issues.md item 136).
+pub const RUN_CHECK_DAYS: std::ops::RangeInclusive<u32> = 0..=365;
 
 const MARKER: &str = "# Babawus configuration\n";
 const HEADER: &str = "\
@@ -73,14 +82,51 @@ impl From<io::Error> for EntryError {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+/// The configuration: the computers and their accounts. Which Babawus wrote the file, and when,
+/// is only in the file, so that writing it again doesn't count as a change.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Config {
-    format: u32,
-    /// N: the number of older versions to keep of each file.
-    pub older_versions: u32,
-    #[serde(rename = "computer", default, skip_serializing_if = "Vec::is_empty")]
     pub computers: Vec<Computer>,
+}
+
+/// The file as it is written.
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct File {
+    babawus: Header,
+    #[serde(rename = "computer", default, skip_serializing_if = "Vec::is_empty")]
+    computers: Vec<Computer>,
+}
+
+/// The `[babawus]` table (Issues.md item 136).
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Header {
+    config_format: u32,
+    /// The version of Babawus that last wrote the file.
+    config_app_version: String,
+    /// When the file was last written, in local time with the UTC offset.
+    config_update_local: String,
+    /// The same time in UTC.
+    config_update_utc: String,
+}
+
+impl Header {
+    fn written_at(time: SystemTime) -> Self {
+        Self {
+            config_format: FORMAT,
+            config_app_version: crate::VERSION.to_owned(),
+            config_update_local: log_timestamp(time),
+            config_update_utc: utc_timestamp(time),
+        }
+    }
+
+    fn is_valid(&self) -> bool {
+        self.config_format == FORMAT
+            && !self.config_app_version.trim().is_empty()
+            && parse_log_timestamp(&self.config_update_local).is_some()
+            && parse_utc_timestamp(&self.config_update_utc).is_some()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -101,6 +147,11 @@ pub struct Computer {
 #[serde(deny_unknown_fields)]
 pub struct Account {
     pub username: String,
+    /// N: the number of older versions to keep of each file.
+    pub older_versions: u32,
+    /// The most days that may pass since the last backup before Babawus reminds the user at
+    /// login. 0 means never (T-059).
+    pub run_check_days: u32,
     /// Selected files and folders, relative to the home folder.
     pub selected: Vec<String>,
     pub exclude_patterns: Vec<String>,
@@ -113,6 +164,8 @@ impl Account {
     fn new(username: &str) -> Self {
         Self {
             username: username.to_owned(),
+            older_versions: DEFAULT_OLDER_VERSIONS,
+            run_check_days: DEFAULT_RUN_CHECK_DAYS,
             selected: Vec::new(),
             exclude_patterns: SUGGESTED_PATTERNS.map(str::to_owned).to_vec(),
             exclude_folders: vec![SUGGESTED_FOLDER.to_owned()],
@@ -133,6 +186,8 @@ impl Account {
 
     fn is_valid(&self) -> bool {
         is_storable_name(&self.username)
+            && OLDER_VERSIONS.contains(&self.older_versions)
+            && RUN_CHECK_DAYS.contains(&self.run_check_days)
             && self
                 .exclude_patterns
                 .iter()
@@ -144,25 +199,19 @@ impl Account {
     }
 }
 
-impl Default for Config {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Config {
-    /// A configuration with no computers and the default limit on older versions.
+    /// A configuration with no computers.
     pub fn new() -> Self {
-        Self {
-            format: FORMAT,
-            older_versions: DEFAULT_OLDER_VERSIONS,
-            computers: Vec::new(),
-        }
+        Self::default()
     }
 
-    /// The file's contents, with the checksum as the last line.
-    pub fn to_text(&self) -> String {
-        let fields = toml::to_string(self).expect("a configuration can always be written");
+    /// The file's contents as written at the time `written`, with the checksum as the last line.
+    pub fn to_text(&self, written: SystemTime) -> String {
+        let file = File {
+            babawus: Header::written_at(written),
+            computers: self.computers.clone(),
+        };
+        let fields = toml::to_string(&file).expect("a configuration can always be written");
         let body = format!("{MARKER}{HEADER}{fields}\n");
         let checksum = checksum(&body);
         format!("{body}{CHECKSUM_PREFIX}{checksum}\n")
@@ -288,6 +337,16 @@ impl Config {
         Ok(())
     }
 
+    /// The entry for `username` on the computer with the ID `id`, to change it.
+    pub fn account_mut(&mut self, id: &str, username: &str) -> Option<&mut Account> {
+        self.computers
+            .iter_mut()
+            .find(|computer| computer.id == id)?
+            .accounts
+            .iter_mut()
+            .find(|account| account.username == username)
+    }
+
     fn computer_mut(&mut self, id: &str) -> Result<&mut Computer, EntryError> {
         self.computers
             .iter_mut()
@@ -309,9 +368,6 @@ impl Config {
 
     /// Checks the rules in "Reading the configuration file" in Requirements.md.
     fn validate(&self) -> Result<(), EntryError> {
-        if self.format != FORMAT || !OLDER_VERSIONS.contains(&self.older_versions) {
-            return Err(EntryError::Invalid);
-        }
         let (mut ids, mut folders) = (HashSet::new(), HashSet::new());
         for computer in &self.computers {
             if !is_computer_id(&computer.id) || !is_folder_name(&computer.folder) {
@@ -384,14 +440,16 @@ fn checksum_matches(text: &str) -> bool {
     stored.eq_ignore_ascii_case(&checksum(body))
 }
 
-/// The value of `format`, from the lines before the first table. This doesn't parse the file, so
-/// it also works if a newer format can't be parsed.
+/// The value of `config_format`, from the `[babawus]` table, which comes first. This doesn't
+/// parse the file, so it also works if a newer format can't be parsed.
 fn declared_format(text: &str) -> Option<u32> {
     text.lines()
-        .take_while(|line| !line.starts_with('['))
+        .skip_while(|line| line.trim() != HEADER_TABLE)
+        .skip(1)
+        .take_while(|line| !line.trim_start().starts_with('['))
         .find_map(|line| {
             let (key, value) = line.split_once('=')?;
-            (key.trim() == "format").then(|| value.trim().parse().ok())?
+            (key.trim() == "config_format").then(|| value.trim().parse().ok())?
         })
 }
 
@@ -405,8 +463,12 @@ pub fn parse(contents: &[u8]) -> Loaded {
     if marked && declared_format(text).is_some_and(|format| format > FORMAT) {
         return Loaded::NewerFormat;
     }
-    let config = toml::from_str::<Config>(text)
+    let config = toml::from_str::<File>(text)
         .ok()
+        .filter(|file| file.babawus.is_valid())
+        .map(|file| Config {
+            computers: file.computers,
+        })
         .filter(|config| config.validate().is_ok());
     match config {
         Some(config) if marked && checksum_matches(text) => Loaded::Ready(config),
@@ -425,7 +487,8 @@ pub fn load(medium: &dyn FileSystem, root: &Path) -> io::Result<Loaded> {
     }
 }
 
-/// Writes the configuration safely, and flushes it to the medium.
+/// Writes the configuration safely, noting this Babawus and the time, and flushes it to the
+/// medium.
 pub fn save(
     medium: &dyn FileSystem,
     root: &Path,
@@ -433,7 +496,7 @@ pub fn save(
     config: &Config,
 ) -> Result<(), EntryError> {
     config.validate()?;
-    let text = config.to_text();
+    let text = config.to_text(SystemTime::now());
     replace_file(medium, root, format, CONFIG_FILE, text.as_bytes())?;
     Ok(())
 }

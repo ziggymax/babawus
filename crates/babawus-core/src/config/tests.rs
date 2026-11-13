@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
 use super::*;
 use crate::fs::fake::FakeFs;
@@ -13,11 +13,30 @@ fn root() -> PathBuf {
     PathBuf::from("/medium")
 }
 
+/// 2026-11-13 11:43:40 UTC.
+fn written() -> SystemTime {
+    SystemTime::UNIX_EPOCH + Duration::from_secs(1_794_570_220)
+}
+
 fn config() -> Config {
     let mut config = Config::new();
     config.add_computer(ID, "mint", "mint", &[]).unwrap();
     config.add_account(ID, "usera").unwrap();
     config
+}
+
+fn text_of(config: &Config) -> String {
+    config.to_text(written())
+}
+
+/// The `[babawus]` table as written at [`written`].
+fn header_table() -> String {
+    format!(
+        "[babawus]\nconfig_format = 1\nconfig_app_version = \"{}\"\n\
+         config_update_local = \"{}\"\nconfig_update_utc = \"2026-11-13 11:43:40 UTC\"\n",
+        crate::VERSION,
+        log_timestamp(written())
+    )
 }
 
 /// A file with a correct checksum, whatever its fields say.
@@ -49,15 +68,14 @@ fn a_written_file_looks_as_the_requirements_describe() {
     let account = account_mut(&mut config);
     account.selected = vec!["Documents".to_owned(), "notes.txt".to_owned()];
 
-    let text = config.to_text();
+    let text = text_of(&config);
 
-    let expected = "\
+    let expected = format!(
+        "\
 # Babawus configuration
 # This file is written by Babawus. Change it with the Advanced functions in Babawus.
 # If it is edited by hand, the medium needs attention until it has been saved in Babawus.
-format = 1
-older_versions = 10
-
+{}
 [[computer]]
 id = \"0123456789abcdef0123456789abcdef\"
 folder = \"mint\"
@@ -65,11 +83,15 @@ hostname = \"mint\"
 
 [[computer.account]]
 username = \"usera\"
+older_versions = 10
+run_check_days = 7
 selected = [\"Documents\", \"notes.txt\"]
 exclude_patterns = [\".cache\", \"*.tmp\", \"*~\"]
 exclude_folders = [\".local/share/Trash\"]
 
-";
+",
+        header_table()
+    );
     let (body, checksum_line) = text.split_at(expected.len());
     assert_eq!(body, expected);
     assert_eq!(checksum_line.len(), CHECKSUM_PREFIX.len() + 16 + 1);
@@ -86,54 +108,66 @@ fn the_checksum_is_the_first_16_digits_of_sha256() {
 #[test]
 fn what_is_written_reads_back_the_same() {
     let mut config = config();
-    config.older_versions = 99;
+    account_mut(&mut config).older_versions = 99;
+    account_mut(&mut config).run_check_days = 365;
     account_mut(&mut config).selected = vec!["Bilder \"gut\"/é.txt".to_owned()];
     config
         .add_computer(OTHER_ID, "mint-2", "Mint", &[])
         .unwrap();
 
-    assert_eq!(parse_text(&config.to_text()), Loaded::Ready(config));
+    assert_eq!(parse_text(&text_of(&config)), Loaded::Ready(config));
+}
+
+#[test]
+fn writing_at_another_time_is_not_a_change() {
+    let config = config();
+    let later = config.to_text(written() + Duration::from_secs(3600));
+
+    assert_ne!(later, text_of(&config));
+    assert_eq!(parse_text(&later), Loaded::Ready(config));
 }
 
 #[test]
 fn a_new_configuration_with_no_computers_reads_back() {
     let config = Config::new();
 
-    assert_eq!(config.older_versions, 10);
-    assert_eq!(parse_text(&config.to_text()), Loaded::Ready(config));
+    assert_eq!(parse_text(&text_of(&config)), Loaded::Ready(config));
+}
+
+#[test]
+fn a_new_account_keeps_10_older_versions_and_reminds_after_7_days() {
+    let config = config();
+
+    assert_eq!(account(&config).older_versions, 10);
+    assert_eq!(account(&config).run_check_days, 7);
 }
 
 #[test]
 fn an_edit_makes_the_file_damaged_but_the_configuration_can_be_checked() {
     let config = config();
-    let edited = config
-        .to_text()
-        .replace("older_versions = 10", "older_versions = 11");
+    let edited = text_of(&config).replace("older_versions = 10", "older_versions = 11");
 
     let Loaded::Damaged(Some(found)) = parse_text(&edited) else {
         panic!("the edit went unnoticed");
     };
 
-    assert_eq!(found.older_versions, 11);
-    assert_eq!(found.computers, config.computers);
+    assert_eq!(account(&found).older_versions, 11);
 }
 
 #[test]
 fn saving_a_checked_configuration_clears_the_damage() {
-    let edited = config()
-        .to_text()
-        .replace("mint\"\nhostname", "mint\"\nhostname ");
+    let edited = text_of(&config()).replace("mint\"\nhostname", "mint\"\nhostname ");
     let Loaded::Damaged(Some(found)) = parse_text(&edited) else {
         panic!("the edit went unnoticed");
     };
 
-    assert_eq!(parse_text(&found.to_text()), Loaded::Ready(found));
+    assert_eq!(parse_text(&text_of(&found)), Loaded::Ready(found));
 }
 
 #[test]
 fn the_checksum_may_be_in_upper_case() {
     let config = config();
-    let text = config.to_text();
+    let text = text_of(&config);
     let (body, last) = text.rsplit_once(CHECKSUM_PREFIX).unwrap();
     let upper = format!("{body}{CHECKSUM_PREFIX}{}", last.to_uppercase());
 
@@ -143,7 +177,7 @@ fn the_checksum_may_be_in_upper_case() {
 #[test]
 fn a_changed_or_missing_checksum_line_is_damage() {
     let config = config();
-    let text = config.to_text();
+    let text = text_of(&config);
     let without = text.rsplit_once(CHECKSUM_PREFIX).unwrap().0.to_owned();
     let wrong = format!("{without}{CHECKSUM_PREFIX}0000000000000000\n");
     let no_line_ending = text.strip_suffix('\n').unwrap().to_owned();
@@ -158,15 +192,15 @@ fn a_changed_or_missing_checksum_line_is_damage() {
 
 #[test]
 fn a_file_without_the_marker_is_damaged_even_with_a_correct_checksum() {
-    let body = "format = 1\nolder_versions = 10\n";
-    let text = format!("{body}{CHECKSUM_PREFIX}{}\n", checksum(body));
+    let body = header_table();
+    let text = format!("{body}{CHECKSUM_PREFIX}{}\n", checksum(&body));
 
     assert_eq!(parse_text(&text), Loaded::Damaged(Some(Config::new())));
 }
 
 #[test]
 fn a_file_that_can_not_be_parsed_can_only_be_replaced() {
-    let halves = config().to_text();
+    let halves = text_of(&config());
     let cut = halves.split_at(halves.len() / 2).0;
 
     for text in ["", "\n", "not toml", cut, "# Babawus configuration\n"] {
@@ -176,29 +210,84 @@ fn a_file_that_can_not_be_parsed_can_only_be_replaced() {
 }
 
 #[test]
+fn a_file_in_the_layout_of_0_1_0_is_damaged_and_can_only_be_replaced() {
+    // There were no real users of 0.1.0, so its layout isn't read (Issues.md item 136).
+    let text = sealed(
+        "format = 1\nolder_versions = 10\n\n[[computer]]\nid = \"0123456789abcdef0123456789abcdef\"\n\
+         folder = \"mint\"\nhostname = \"mint\"\n\n[[computer.account]]\nusername = \"usera\"\n\
+         selected = []\nexclude_patterns = []\nexclude_folders = []\n\n",
+    );
+
+    assert_eq!(parse_text(&text), Loaded::Damaged(None));
+}
+
+#[test]
 fn a_newer_format_is_recognised_whatever_the_rest_of_the_file_holds() {
     for rest in [
-        "older_versions = 10\n",
+        "config_app_version = \"9.0.0\"\n",
         "new_field = \"something\"\n",
         "this isn't even toml\n",
     ] {
-        let text = format!("{MARKER}{HEADER}format = 2\n{rest}");
+        let text = format!("{MARKER}{HEADER}[babawus]\nconfig_format = 2\n{rest}");
         assert_eq!(parse_text(&text), Loaded::NewerFormat, "{rest}");
     }
 }
 
 #[test]
 fn a_newer_format_needs_the_marker() {
-    let text = "format = 2\nolder_versions = 10\n";
+    let text = "[babawus]\nconfig_format = 2\n";
 
     assert_eq!(parse_text(text), Loaded::Damaged(None));
 }
 
 #[test]
-fn format_is_only_looked_for_before_the_first_table() {
-    let text = sealed("older_versions = 10\n\n[[computer]]\nformat = 2\n");
+fn the_format_is_only_looked_for_in_the_babawus_table() {
+    let outside = sealed("config_format = 2\n\n[babawus]\nconfig_format = 1\n");
+    let later_table = sealed(&format!(
+        "{}\n[[computer]]\nconfig_format = 2\n",
+        header_table()
+    ));
 
-    assert_eq!(parse_text(&text), Loaded::Damaged(None));
+    assert_eq!(parse_text(&outside), Loaded::Damaged(None));
+    assert_eq!(parse_text(&later_table), Loaded::Damaged(None));
+}
+
+#[test]
+fn a_header_that_breaks_the_rules_makes_the_file_unusable() {
+    let good = header_table();
+    let cases = [
+        (
+            "format 0",
+            good.replace("config_format = 1", "config_format = 0"),
+        ),
+        ("no format", good.replace("config_format = 1\n", "")),
+        (
+            "empty version",
+            good.replace(&format!("\"{}\"", crate::VERSION), "\"\""),
+        ),
+        (
+            "unquoted version",
+            good.replace(&format!("\"{}\"", crate::VERSION), "0.1"),
+        ),
+        (
+            "local time in another form",
+            good.replace(&log_timestamp(written()), "Fri Nov 13 12:43:40 PM CET 2026"),
+        ),
+        (
+            "UTC time in another form",
+            good.replace("2026-11-13 11:43:40 UTC", "2026-11-13 11:43:40"),
+        ),
+        ("unknown field", format!("{good}colour = \"red\"\n")),
+        ("a list of tables", good.replace("[babawus]", "[[babawus]]")),
+        ("no table", String::new()),
+    ];
+    for (name, header) in cases {
+        assert_eq!(
+            parse_text(&sealed(&header)),
+            Loaded::Damaged(None),
+            "{name}"
+        );
+    }
 }
 
 #[test]
@@ -206,54 +295,61 @@ fn values_that_break_the_rules_make_the_file_unusable() {
     let computer = |id: &str, folder: &str| {
         format!("[[computer]]\nid = \"{id}\"\nfolder = \"{folder}\"\nhostname = \"h\"\n")
     };
-    let account = |username: &str, patterns: &str, folders: &str| {
-        format!(
-            "[[computer.account]]\nusername = \"{username}\"\nselected = []\n\
+    let account_with =
+        |username: &str, versions: &str, days: &str, patterns: &str, folders: &str| {
+            format!(
+                "[[computer.account]]\nusername = \"{username}\"\nolder_versions = {versions}\n\
+             run_check_days = {days}\nselected = []\n\
              exclude_patterns = {patterns}\nexclude_folders = {folders}\n"
-        )
+            )
+        };
+    let account = |username: &str, patterns: &str, folders: &str| {
+        account_with(username, "10", "7", patterns, folders)
     };
     let good = computer(ID, "mint");
     let cases = [
-        ("too few versions", "0".to_owned(), String::new()),
-        ("too many versions", "100".to_owned(), String::new()),
-        ("no number", "\"ten\"".to_owned(), String::new()),
-        ("bad id", "10".to_owned(), computer("xyz", "mint")),
         (
-            "upper-case id",
-            "10".to_owned(),
-            computer(&ID.to_uppercase(), "mint"),
+            "too few versions",
+            format!("{good}{}", account_with("a", "0", "7", "[]", "[]")),
         ),
-        ("dots", "10".to_owned(), computer(ID, "..")),
-        ("path", "10".to_owned(), computer(ID, "../mint")),
-        ("slash", "10".to_owned(), computer(ID, "a/b")),
-        ("empty folder", "10".to_owned(), computer(ID, "")),
-        ("upper case", "10".to_owned(), computer(ID, "Mint")),
-        ("not storable", "10".to_owned(), computer(ID, "a:b")),
-        ("version form", "10".to_owned(), computer(ID, "a[]b")),
-        ("too long", "10".to_owned(), computer(ID, &"a".repeat(256))),
         (
-            "same id",
-            "10".to_owned(),
-            format!("{good}{}", computer(ID, "other")),
+            "too many versions",
+            format!("{good}{}", account_with("a", "100", "7", "[]", "[]")),
         ),
+        (
+            "no number",
+            format!("{good}{}", account_with("a", "\"ten\"", "7", "[]", "[]")),
+        ),
+        (
+            "too many days",
+            format!("{good}{}", account_with("a", "10", "366", "[]", "[]")),
+        ),
+        (
+            "negative days",
+            format!("{good}{}", account_with("a", "10", "-1", "[]", "[]")),
+        ),
+        ("bad id", computer("xyz", "mint")),
+        ("upper-case id", computer(&ID.to_uppercase(), "mint")),
+        ("dots", computer(ID, "..")),
+        ("path", computer(ID, "../mint")),
+        ("slash", computer(ID, "a/b")),
+        ("empty folder", computer(ID, "")),
+        ("upper case", computer(ID, "Mint")),
+        ("not storable", computer(ID, "a:b")),
+        ("version form", computer(ID, "a[]b")),
+        ("too long", computer(ID, &"a".repeat(256))),
+        ("same id", format!("{good}{}", computer(ID, "other"))),
         (
             "same folder",
-            "10".to_owned(),
             format!("{good}{}", computer(OTHER_ID, "mint")),
         ),
-        (
-            "unknown field",
-            "10".to_owned(),
-            format!("{good}colour = \"red\"\n"),
-        ),
+        ("unknown field", format!("{good}colour = \"red\"\n")),
         (
             "user with a path",
-            "10".to_owned(),
             format!("{good}{}", account("../x", "[]", "[]")),
         ),
         (
             "same user in another case",
-            "10".to_owned(),
             format!(
                 "{good}{}{}",
                 account("anna", "[]", "[]"),
@@ -262,48 +358,40 @@ fn values_that_break_the_rules_make_the_file_unusable() {
         ),
         (
             "pattern with a slash",
-            "10".to_owned(),
             format!("{good}{}", account("a", "[\"a/b\"]", "[]")),
         ),
         (
             "empty pattern",
-            "10".to_owned(),
             format!("{good}{}", account("a", "[\"\"]", "[]")),
         ),
         (
             "empty excluded folder",
-            "10".to_owned(),
             format!("{good}{}", account("a", "[]", "[\"\"]")),
         ),
         (
             "absolute excluded folder",
-            "10".to_owned(),
             format!("{good}{}", account("a", "[]", "[\"/home\"]")),
         ),
         (
             "excluded folder with dots",
-            "10".to_owned(),
             format!("{good}{}", account("a", "[]", "[\"a/../b\"]")),
         ),
         (
             "missing field",
-            "10".to_owned(),
             format!("{good}[[computer.account]]\nusername = \"a\"\n"),
         ),
     ];
-    for (name, versions, tables) in cases {
-        let text = sealed(&format!(
-            "format = 1\nolder_versions = {versions}\n\n{tables}\n"
-        ));
+    for (name, tables) in cases {
+        let text = sealed(&format!("{}\n{tables}\n", header_table()));
         assert_eq!(parse_text(&text), Loaded::Damaged(None), "{name}");
     }
-}
-
-#[test]
-fn format_0_is_not_valid() {
-    let text = sealed("format = 0\nolder_versions = 10\n\n");
-
-    assert_eq!(parse_text(&text), Loaded::Damaged(None));
+    // The same file with good values is fine, so the cases above fail for their own reasons.
+    let text = sealed(&format!(
+        "{}\n{good}{}\n",
+        header_table(),
+        account_with("a", "99", "0", "[]", "[]")
+    ));
+    assert!(matches!(parse_text(&text), Loaded::Ready(_)));
 }
 
 #[test]
@@ -311,7 +399,7 @@ fn a_selection_with_dots_is_left_for_the_run_to_report() {
     let mut config = config();
     account_mut(&mut config).selected = vec!["../other".to_owned()];
 
-    assert_eq!(parse_text(&config.to_text()), Loaded::Ready(config));
+    assert_eq!(parse_text(&text_of(&config)), Loaded::Ready(config));
 }
 
 #[test]
@@ -589,7 +677,7 @@ fn saving_replaces_the_old_configuration() {
     let mut config = config();
     medium.save(&config);
 
-    config.older_versions = 5;
+    account_mut(&mut config).older_versions = 5;
     medium.save(&config);
 
     assert_eq!(medium.load(), Loaded::Ready(config));
@@ -599,7 +687,7 @@ fn saving_replaces_the_old_configuration() {
 fn an_invalid_configuration_is_never_saved() {
     let medium = Medium::new();
     let mut config = config();
-    config.older_versions = 0;
+    account_mut(&mut config).older_versions = 0;
 
     let result = save(&medium.fake, &root(), Format::ExFat, &config);
 
@@ -611,7 +699,7 @@ fn an_invalid_configuration_is_never_saved() {
 fn pulling_the_medium_while_saving_never_damages_the_configuration() {
     let old = config();
     let mut new = old.clone();
-    new.older_versions = 5;
+    account_mut(&mut new).older_versions = 5;
     let steps = {
         let medium = Medium::new();
         medium.save(&old);

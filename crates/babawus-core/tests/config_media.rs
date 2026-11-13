@@ -47,7 +47,7 @@ fn saving_and_loading(format: Format) {
     save(&RealFs, root, format, &config).unwrap();
     assert_eq!(load(&RealFs, root).unwrap(), Loaded::Ready(config.clone()));
 
-    config.older_versions = 3;
+    config.computers[0].accounts[0].older_versions = 3;
     save(&RealFs, root, format, &config).unwrap();
     assert_eq!(load(&RealFs, root).unwrap(), Loaded::Ready(config));
     let temp = fs::read_dir(root.join(".babawus/tmp")).unwrap();
@@ -130,11 +130,11 @@ fn a_full_medium_keeps_the_old_configuration(format: Format, size: u64) {
         number += 1;
     }
 
-    config.older_versions = 5;
+    config.computers[0].accounts[0].older_versions = 5;
     let result = save(&RealFs, root, format, &config);
 
     assert!(matches!(result, Err(EntryError::Io(_))), "{result:?}");
-    config.older_versions = 10;
+    config.computers[0].accounts[0].older_versions = 10;
     assert_eq!(load(&RealFs, root).unwrap(), Loaded::Ready(config));
 }
 

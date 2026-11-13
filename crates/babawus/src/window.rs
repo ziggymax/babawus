@@ -1345,20 +1345,6 @@ impl Window {
     fn connect_setup_signals(self: &Rc<Self>) {
         let page = &self.setup_page;
         let weak = Rc::downgrade(self);
-        page.older_versions.connect_value_changed(move |spin| {
-            let Some(window) = weak.upgrade() else { return };
-            if window.setup_updating.get() {
-                return;
-            }
-            if let Some(setup) = window.setup.borrow_mut().as_mut()
-                && let SetupStage::Editing(editor) = &mut setup.stage
-            {
-                editor.set_older_versions(spin.value_as_int() as u32);
-                setup.notice = None;
-            }
-            window.show_setup();
-        });
-        let weak = Rc::downgrade(self);
         page.choose.connect_clicked(move |_| {
             if let Some(window) = weak.upgrade() {
                 window.open_choose();
@@ -1603,6 +1589,21 @@ impl Window {
     fn setup_event(self: &Rc<Self>, event: SetupEvent) {
         let language = self.language.get();
         match event {
+            SetupEvent::Numbers {
+                id,
+                username,
+                older_versions,
+                run_check_days,
+            } => {
+                if let Some(setup) = self.setup.borrow_mut().as_mut()
+                    && let SetupStage::Editing(editor) = &mut setup.stage
+                {
+                    editor.set_older_versions(&id, &username, older_versions);
+                    editor.set_run_check_days(&id, &username, run_check_days);
+                    setup.notice = None;
+                }
+                self.show_setup();
+            }
             SetupEvent::Here(HereAction::Add) => {
                 self.change_setup(|editor, here| editor.add_here(here).is_ok());
             }

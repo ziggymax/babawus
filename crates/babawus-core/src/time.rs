@@ -84,6 +84,25 @@ pub fn utc_clock(time: SystemTime) -> ClockTime {
     ClockTime::of(&broken_down(time, libc::gmtime_r))
 }
 
+/// A time in UTC, as the configuration notes when it was written: `YYYY-MM-DD HH:MM:SS UTC`.
+pub fn utc_timestamp(time: SystemTime) -> String {
+    let fields = broken_down(time, libc::gmtime_r);
+    format!(
+        "{:04}-{:02}-{:02} {:02}:{:02}:{:02} UTC",
+        fields.tm_year + 1900,
+        fields.tm_mon + 1,
+        fields.tm_mday,
+        fields.tm_hour,
+        fields.tm_min,
+        fields.tm_sec
+    )
+}
+
+/// Reads a time written by [`utc_timestamp`].
+pub fn parse_utc_timestamp(text: &str) -> Option<SystemTime> {
+    parse_log_timestamp(&format!("{} +0000", text.strip_suffix(" UTC")?))
+}
+
 /// A time in local time with the UTC offset, for the log.
 pub fn log_timestamp(time: SystemTime) -> String {
     let fields = broken_down(time, libc::localtime_r);

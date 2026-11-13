@@ -45,7 +45,7 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 | Lock | Either the medium's lock (`.babawus/lock`), held by any action that writes to the medium, or the lock that allows only one Babawus per computer. |
 | Log | The file `.babawus/babawus_log.txt`, which records every run on a medium. |
 | Medium (plural media) | A USB storage device, typically a USB stick, whether it has been prepared by Babawus or not. |
-| N | The limit on how many older versions of each file are kept on a medium. |
+| N | The limit on how many older versions of each file are kept, set for each backup profile. |
 | Newest copy | The copy of a file at its normal place on the medium. |
 | Older version | A replaced copy of a file, kept in a version folder. |
 | Poweruser | The more technical person, who formats and configures media (see "Introduction"). |
@@ -163,7 +163,7 @@ As a poweruser I want Babawus to provide me with the means of easily creating an
 
 That way I can easily create or update a configuration for a USB medium.
 
-"Change setup…" opens the overview, which fills the window. It shows the number of older versions to keep, this computer and account, and every backup profile on the medium, under "Backup profiles on this stick", grouped by computer, each with how many files or folders it has chosen. In sentences, questions and buttons, names are quoted and say what they name: "the computer called “laptop”", "the backup profile for “anna”", "Link to “laptop”…" (Issues.md item 122). If this computer isn't in the configuration, the overview offers "Add this computer and your account", and says the folder it will be added as. If other computers are there, it also offers to link it to one of them. If the computer is there but this account isn't, it offers to add the account, or to link it to another account on this computer whose user name it had before. Every entry, this one or another, can be removed. "Choose what to back up…" opens a full-window screen for this account, described below. Changes wait for "Save", which takes the medium's lock, writes the file and releases the lock, and says "Stick setup saved." (Issues.md item 127) Leaving or closing the window with unsaved changes asks first. Removing an entry and linking a computer ask for confirmation, and wait for "Save". Linking an account also asks, and saves at once, because it renames the account's folder and its name in the log. If the medium's lock is live, saving says whose backup is running and changes nothing.
+"Change setup…" opens the overview, which fills the window. It shows this computer and account, and every backup profile on the medium, under "Backup profiles on this stick", grouped by computer, each with how many files or folders it has chosen, and two number fields: "Older versions to keep" (N) and "Remind after days without a backup" (`run_check_days`). Both can be changed for every backup profile, not only the one of the account that is logged in (Issues.md item 136). In sentences, questions and buttons, names are quoted and say what they name: "the computer called “laptop”", "the backup profile for “anna”", "Link to “laptop”…" (Issues.md item 122). If this computer isn't in the configuration, the overview offers "Add this computer and your account", and says the folder it will be added as. If other computers are there, it also offers to link it to one of them. If the computer is there but this account isn't, it offers to add the account, or to link it to another account on this computer whose user name it had before. Every entry, this one or another, can be removed. "Choose what to back up…" opens a full-window screen for this account, described below. Changes wait for "Save", which takes the medium's lock, writes the file and releases the lock, and says "Stick setup saved." (Issues.md item 127) Leaving or closing the window with unsaved changes asks first. Removing an entry and linking a computer ask for confirmation, and wait for "Save". Linking an account also asks, and saves at once, because it renames the account's folder and its name in the log. If the medium's lock is live, saving says whose backup is running and changes nothing.
 
 A damaged configuration that can be parsed opens with a warning to check it and save it, and "Save" works without a change. One that can't be parsed shows "Start a new setup…" instead, which asks first, and then opens an empty configuration that replaces the old file when saved. A configuration that needs a newer Babawus can't be changed. The format view's "Add this computer and your account…" opens the overview of the new medium.
 
@@ -263,7 +263,7 @@ As a user, if the medium runs out of space during a backup, or a file to be copi
 
 ### Set the number of older versions to keep
 
-As a poweruser I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N). There is one N for the whole medium, shared by all computers and accounts, because it is about space on the medium. N is between 1 and 99, and 10 by default. N = 0 is not allowed, because it would remove the protection against accidentally overwritten files. When I lower N, the extra versions are removed on the next backup (see "Handling of file versioning"). That way I can balance history against space on the medium.
+As a poweruser I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N), for each backup profile, because some accounts' files change more often, or matter more, than others (Issues.md item 136). N is between 1 and 99, and 10 for a new backup profile. N = 0 is not allowed, because it would remove the protection against accidentally overwritten files. When I lower N, the extra versions are removed on the next backup (see "Handling of file versioning"). That way I can balance history against space on the medium.
 
 ### Change the language
 
@@ -317,7 +317,7 @@ For each computer added to a medium, the configuration holds:
 
 ### Handling of file versioning
 
-Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser in the configuration.
+Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser for each backup profile in the configuration.
 
 A source file needs to be backed up again when its size or its last modification time differs from that of its newest copy on the medium. "Differs" is used rather than "is newer", so a file that has been replaced by an older copy is also backed up. To make this work, every copy written to the medium keeps the last modification time of its source file. Modification times are compared with a tolerance of 2 seconds, because exFAT may store them with less precision than the source file system. exFAT also can't store times before 1980 or after 2107, and moves them to the nearest time it can store. On exFAT, Babawus therefore compares such a time as that nearest time. Otherwise the file would look changed on every run, and each new copy would push out a real older version.
 
@@ -525,17 +525,22 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 `.babawus/babawus_config` is a TOML file, encoded in UTF-8, with LF line endings and a line ending after the last line.
 
 - The first line is the fixed marker comment `# Babawus configuration`, which identifies the file as a Babawus configuration. It is followed by the boilerplate header as comments, in English.
-- The field `format = 1` states the version of the file format. If a file has a newer format than this Babawus understands, the medium is shown as "Needs attention" in the media list (with the hint that a newer Babawus is needed), and Babawus never writes to it.
-- The configuration itself: N, and for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, the selected files and folders, and the exclusions.
+- The `[babawus]` table comes first (Issues.md item 136). `config_format = 1` states the version of the file format. If a file has a newer format than this Babawus understands, the medium is shown as "Needs attention" in the media list (with the hint that a newer Babawus is needed), and Babawus never writes to it. `config_app_version` is the version of Babawus that last wrote the file, and `config_update_local` and `config_update_utc` say when, in the log's form, in local time with the UTC offset and in UTC. Babawus sets all three whenever it writes the file; writing it again doesn't count as a change to the configuration.
+- The configuration itself: for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, N (`older_versions`), the days before a reminder (`run_check_days`, for the reminder at login, T-059), the selected files and folders, and the exclusions.
 - The last line is the checksum, written as a TOML comment, so the file stays valid TOML. The checksum is the validation marker; there is no separate one.
+
+A file in the layout of Babawus 0.1.0, which had `format` and one `older_versions` for the whole medium at the top and no `[babawus]` table, is not read: it is damaged, and the poweruser starts a new configuration. There were no real users of 0.1.0, so Babawus carries no code for older layouts (Issues.md item 136).
 
 For example:
 
     # Babawus configuration
     # This file is written by Babawus. Change it with the Advanced functions in Babawus.
     # If it is edited by hand, the medium needs attention until it has been saved in Babawus.
-    format = 1
-    older_versions = 10
+    [babawus]
+    config_format = 1
+    config_app_version = "0.1.0"
+    config_update_local = "2026-11-13 12:43:40 +0100"
+    config_update_utc = "2026-11-13 11:43:40 UTC"
 
     [[computer]]
     id = "0123456789abcdef0123456789abcdef"
@@ -544,6 +549,8 @@ For example:
 
     [[computer.account]]
     username = "usera"
+    older_versions = 10
+    run_check_days = 7
     selected = ["Documents", "notes.txt"]
     exclude_patterns = [".cache", "*.tmp", "*~"]
     exclude_folders = [".local/share/Trash"]
@@ -554,7 +561,7 @@ For example:
 
 A medium that has a file at `.babawus/babawus_config` is a Babawus medium, whatever the file holds. The file is read in this order:
 
-1. If it starts with the marker and has a newer `format` than this Babawus understands, the medium needs attention, with the hint that a newer Babawus is needed. The rest of the file is not looked at, because a newer format may mean anything. `format` is found by looking at the lines before the first table, so this works even if the rest of the file can't be parsed.
+1. If it starts with the marker and has a newer `config_format` than this Babawus understands, the medium needs attention, with the hint that a newer Babawus is needed. The rest of the file is not looked at, because a newer format may mean anything. `config_format` is found by looking at the lines of the `[babawus]` table, up to the next table, so this works even if the rest of the file can't be parsed.
 2. The file is parsed and its values are checked (see below), and the checksum and the marker are checked.
 
 If everything is in order, the configuration is used. Otherwise the configuration is damaged, and the medium needs attention:
@@ -564,7 +571,8 @@ If everything is in order, the configuration is used. Otherwise the configuratio
 
 These values are checked. Anything else makes the file invalid, including a field that Babawus does not know:
 
-- `format` is a whole number from 1 up, and N is from 1 to 99.
+- `config_format` is a whole number from 1 up, `config_app_version` is a version that isn't empty, and the two times are in the forms above.
+- N is from 1 to 99, and `run_check_days` from 0 to 365, where 0 means never remind.
 - A computer ID is 32 lower-case hexadecimal digits, and no two computers have the same one.
 - A computer folder is a single, lower-case name that can be stored on exFAT (see "Names that cannot be stored"), not `.` or `..`, and no two differ only in case.
 - A user name is a single name that can be stored on exFAT, and no two accounts on a computer differ only in case, because they would share a folder.

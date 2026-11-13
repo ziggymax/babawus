@@ -54,14 +54,15 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 ## Setting up
 
-- [ ] Turn Advanced on, select stick A and press "Change setup…". → "Setup of this stick", with "Older versions to keep of each file: 10", and "This computer (…) isn't set up on this stick yet."
-- [ ] Press "Add this computer and your account". → Your backup profile shows as set up, the entry is listed with "(this computer)" and "(you)", and "Save" can be pressed.
+- [ ] Turn Advanced on, select stick A and press "Change setup…". → "Setup of this stick", with "This computer (…) isn't set up on this stick yet."
+- [ ] Press "Add this computer and your account". → Your backup profile shows as set up, the entry is listed with "(this computer)" and "(you)", with "Older versions to keep: 10" and "Remind after days without a backup: 7", and "Save" can be pressed.
 - [ ] Press "Back". → "Leave without saving?" Choose "Keep editing".
 - [ ] Press "Choose what to back up…". → A tree with "Your home folder" open. Hidden folders don't show, except those holding something chosen.
 - [ ] Tick `BabawusTest` and open it. → Everything in it is ticked. `notes.tmp` is crossed out, with "Left out by the name pattern *.tmp". The totals count, then show the files and size, with the free space on the stick.
 - [ ] Open `Letters` and untick `old`. → It is crossed out, "Left out", and the totals go down. `Letters` and `BabawusTest` now show partly ticked boxes.
 - [ ] Press "Done", then "Save". → "Stick setup saved." The start screen shows stick A as "Ready", "No backup yet".
-- [ ] Damage the setup by hand: open `.babawus/babawus_config` on stick A in a text editor, change `older_versions = 10` to `11`, and save. Replug the stick. → "Needs attention". "Change setup…" warns that the setup "was changed outside Babawus, or is damaged", and shows 11. Set it back to 10 and press "Save". → "Ready" again.
+- [ ] A stick set up with Babawus 0.1.0, if you have one: plug it in. → "Needs attention", and "Change setup…" offers only "Start a new setup…" (Issues.md item 136). Its backups stay on it.
+- [ ] Damage the setup by hand: open `.babawus/babawus_config` on stick A in a text editor, change `older_versions = 10` to `11` in your backup profile, and save. Replug the stick. → "Needs attention". "Change setup…" warns that the setup "was changed outside Babawus, or is damaged", and shows 11 in your backup profile. Set it back to 10, press the + of "Remind after days without a backup" once, and press "Save". → "Ready" again. The file now says `older_versions = 10` and `run_check_days = 8` in your profile, and its `[babawus]` table has this version of Babawus and the time it was saved.
 
 ## Backing up
 
