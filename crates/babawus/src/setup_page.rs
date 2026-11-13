@@ -1,13 +1,15 @@
-//! The configuration editor's overview: the number of older versions, this computer and
-//! account, and every entry on the medium, with Save and Back. See "Configure USB media" in
+//! The configuration editor's overview: this computer and account, and every entry on the
+//! medium with each backup profile's numbers, with Save and Back. See "Configure USB media" in
 //! Requirements.md and Issues.md items 83-85. What to show comes from
 //! [`babawus_core::setup_screen`]; this module only puts it on the screen, and passes what the
 //! poweruser presses on to the window.
 
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use babawus_core::config::{OLDER_VERSIONS, RUN_CHECK_DAYS};
 use babawus_core::settings::Language;
-use babawus_core::setup_screen::{HereAction, OverviewShown};
+use babawus_core::setup_screen::{ComputerShown, HereAction, OverviewShown};
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
 use gtk4::prelude::*;
@@ -35,6 +37,21 @@ pub enum SetupEvent {
         folder: String,
         username: String,
     },
+    /// A backup profile's numbers were changed (Issues.md item 136).
+    Numbers {
+        id: String,
+        username: String,
+        older_versions: u32,
+        run_check_days: u32,
+    },
+}
+
+/// A backup profile's two number fields.
+struct NumberFields {
+    id: String,
+    username: String,
+    older_versions: SpinButton,
+    run_check_days: SpinButton,
 }
 
 /// What the page shows instead of the overview.
@@ -56,15 +73,18 @@ pub struct SetupPage {
     editing: Box,
     banner: Label,
     banner_row: Box,
-    older_versions_label: Label,
-    pub older_versions: SpinButton,
-    older_versions_detail: Label,
     here_heading: Label,
     here_text: Label,
     here_actions: Box,
     pub choose: Button,
     entries_heading: Label,
     entries: ListBox,
+    /// What the list was last built from. It is only built again when that changes, so that a
+    /// number field isn't replaced while it is being used.
+    entries_built: RefCell<String>,
+    numbers: RefCell<Vec<NumberFields>>,
+    /// Set while the page sets the number fields itself, so that their signals are ignored.
+    updating: Rc<Cell<bool>>,
     empty: Label,
 
     notice: Label,
@@ -110,20 +130,6 @@ impl SetupPage {
         banner_row.append(&banner_mark);
         banner_row.append(&banner);
 
-        let older_versions_label = label(Some("babawus-next-step"));
-        older_versions_label.set_hexpand(false);
-        let older_versions = SpinButton::new(
-            Some(&Adjustment::new(10.0, 1.0, 99.0, 1.0, 10.0, 0.0)),
-            1.0,
-            0,
-        );
-        older_versions.set_numeric(true);
-        older_versions.set_valign(Align::Center);
-        let older_row = Box::new(Orientation::Horizontal, SPACING);
-        older_row.append(&older_versions_label);
-        older_row.append(&older_versions);
-        let older_versions_detail = label(Some("dim-label"));
-
         let here_heading = label(Some("babawus-next-step"));
         let here_text = label(None);
         let here_actions = Box::new(Orientation::Horizontal, 8);
@@ -139,9 +145,6 @@ impl SetupPage {
 
         let editing = column();
         editing.append(&banner_row);
-        editing.append(&older_row);
-        editing.append(&older_versions_detail);
-        editing.append(&Separator::new(Orientation::Horizontal));
         editing.append(&here_heading);
         editing.append(&here_text);
         editing.append(&here_actions);
@@ -198,15 +201,15 @@ impl SetupPage {
             editing,
             banner,
             banner_row,
-            older_versions_label,
-            older_versions,
-            older_versions_detail,
             here_heading,
             here_text,
             here_actions,
             choose,
             entries_heading,
             entries,
+            entries_built: RefCell::default(),
+            numbers: RefCell::default(),
+            updating: Rc::default(),
             empty,
             notice,
             save,
@@ -221,10 +224,6 @@ impl SetupPage {
         self.loading_text
             .set_label(Text::SetupLoading.get(language));
         self.start_new.set_label(Text::SetupStartNew.get(language));
-        self.older_versions_label
-            .set_label(Text::SetupOlderVersions.get(language));
-        self.older_versions_detail
-            .set_label(Text::SetupOlderVersionsDetail.get(language));
         self.here_heading.set_label(Text::SetupHere.get(language));
         self.choose.set_label(Text::SetupChoose.get(language));
         self.choose
@@ -285,10 +284,6 @@ impl SetupPage {
         self.banner
             .set_label(shown.banner.as_deref().unwrap_or_default());
         self.banner_row.set_visible(shown.banner.is_some());
-        if self.older_versions.value_as_int() as u32 != shown.older_versions {
-            self.older_versions
-                .set_value(f64::from(shown.older_versions));
-        }
 
         self.here_text.set_label(&shown.here.text);
         while let Some(child) = self.here_actions.first_child() {
@@ -308,8 +303,38 @@ impl SetupPage {
             .set_visible(!shown.here.actions.is_empty());
         self.choose.set_visible(shown.here.can_choose);
 
+        let built = format!("{language:?}\n{}", without_numbers(&shown.computers));
+        if *self.entries_built.borrow() != built {
+            self.build_entries(&shown.computers, language);
+            *self.entries_built.borrow_mut() = built;
+        }
+        self.updating.set(true);
+        for fields in self.numbers.borrow().iter() {
+            let account = shown
+                .computers
+                .iter()
+                .filter(|computer| computer.id == fields.id)
+                .flat_map(|computer| &computer.accounts)
+                .find(|account| account.username == fields.username);
+            if let Some(account) = account {
+                set_number(&fields.older_versions, account.older_versions);
+                set_number(&fields.run_check_days, account.run_check_days);
+            }
+        }
+        self.updating.set(false);
+        self.entries.set_visible(!shown.computers.is_empty());
+        set_optional(&self.empty, shown.empty.as_deref());
+
+        self.save.set_visible(true);
+        self.save.set_sensitive(shown.can_save && !busy);
+        self.back.set_sensitive(!busy);
+    }
+
+    /// Builds the list of computers and their backup profiles anew.
+    fn build_entries(&self, computers: &[ComputerShown], language: Language) {
         self.entries.remove_all();
-        for computer in &shown.computers {
+        let mut numbers = Vec::new();
+        for computer in computers {
             let folder = computer.folder.clone();
             let title = label(Some("babawus-next-step"));
             title.set_label(&computer.title);
@@ -335,7 +360,6 @@ impl SetupPage {
                 let text = label(None);
                 text.set_label(&account.text);
                 text.set_hexpand(true);
-                text.set_margin_start(SPACING * 2);
                 let remove = self.remove_button(
                     SetupEvent::RemoveAccount {
                         id: computer.id.clone(),
@@ -348,16 +372,60 @@ impl SetupPage {
                 let row = Box::new(Orientation::Horizontal, SPACING);
                 row.append(&text);
                 row.append(&remove);
-                rows.append(&row);
+                let fields = NumberFields {
+                    id: computer.id.clone(),
+                    username: account.username.clone(),
+                    older_versions: number_field(&OLDER_VERSIONS),
+                    run_check_days: number_field(&RUN_CHECK_DAYS),
+                };
+                fields
+                    .older_versions
+                    .set_tooltip_text(Some(Text::SetupOlderVersionsDetail.get(language)));
+                fields
+                    .run_check_days
+                    .set_tooltip_text(Some(Text::SetupRunCheckDaysDetail.get(language)));
+                let numbers_row = Box::new(Orientation::Horizontal, 8);
+                // On one line each, beside their fields.
+                let older_label = label(Some("dim-label"));
+                older_label.set_wrap(false);
+                older_label.set_label(Text::SetupOlderVersions.get(language));
+                let days_label = label(Some("dim-label"));
+                days_label.set_wrap(false);
+                days_label.set_label(Text::SetupRunCheckDays.get(language));
+                days_label.set_margin_start(SPACING * 2);
+                numbers_row.append(&older_label);
+                numbers_row.append(&fields.older_versions);
+                numbers_row.append(&days_label);
+                numbers_row.append(&fields.run_check_days);
+                for spin in [&fields.older_versions, &fields.run_check_days] {
+                    let on_event = self.on_event.clone();
+                    let updating = self.updating.clone();
+                    let (id, username) = (fields.id.clone(), fields.username.clone());
+                    let (older, days) =
+                        (fields.older_versions.clone(), fields.run_check_days.clone());
+                    spin.connect_value_changed(move |_| {
+                        if updating.get() {
+                            return;
+                        }
+                        on_event(SetupEvent::Numbers {
+                            id: id.clone(),
+                            username: username.clone(),
+                            older_versions: older.value_as_int() as u32,
+                            run_check_days: days.value_as_int() as u32,
+                        });
+                    });
+                }
+                let profile = Box::new(Orientation::Vertical, 4);
+                profile.set_margin_start(SPACING * 2);
+                profile.set_margin_top(4);
+                profile.append(&row);
+                profile.append(&numbers_row);
+                rows.append(&profile);
+                numbers.push(fields);
             }
             self.entries.append(&rows);
         }
-        self.entries.set_visible(!shown.computers.is_empty());
-        set_optional(&self.empty, shown.empty.as_deref());
-
-        self.save.set_visible(true);
-        self.save.set_sensitive(shown.can_save && !busy);
-        self.back.set_sensitive(!busy);
+        *self.numbers.borrow_mut() = numbers;
     }
 
     fn remove_button(&self, event: SetupEvent, tooltip: Text, language: Language) -> Button {
@@ -373,4 +441,38 @@ impl SetupPage {
 fn set_optional(label: &Label, text: Option<&str>) {
     label.set_label(text.unwrap_or_default());
     label.set_visible(text.is_some());
+}
+
+/// The computers as shown, without the numbers, which change without building the list again.
+fn without_numbers(computers: &[ComputerShown]) -> String {
+    let mut text = String::new();
+    for computer in computers {
+        text.push_str(&format!("{}\t{}\n", computer.id, computer.title));
+        for account in &computer.accounts {
+            text.push_str(&format!("\t{}\t{}\n", account.username, account.text));
+        }
+    }
+    text
+}
+
+/// A field for a whole number in `range`.
+fn number_field(range: &std::ops::RangeInclusive<u32>) -> SpinButton {
+    let adjustment = Adjustment::new(
+        f64::from(*range.start()),
+        f64::from(*range.start()),
+        f64::from(*range.end()),
+        1.0,
+        10.0,
+        0.0,
+    );
+    let spin = SpinButton::new(Some(&adjustment), 1.0, 0);
+    spin.set_numeric(true);
+    spin.set_valign(Align::Center);
+    spin
+}
+
+fn set_number(spin: &SpinButton, value: u32) {
+    if spin.value_as_int() as u32 != value {
+        spin.set_value(f64::from(value));
+    }
 }

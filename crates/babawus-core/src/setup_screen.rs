@@ -126,8 +126,18 @@ impl Editor {
         self.saved.as_ref() != Some(&self.config)
     }
 
-    pub fn set_older_versions(&mut self, older_versions: u32) {
-        self.config.older_versions = older_versions;
+    /// Sets N for the account `username` on the computer `id` (Issues.md item 136).
+    pub fn set_older_versions(&mut self, id: &str, username: &str, older_versions: u32) {
+        if let Some(account) = self.config.account_mut(id, username) {
+            account.older_versions = older_versions;
+        }
+    }
+
+    /// Sets `run_check_days` for the account `username` on the computer `id`.
+    pub fn set_run_check_days(&mut self, id: &str, username: &str, days: u32) {
+        if let Some(account) = self.config.account_mut(id, username) {
+            account.run_check_days = days;
+        }
     }
 
     /// The folder a new entry for this computer would get.
@@ -280,6 +290,8 @@ pub struct AccountShown {
     pub username: String,
     /// For example "anna (you) · 3 files or folders chosen".
     pub text: String,
+    pub older_versions: u32,
+    pub run_check_days: u32,
 }
 
 /// A computer in the list of entries.
@@ -297,7 +309,6 @@ pub struct ComputerShown {
 pub struct OverviewShown {
     /// Says that a damaged configuration must be checked and saved.
     pub banner: Option<String>,
-    pub older_versions: u32,
     pub here: HereShown,
     pub computers: Vec<ComputerShown>,
     /// For example "No computers or accounts are set up on this stick yet."
@@ -411,6 +422,8 @@ pub fn overview(editor: &Editor, here: &Here, language: Language) -> OverviewSho
                     AccountShown {
                         username: account.username.clone(),
                         text: format!("{name} · {chosen}"),
+                        older_versions: account.older_versions,
+                        run_check_days: account.run_check_days,
                     }
                 })
                 .collect();
@@ -426,7 +439,6 @@ pub fn overview(editor: &Editor, here: &Here, language: Language) -> OverviewSho
         banner: editor
             .damaged
             .then(|| Text::SetupDamaged.get(language).to_owned()),
-        older_versions: config.older_versions,
         here: here_shown,
         empty: computers
             .is_empty()

@@ -231,7 +231,9 @@ texts! {
     SetupStartNewDetail: "The old setup is replaced when you save. The backups on the stick are kept.", "Die alte Einrichtung wird beim Speichern ersetzt. Die Sicherungen auf dem Stick bleiben erhalten.";
     SetupNewerFormat: "The setup on this stick needs a newer Babawus. It can't be changed here.", "Die Einrichtung auf diesem Stick braucht ein neueres Babawus. Sie kann hier nicht geändert werden.";
     SetupNotBabawus: "This stick has no Babawus setup any more.", "Dieser Stick hat keine Babawus-Einrichtung mehr.";
-    SetupOlderVersions: "Older versions to keep of each file:", "Ältere Versionen pro Datei:";
+    SetupOlderVersions: "Older versions to keep:", "Ältere Versionen aufbewahren:";
+    SetupRunCheckDays: "Remind after days without a backup:", "Erinnern nach Tagen ohne Sicherung:";
+    SetupRunCheckDaysDetail: "When this account logs in, Babawus can remind it to back up if its last backup is older than this many days. 0 means never.", "Wenn sich dieses Konto anmeldet, kann Babawus daran erinnern, eine Sicherung zu machen, wenn die letzte älter ist als so viele Tage. 0 heißt nie.";
     SetupOlderVersionsDetail: "When a file changes, its earlier copies are kept, up to this many. Fewer leaves more space on the stick.", "Wenn sich eine Datei ändert, werden ihre früheren Fassungen aufbewahrt, bis zu dieser Anzahl. Weniger lässt mehr Platz auf dem Stick.";
     SetupHere: "You on this computer", "Du auf diesem Computer";
     SetupNoComputerId: "This computer has no ID, so it can't be set up. Contact whoever looks after this computer.", "Dieser Computer hat keine Kennung und kann deshalb nicht eingerichtet werden. Wende dich an die Person, die diesen Computer betreut.";

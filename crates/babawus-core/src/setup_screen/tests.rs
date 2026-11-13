@@ -113,7 +113,7 @@ fn a_ready_configuration_opens_with_nothing_to_save() {
 #[test]
 fn a_configuration_that_can_be_parsed_but_is_damaged_must_be_saved() {
     let setup = Setup::new(Some(&config(None)));
-    let text = config(None).to_text();
+    let text = config(None).to_text(SystemTime::UNIX_EPOCH);
     let changed = text.replace("older_versions = 10", "older_versions = 12");
     setup.files.add_file(
         root().join(CONFIG_FILE),
@@ -125,7 +125,15 @@ fn a_configuration_that_can_be_parsed_but_is_damaged_must_be_saved() {
 
     assert!(editor.damaged);
     assert!(editor.unsaved());
-    assert_eq!(editor.config.older_versions, 12);
+    assert_eq!(
+        editor
+            .config
+            .account(OTHER_ID, "bert")
+            .unwrap()
+            .1
+            .older_versions,
+        12
+    );
     let shown = overview(&editor, &setup.here(), EN);
     assert!(shown.banner.unwrap().contains("Check it, then save it"));
     assert!(shown.can_save);
@@ -225,13 +233,15 @@ fn saving_writes_the_changes_and_releases_the_lock() {
     let setup = Setup::new(Some(&config(None)));
     let mut editor = setup.editor();
     editor.add_here(&setup.here()).unwrap();
-    editor.set_older_versions(5);
+    editor.set_older_versions(ID, "anna", 5);
+    editor.set_run_check_days(ID, "anna", 0);
 
     editor.save(&setup.medium(), &setup.here()).unwrap();
 
     assert!(!editor.unsaved());
     let loaded = setup.loaded();
-    assert_eq!(loaded.older_versions, 5);
+    let (_, anna) = loaded.account(ID, "anna").unwrap();
+    assert_eq!((anna.older_versions, anna.run_check_days), (5, 0));
     assert_eq!(loaded.computer(ID).unwrap().hostname, "Laptop");
     assert!(setup.files.metadata(&root().join(LOCK_FILE)).is_err());
 }
@@ -252,14 +262,18 @@ fn saving_waits_for_a_live_lock() {
         SystemTime::UNIX_EPOCH,
     );
     let mut editor = setup.editor();
-    editor.set_older_versions(5);
+    editor.set_older_versions(OTHER_ID, "bert", 5);
 
     let error = editor.save(&setup.medium(), &setup.here()).unwrap_err();
 
     assert!(matches!(&error, SaveError::Busy(Some(user)) if user == "bert"));
     assert!(save_error_text(&error, EN).contains("for bert"));
     assert!(editor.unsaved());
-    assert_eq!(setup.loaded().older_versions, 10);
+    let loaded = setup.loaded();
+    assert_eq!(
+        loaded.account(OTHER_ID, "bert").unwrap().1.older_versions,
+        10
+    );
 }
 
 #[test]
@@ -300,7 +314,7 @@ fn linking_an_account_renames_it_and_saves_at_once() {
         .files
         .add_dir_on_device(root().join("backup/laptop/anne"), 1);
     let mut editor = setup.editor();
-    editor.set_older_versions(7);
+    editor.set_older_versions(ID, "anne", 7);
 
     editor
         .link_account(&setup.medium(), &setup.here(), "anne")
@@ -309,7 +323,7 @@ fn linking_an_account_renames_it_and_saves_at_once() {
     assert!(!editor.unsaved());
     let loaded = setup.loaded();
     assert!(loaded.account(ID, "anna").is_some());
-    assert_eq!(loaded.older_versions, 7);
+    assert_eq!(loaded.account(ID, "anna").unwrap().1.older_versions, 7);
     assert!(
         setup
             .files
@@ -403,4 +417,27 @@ fn a_computer_without_an_id_can_not_be_added() {
 
     assert!(shown.here.actions.is_empty());
     assert!(editor.add_here(&setup.here()).is_err());
+}
+
+#[test]
+fn every_backup_profile_shows_its_own_numbers_which_can_be_changed() {
+    let setup = Setup::new(Some(&config(Some(&["anna"]))));
+    let mut editor = setup.editor();
+
+    editor.set_older_versions(OTHER_ID, "bert", 3);
+    editor.set_run_check_days(OTHER_ID, "bert", 30);
+    let shown = overview(&editor, &setup.here(), EN);
+
+    let numbers = |folder: &str| {
+        let computer = shown
+            .computers
+            .iter()
+            .find(|each| each.folder == folder)
+            .unwrap();
+        let account = &computer.accounts[0];
+        (account.older_versions, account.run_check_days)
+    };
+    assert_eq!(numbers("desktop"), (3, 30));
+    assert_eq!(numbers("laptop"), (10, 7));
+    assert!(shown.can_save);
 }

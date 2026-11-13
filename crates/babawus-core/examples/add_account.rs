@@ -59,5 +59,5 @@ fn main() {
         .unwrap();
     account.selected = selected;
     save(&RealFs, &root, format, &config).expect("save the configuration");
-    println!("{}", config.to_text());
+    println!("{}", config.to_text(std::time::SystemTime::now()));
 }

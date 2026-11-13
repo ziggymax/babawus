@@ -13,7 +13,7 @@ use std::sync::mpsc::{self, Receiver};
 use std::thread;
 use std::time::SystemTime;
 
-use crate::config::{Config, Loaded, load, save};
+use crate::config::{Config, DEFAULT_OLDER_VERSIONS, Loaded, load, save};
 use crate::copy::{FileCopier, Pruned, Skip, Visit, stop_for};
 use crate::fs::FileSystem;
 use crate::lock::{Holder, LockError, MediumLock, ThisProcess};
@@ -101,6 +101,8 @@ pub struct Backup {
 struct Plan {
     folder: PathBuf,
     selection: Selection,
+    /// N for this account (Issues.md item 136).
+    older_versions: u32,
 }
 
 impl Backup {
@@ -115,6 +117,7 @@ impl Backup {
         let plan = Plan {
             folder: account_folder(&computer.folder, &self.username),
             selection: account.selection(&self.home),
+            older_versions: account.older_versions,
         };
         (account_name(&self.username, &computer.folder), Some(plan))
     }
@@ -163,7 +166,9 @@ impl Backup {
             medium,
             self.root.clone(),
             self.format,
-            config.older_versions as usize,
+            // An account that hasn't been added stops before anything is copied or pruned.
+            plan.as_ref()
+                .map_or(DEFAULT_OLDER_VERSIONS, |plan| plan.older_versions) as usize,
             &version_now,
             cancel,
         );
