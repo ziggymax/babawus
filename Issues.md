@@ -426,3 +426,49 @@ The user tried the package built from pull request 59 on the VM: formatting as E
         - The window follows the log: when the file changes, it is read again, the highlight stays on the same run, and the view keeps its place.
         - When the stick is ejected or pulled out, its log window closes by itself.
     - **Decided by Claude, as the obvious defaults (2026-11-12):** there is at most one log window per stick; choosing "Show in the log" for another run of that stick moves the highlight and brings the window to the front. The window is titled "Log of BACKUP-A", opens at a size of its own, and closes when Babawus does. Its texts are in the language chosen when it opened. Long lines don't wrap: the window scrolls sideways too.
+
+## For the next version: the configuration and a reminder at login (T-058, T-059)
+
+The user asked on 2026-11-13, after trying the build with T-053 to T-057, for two more things before the next release. Their sample of the new configuration:
+
+    # Babawus configuration
+    # This file is written by Babawus. Change it with the Advanced functions in Babawus.
+    # If it is edited by hand, the medium needs attention until it has been saved in Babawus.
+
+    [[babawus]]
+    config_format = 1
+    config_app_version = 0.1.1
+    config_update_local = "Fri Nov 13 12:43:40 PM CET 2026"
+    config_update_utc = "Fri Nov 13 11:43:40 AM UTC 2026"
+
+    [[computer]]
+    id = "69cc641079d85ec2d1b909e0bc3d3a2a"
+    folder = "steen-virtualbox"
+    hostname = "steen-VirtualBox"
+
+    [[computer.account]]
+    username = "steen"
+    older_versions = 20
+    run_check_days = 7
+    selected = ["Documents"]
+    exclude_patterns = [".cache", "*.tmp", "*~"]
+    exclude_folders = [".local/share/Trash", "Documents/Backups"]
+
+    # checksum: 2cbbee54a52d7feb
+
+136. **The new configuration format (T-058).** A `babawus` table with the format, the version of Babawus that last wrote the file, and when, in local time and UTC; and per account the number of older versions to keep (instead of one N for the whole medium) and `run_check_days`, the most days that may pass before the reminder of T-059.
+    - **Open:**
+        - The sample needs two small changes to be valid TOML that reads as meant: `[babawus]` rather than `[[babawus]]`, which would be a list of tables; and the version in quotes, `"0.1.1"`.
+        - The times: as in the sample, or in the log's form (`2026-11-13 12:43:40 +0100`, and `2026-11-13 11:43:40 UTC`), which sorts and reads the same in every language.
+        - Whether the file also keeps when it was first created, or only when it was last written.
+        - The format number: the new layout is format 2, so that 0.1.0 shows a stick with it as "Needs attention" (a newer Babawus is needed) instead of misreading it. Today the format is found before the first table; with `[babawus]` first, reading it needs to change.
+        - Sticks set up with 0.1.0 (format 1): read as they are, and written in the new format the next time they are saved, or upgraded at once. Each account then starts with the old N, and with a default for `run_check_days`.
+        - The range and default of `run_check_days`, and whether 0 means "never remind".
+        - Older versions per account: each account's versions are kept apart already (under `backup/<computer folder>/<username>`), so pruning follows the account's own N. "Change setup…" sets N per account instead of once for the stick, and Requirements.md's user story about N changes with it.
+137. **A reminder at login when the last backup is too long ago (T-059).** Babawus started with `--checklastbackup` looks at when this account last made a backup. If that is more than `run_check_days` ago, it shows a small window with the logo, "X days have passed since your last backup. Do you want to back up now?", with Yes, which opens the normal window, and No, which closes Babawus. Otherwise, or if no backup has been noted yet, it closes without showing anything. Each successful backup notes its time in a file under `~/.local/state`.
+    - **Open:**
+        - The file: `$XDG_STATE_HOME/babawus/last_backup` (by default `~/.local/state/babawus/last_backup`), the standard place for state like this.
+        - The stick is usually not plugged in at login, so `run_check_days` can't be read from it then. The state file would also note the account's `run_check_days` from the stick at each backup, and with several sticks, the one from the latest backup counts.
+        - Whether "Some files were skipped" counts as a backup here, as it does for "Last backup" (Requirements.md, "See when I last made a backup").
+        - How Babawus gets started at login: the package could install an entry in `/etc/xdg/autostart` for every account, the poweruser could add it by hand in "Startup Applications", or "Change setup…" could offer it per account.
+        - What happens if Babawus is already open, for this account or another (only one runs per computer), and whether the reminder counts calendar days, as "Last backup" does.
