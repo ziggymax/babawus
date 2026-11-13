@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 is done; T-059, in "Next version" below, is to go in before the next release. T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, asked for before the next release, are done too. Nothing more is planned yet. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -42,11 +42,7 @@ Everything here is done.
 
 ## Next version
 
-From the user's testing of 0.1.0 (2026-11-12 and 2026-11-13). T-053 to T-058 are done. Each task's design questions are asked when it starts.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-059 | `--checklastbackup`, for starting Babawus at login: if this account's last backup was more than `run_check_days` ago, a small window with the logo asks whether to back up now, and Yes opens the normal window; otherwise Babawus closes without showing anything. Each successful backup notes its time in a state file under `~/.local/state`. Needs T-058 for `run_check_days`. Open questions: Issues.md item 137 | Todo | The user, 2026-11-13 |
+From the user's testing of 0.1.0 (2026-11-12 and 2026-11-13). Everything here is done.
 
 ## Needs a decision
 
@@ -118,3 +114,4 @@ Nothing is waiting for a decision.
 | T-056 | The start screen's new layout, after the user's mock-ups: every stick in the list is framed and has its own round Eject button instead of a status mark; the selected Babawus stick has a large green "Start backup" right below its row; and the details' buttons, the user's and then the poweruser's on one row, come right after the texts, below a thin line (Issues.md item 134) | [#69](https://github.com/ziggymax/babawus/pull/69) |
 | T-057 | A log window for the poweruser: with Advanced on, right-clicking a run in the history offers "Show in the log", which opens a window of its own with the whole log one row per line and the run's lines highlighted. It follows changes to the log, and closes when its stick goes or Babawus closes (Issues.md item 135) | [#70](https://github.com/ziggymax/babawus/pull/70) |
 | T-058 | The new configuration format: a `[babawus]` table with the format, the version of Babawus that last wrote the file and when, in local time and UTC; and per backup profile `older_versions`, used for pruning, and `run_check_days`, both set for every profile in "Change setup…". A file in the layout of 0.1.0 is damaged, and is replaced by a new setup (Issues.md item 136) | [#72](https://github.com/ziggymax/babawus/pull/72) |
+| T-059 | `babawus --checklastbackup`, for "Startup Applications": if this account's last backup that counts was more than `run_check_days` calendar days ago, a small window asks "Back up now" or "Not now"; otherwise Babawus closes without showing anything. Each backup that counts is noted in `~/.local/state/babawus/last_backup`, with the profile's `run_check_days`. The README says how to add it at login (Issues.md item 137) | [#73](https://github.com/ziggymax/babawus/pull/73) |

@@ -86,24 +86,30 @@ impl Settings {
     /// Writes the settings file at `path`, and any folders it needs. The file is never written in
     /// place, so an interruption leaves either the old settings or the new ones.
     pub fn save(&self, fs: &dyn FileSystem, path: &Path) -> io::Result<()> {
-        if let Some(folder) = path.parent() {
-            create_folders(fs, folder)?;
-        }
         let text = toml::to_string(self).map_err(io::Error::other)?;
-        let mut temp = OsString::from(path);
-        temp.push(TEMP_SUFFIX);
-        let temp = Path::new(&temp);
-        match fs.remove_file(temp) {
-            Err(error) if error.kind() != ErrorKind::NotFound => return Err(error),
-            _ => {}
-        }
-        let result = write_file(fs, temp, text.as_bytes()).and_then(|()| fs.rename(temp, path));
-        if result.is_err() {
-            // If this fails too, the next save removes it.
-            let _ = fs.remove_file(temp);
-        }
-        result
+        save_user_file(fs, path, text.as_bytes())
     }
+}
+
+/// Writes a small file of the user's at `path`, and any folders it needs. The file is never
+/// written in place, so an interruption leaves either the old file or the new one.
+pub(crate) fn save_user_file(fs: &dyn FileSystem, path: &Path, data: &[u8]) -> io::Result<()> {
+    if let Some(folder) = path.parent() {
+        create_folders(fs, folder)?;
+    }
+    let mut temp = OsString::from(path);
+    temp.push(TEMP_SUFFIX);
+    let temp = Path::new(&temp);
+    match fs.remove_file(temp) {
+        Err(error) if error.kind() != ErrorKind::NotFound => return Err(error),
+        _ => {}
+    }
+    let result = write_file(fs, temp, data).and_then(|()| fs.rename(temp, path));
+    if result.is_err() {
+        // If this fails too, the next save removes it.
+        let _ = fs.remove_file(temp);
+    }
+    result
 }
 
 fn write_file(fs: &dyn FileSystem, path: &Path, data: &[u8]) -> io::Result<()> {

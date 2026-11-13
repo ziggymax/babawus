@@ -163,6 +163,10 @@ texts! {
     ShowInLog: "Show in the log", "Im Protokoll zeigen";
     LogWindowTitle: "Log of {label}", "Protokoll von {label}";
     LogUnreadable: "The log on this stick can't be read.", "Das Protokoll auf diesem Stick kann nicht gelesen werden.";
+    ReminderDays: "Your last backup was {days} days ago.", "Deine letzte Sicherung ist {days} Tage her.";
+    ReminderQuestion: "Do you want to back up now?", "Möchtest du jetzt eine Sicherung machen?";
+    ReminderBackUp: "Back up now", "Jetzt sichern";
+    ReminderNotNow: "Not now", "Nicht jetzt";
     HistoryRunning: "Backup in progress", "Sicherung läuft";
     HistoryToday: "Today, {time}", "Heute, {time}";
     HistoryYesterday: "Yesterday, {time}", "Gestern, {time}";

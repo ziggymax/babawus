@@ -23,6 +23,10 @@ fn at(seconds: u64) -> SystemTime {
     SystemTime::UNIX_EPOCH + Duration::from_secs(seconds)
 }
 
+fn state_file() -> PathBuf {
+    PathBuf::from("/home/usera/.local/state/babawus/last_backup")
+}
+
 fn root() -> PathBuf {
     PathBuf::from("/medium")
 }
@@ -89,7 +93,13 @@ impl Setup {
             hostname: "mint".to_owned(),
             home: PathBuf::from("/home/usera"),
             now: Arc::new(|| at(NOW)),
+            state_file: Some(state_file()),
         }
+    }
+
+    /// What the state file for the reminder at login says.
+    fn noted(&self) -> Option<Noted> {
+        reminder::read(&*self.system, &state_file())
     }
 
     fn run_with(&self, backup: &Backup, on_progress: &mut dyn FnMut(Progress)) -> Ended {
@@ -993,4 +1003,56 @@ fn a_worker_finishes_properly_even_if_nobody_listens() {
         std::thread::yield_now();
     }
     assert_eq!(setup.last_run().end.unwrap().reason, Reason::None);
+}
+
+#[test]
+fn a_good_backup_is_noted_for_the_reminder_with_the_account_s_days() {
+    let setup = Setup::new();
+    let mut changed = config();
+    changed.computers[0].accounts[0].run_check_days = 3;
+    setup.save(&changed);
+
+    setup.run();
+
+    let expected = Noted {
+        finished: at(NOW),
+        run_check_days: 3,
+    };
+    assert_eq!(setup.noted(), Some(expected));
+}
+
+#[test]
+fn a_backup_with_skipped_files_is_noted_too() {
+    let setup = Setup::new();
+    let mut changed = config();
+    changed.computers[0].accounts[0]
+        .selected
+        .push("Gone".to_owned());
+    setup.save(&changed);
+
+    assert_eq!(setup.run().verdict(), Verdict::Skipped);
+
+    assert!(setup.noted().is_some());
+}
+
+#[test]
+fn a_failed_backup_is_not_noted() {
+    let setup = Setup::empty();
+    setup.source_file("Documents/a.txt", &[1; 5000], 1000);
+    setup.leave_room(1000);
+
+    assert_eq!(setup.run().verdict(), Verdict::Failed);
+
+    assert_eq!(setup.noted(), None);
+}
+
+#[test]
+fn an_account_that_has_not_been_added_is_not_noted() {
+    let setup = Setup::new();
+    let mut backup = setup.backup();
+    backup.username = "userb".to_owned();
+
+    setup.outcome_of(&backup);
+
+    assert_eq!(setup.noted(), None);
 }

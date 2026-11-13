@@ -18,6 +18,7 @@ use crate::copy::{FileCopier, Pruned, Skip, Visit, stop_for};
 use crate::fs::FileSystem;
 use crate::lock::{Holder, LockError, MediumLock, ThisProcess};
 use crate::log::{PRUNE_FAILED, RunLog, Runner, Stats, account_name, new_run_id};
+use crate::reminder::{self, Noted};
 use crate::scan::{Destination, Entry, Scan, Selection, Skipped, account_folder, scan};
 use crate::time::{log_timestamp, version_timestamp};
 use crate::verdict::{Reason, Verdict, worst};
@@ -95,6 +96,9 @@ pub struct Backup {
     pub hostname: String,
     pub home: PathBuf,
     pub now: Arc<dyn Fn() -> SystemTime + Send + Sync>,
+    /// Where a backup that counts is noted for the reminder at login, on the computer's own
+    /// file system, if anywhere (Issues.md item 137).
+    pub state_file: Option<PathBuf>,
 }
 
 /// Where an account's backup goes, and what it holds.
@@ -103,6 +107,7 @@ struct Plan {
     selection: Selection,
     /// N for this account (Issues.md item 136).
     older_versions: u32,
+    run_check_days: u32,
 }
 
 impl Backup {
@@ -118,6 +123,7 @@ impl Backup {
             folder: account_folder(&computer.folder, &self.username),
             selection: account.selection(&self.home),
             older_versions: account.older_versions,
+            run_check_days: account.run_check_days,
         };
         (account_name(&self.username, &computer.folder), Some(plan))
     }
@@ -216,6 +222,16 @@ impl Backup {
         let outcome = pass.finish(self, stop);
         // Only now: the lock is removed after the end entry has been written.
         drop(lock);
+        if let (Some(plan), Some(state_file)) = (&plan, &self.state_file)
+            && matches!(outcome.verdict(), Verdict::AllGood | Verdict::Skipped)
+        {
+            let noted = Noted {
+                finished: (self.now)(),
+                run_check_days: plan.run_check_days,
+            };
+            // Only a reminder depends on it, so a backup isn't spoilt when it can't be noted.
+            let _ = reminder::note(&*self.system, state_file, noted);
+        }
         Ended::Finished(outcome)
     }
 
