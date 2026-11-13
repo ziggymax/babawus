@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, asked for before the next release, are done too, and so is T-062, the square logos. Release 0.2.0 is now under way (T-060). T-043 waits for its problem to show again.
+Babawus 0.2.0 is released (T-060), after 0.1.0 (T-052). Nothing else is planned. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -118,3 +118,4 @@ Nothing is waiting for a decision.
 | T-058 | The new configuration format: a `[babawus]` table with the format, the version of Babawus that last wrote the file and when, in local time and UTC; and per backup profile `older_versions`, used for pruning, and `run_check_days`, both set for every profile in "Change setup…". A file in the layout of 0.1.0 is damaged, and is replaced by a new setup (Issues.md item 136) | [#72](https://github.com/ziggymax/babawus/pull/72) |
 | T-059 | `babawus --checklastbackup`, for "Startup Applications": if this account's last backup that counts was more than `run_check_days` calendar days ago, a small window asks "Back up now" or "Not now"; otherwise Babawus closes without showing anything. Each backup that counts is noted in `~/.local/state/babawus/last_backup`, with the profile's `run_check_days`. The README says how to add it at login (Issues.md item 137) | [#73](https://github.com/ziggymax/babawus/pull/73) |
 | T-062 | The logos are square, 90 × 90 mm with a white rounded background, so that the menu and the panel no longer stretch the elephant in height. A change by the user to the four SVG files in `assets`, which Babawus already uses; PNG exports of both plain logos are added to git too, but not used (Issues.md item 138) | [#76](https://github.com/ziggymax/babawus/pull/76) |
+| T-060 | Release 0.2.0: the version raised in #74, the tag `v0.2.0` on main at #76, and a [GitHub release](https://github.com/ziggymax/babawus/releases/tag/v0.2.0) with the `.deb` and notes linking issue 75, the checklist run, which is closed | [#77](https://github.com/ziggymax/babawus/pull/77) |
