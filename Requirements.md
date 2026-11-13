@@ -217,6 +217,17 @@ As a user I want the details of a Ready medium on the start screen to show how l
 - Before my first backup to the medium, "No backup yet" is shown.
 - The date is read from the log on the medium.
 
+### Remind me at login when my last backup is too old
+
+As a user I want Babawus to remind me, when I log in, that my last backup is too long ago, and let me start one at once, so that backing up doesn't slip my mind (Issues.md item 137).
+
+Started as `babawus --checklastbackup`, Babawus first looks at when this account last made a backup that counts. If that was more than `run_check_days` calendar days ago, it shows a small window with the logo without the name, "Your last backup was 9 days ago." in bold, "Do you want to back up now?", and the buttons "Not now" and "Back up now". "Back up now" opens the normal window, as a normal start would; "Not now", or closing the window, closes Babawus. Otherwise, and if this account has never made a backup that counts, Babawus closes at once without showing anything. Whether a reminder is due is decided before anything is shown.
+
+- A backup counts as for "See when I last made a backup": "All good" or "Some files were skipped". Days are calendar days in local time, so with `run_check_days = 7` the reminder comes from the 8th day on. `run_check_days = 0` never reminds.
+- The stick is usually not plugged in at login, so each backup that counts notes when it finished, with the account's `run_check_days` from that stick, in `$XDG_STATE_HOME/babawus/last_backup` (by default `~/.local/state/babawus/last_backup`). It is a small TOML file, with the time in the log's form. The latest backup counts, whichever stick it went to. A file that can't be read counts as no file, and a backup that can't be noted is still a backup.
+- Babawus doesn't add itself to the startup programs. The poweruser adds `babawus --checklastbackup` in "Startup Applications" for each account that wants the reminder (see the README).
+- If Babawus is already open for this account, `--checklastbackup` brings its window forward like any other start.
+
 ### View the history of a medium
 
 As a user I want to be able to view the history of backups made on a medium, in plain words: when each backup ran and what its verdict was. That way I can see that my backups have been running as expected. (The history is read from the log on the medium, see "Maintain a log".)
@@ -526,7 +537,7 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 
 - The first line is the fixed marker comment `# Babawus configuration`, which identifies the file as a Babawus configuration. It is followed by the boilerplate header as comments, in English.
 - The `[babawus]` table comes first (Issues.md item 136). `config_format = 1` states the version of the file format. If a file has a newer format than this Babawus understands, the medium is shown as "Needs attention" in the media list (with the hint that a newer Babawus is needed), and Babawus never writes to it. `config_app_version` is the version of Babawus that last wrote the file, and `config_update_local` and `config_update_utc` say when, in the log's form, in local time with the UTC offset and in UTC. Babawus sets all three whenever it writes the file; writing it again doesn't count as a change to the configuration.
-- The configuration itself: for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, N (`older_versions`), the days before a reminder (`run_check_days`, for the reminder at login, T-059), the selected files and folders, and the exclusions.
+- The configuration itself: for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, N (`older_versions`), the days before a reminder (`run_check_days`, see "Remind me at login when my last backup is too old"), the selected files and folders, and the exclusions.
 - The last line is the checksum, written as a TOML comment, so the file stays valid TOML. The checksum is the validation marker; there is no separate one.
 
 A file in the layout of Babawus 0.1.0, which had `format` and one `older_versions` for the whole medium at the top and no `[babawus]` table, is not read: it is damaged, and the poweruser starts a new configuration. There were no real users of 0.1.0, so Babawus carries no code for older layouts (Issues.md item 136).

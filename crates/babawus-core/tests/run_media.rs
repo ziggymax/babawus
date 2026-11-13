@@ -87,6 +87,7 @@ impl Test {
             hostname: "mint".to_owned(),
             home: self.home.0.clone(),
             now: Arc::new(SystemTime::now),
+            state_file: None,
         }
     }
 

@@ -51,6 +51,7 @@ use crate::icons;
 use crate::info_page::InfoPage;
 use crate::log_window::LogWindow;
 use crate::setup_page::{Instead, SetupEvent, SetupPage};
+use babawus_core::reminder::state_file;
 
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
@@ -2248,6 +2249,10 @@ impl Window {
             hostname,
             home: glib::home_dir(),
             now: Arc::new(SystemTime::now),
+            state_file: Some(state_file(
+                std::env::var_os("XDG_STATE_HOME").as_deref(),
+                &glib::home_dir(),
+            )),
         };
         *self.notice.borrow_mut() = None;
         *self.backup.borrow_mut() = Some(BackupState {

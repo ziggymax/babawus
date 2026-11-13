@@ -27,6 +27,10 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 
 Each stick keeps a log of every backup made to it, in `.babawus/babawus_log.txt` on the stick. It is plain text, one entry per line: when each run started, for whom, on which computer and with which version of Babawus, every file it had to skip and why, and how it ended. Open it with any text editor; the folder `.babawus` is hidden, so show hidden files in the file manager first. The format is described under "Format of the log" in [Requirements.md](Requirements.md).
 
+## A reminder at login
+
+Babawus can remind a user at login when their last backup is too long ago, and offer to start one. For each account that wants this, open "Startup Applications" in that account, press "+", choose "Custom command", and enter `babawus --checklastbackup` as the command, with "Babawus reminder" as the name. At login Babawus then shows nothing, unless the last backup is more days ago than "Remind after days without a backup" in that account's backup profile on the stick (7 by default; 0 turns it off). See "Remind me at login when my last backup is too old" in [Requirements.md](Requirements.md).
+
 ## Installing and uninstalling
 
 Install Babawus by double-clicking the `.deb` package and choosing "Install Package". Install a newer version the same way: it replaces the old one, and keeps the chosen language and everything on the sticks.
@@ -35,3 +39,4 @@ To uninstall Babawus, run `sudo apt remove babawus`, or remove it in the Softwar
 
 - **Nothing on any stick is changed.** Backups, their history and the stick's configuration stay as they are, and a later install of Babawus finds them again.
 - **The settings file stays behind.** Babawus keeps the chosen language in `~/.config/babawus/settings.toml`, in the home folder of each user who chose one. Uninstalling can't reach into home folders, so delete that file by hand if it is no longer wanted: `rm -r ~/.config/babawus`.
+- **So does the note of the last backup,** `~/.local/state/babawus/last_backup`, for the reminder at login: `rm -r ~/.local/state/babawus`. Remove "Babawus reminder" from "Startup Applications" too, if it was added.

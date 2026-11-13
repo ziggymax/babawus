@@ -78,6 +78,14 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders and the name patterns.
 - [ ] Set up stick B as for stick A, with `BabawusTest` ticked, and back up to it once. → `meeting: notes.txt` is backed up there, because Ext4 can store the name. Only `secret.txt` is skipped.
 
+## The reminder at login (T-059)
+
+- [ ] In a terminal, run `cat ~/.local/state/babawus/last_backup`. → The time of the last backup above, and `run_check_days = 8`, from stick A's setup.
+- [ ] Run `babawus --checklastbackup`. → Nothing shows, and the command ends at once.
+- [ ] Make the note 9 days old: `sed -i "s/^last_backup = .*/last_backup = \"$(date -d '9 days ago' '+%Y-%m-%d %H:%M:%S %z')\"/" ~/.local/state/babawus/last_backup`. Run `babawus --checklastbackup`. → A small window with the elephant: "Your last backup was 9 days ago.", "Do you want to back up now?", "Not now" and "Back up now". Press "Not now". → Babawus closes.
+- [ ] Run it again, and press "Back up now". → The normal window opens. Back up to stick A. → The note has today's time again.
+- [ ] Add "Babawus reminder" in "Startup Applications" as the README says, make the note 9 days old again, and log out and in. → The reminder shows after login. Remove the entry from "Startup Applications" afterwards, unless you want to keep it.
+
 ## Cancelling and closing
 
 - [ ] Start a backup to stick A after changing `big.bin` (`touch ~/BabawusTest/Photos/big.bin`), and press "Cancel" while it says "Backing up…". → "Stop the backup?" Choose "Keep going". → It carries on.
