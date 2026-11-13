@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-061.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-062.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -24,7 +24,9 @@ Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-
 
 ## First version: logic
 
-Everything here is done.
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-061 | Find out why `computer_lock::tests::a_released_lock_can_be_taken_and_records_only_the_new_user` failed once on CI (pull request 74), reading back the first user's name instead of the second's. Not reproduced locally in 20 tries. If it can't be made to happen again, close it | Todo | Pull request 74 |
 
 ## First version: udisks2
 
