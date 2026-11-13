@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-062.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-063.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, asked for before the next release, are done too. Release 0.2.0 is now under way (T-060). T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, asked for before the next release, are done too, and so is T-062, the square logos. Release 0.2.0 is now under way (T-060). T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -117,3 +117,4 @@ Nothing is waiting for a decision.
 | T-057 | A log window for the poweruser: with Advanced on, right-clicking a run in the history offers "Show in the log", which opens a window of its own with the whole log one row per line and the run's lines highlighted. It follows changes to the log, and closes when its stick goes or Babawus closes (Issues.md item 135) | [#70](https://github.com/ziggymax/babawus/pull/70) |
 | T-058 | The new configuration format: a `[babawus]` table with the format, the version of Babawus that last wrote the file and when, in local time and UTC; and per backup profile `older_versions`, used for pruning, and `run_check_days`, both set for every profile in "Change setup…". A file in the layout of 0.1.0 is damaged, and is replaced by a new setup (Issues.md item 136) | [#72](https://github.com/ziggymax/babawus/pull/72) |
 | T-059 | `babawus --checklastbackup`, for "Startup Applications": if this account's last backup that counts was more than `run_check_days` calendar days ago, a small window asks "Back up now" or "Not now"; otherwise Babawus closes without showing anything. Each backup that counts is noted in `~/.local/state/babawus/last_backup`, with the profile's `run_check_days`. The README says how to add it at login (Issues.md item 137) | [#73](https://github.com/ziggymax/babawus/pull/73) |
+| T-062 | The logos are square, 90 × 90 mm with a white rounded background, so that the menu and the panel no longer stretch the elephant in height. A change by the user to the four SVG files in `assets`, which Babawus already uses; PNG exports of both plain logos are added to git too, but not used (Issues.md item 138) | [#76](https://github.com/ziggymax/babawus/pull/76) |
