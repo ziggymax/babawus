@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-058.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-060.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done; nothing more is planned yet. T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, in "Next version" below, are to go in before the next release. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -42,7 +42,12 @@ Everything here is done.
 
 ## Next version
 
-From the user's testing of 0.1.0 (2026-11-12). Everything here is done.
+From the user's testing of 0.1.0 (2026-11-12 and 2026-11-13). T-053 to T-057 are done. Each task's design questions are asked when it starts.
+
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-058 | The new configuration format: a `babawus` table with the format, the version of Babawus that last wrote the file and when, in local time and UTC; and per account, the number of older versions to keep, instead of one for the whole stick, and `run_check_days`. Includes reading sticks set up with 0.1.0, pruning per account, and setting both per account in "Change setup…". Open questions: Issues.md item 136 | Todo | The user, 2026-11-13 |
+| T-059 | `--checklastbackup`, for starting Babawus at login: if this account's last backup was more than `run_check_days` ago, a small window with the logo asks whether to back up now, and Yes opens the normal window; otherwise Babawus closes without showing anything. Each successful backup notes its time in a state file under `~/.local/state`. Needs T-058 for `run_check_days`. Open questions: Issues.md item 137 | Todo | The user, 2026-11-13 |
 
 ## Needs a decision
 
