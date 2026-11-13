@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-060.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-061.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, asked for before the next release, are done too. Nothing more is planned yet. T-043 waits for its problem to show again.
+Babawus 0.1.0 is released (T-052). The user's own testing of it gave T-053 to T-057, which are all done. T-058 and T-059, asked for before the next release, are done too. Release 0.2.0 is now under way (T-060). T-043 waits for its problem to show again.
 
 ## First version: logic
 
