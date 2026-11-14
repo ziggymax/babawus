@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **`Requirements.md` says what Babawus does, `Issues.md` records questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them. An open question stays in `Issues.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-063.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-064.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
 
@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen. Within a section, ta
 
 ## Now
 
-Babawus 0.2.0 is released (T-060), after 0.1.0 (T-052). Nothing else is planned. T-043 waits for its problem to show again.
+Babawus 0.2.0 is released (T-060), after 0.1.0 (T-052). T-063, the size of the menu icon, is done since. Nothing else is planned. T-043 waits for its problem to show again.
 
 ## First version: logic
 
@@ -119,3 +119,4 @@ Nothing is waiting for a decision.
 | T-059 | `babawus --checklastbackup`, for "Startup Applications": if this account's last backup that counts was more than `run_check_days` calendar days ago, a small window asks "Back up now" or "Not now"; otherwise Babawus closes without showing anything. Each backup that counts is noted in `~/.local/state/babawus/last_backup`, with the profile's `run_check_days`. The README says how to add it at login (Issues.md item 137) | [#73](https://github.com/ziggymax/babawus/pull/73) |
 | T-062 | The logos are square, 90 × 90 mm with a white rounded background, so that the menu and the panel no longer stretch the elephant in height. A change by the user to the four SVG files in `assets`, which Babawus already uses; PNG exports of both plain logos are added to git too, but not used (Issues.md item 138) | [#76](https://github.com/ziggymax/babawus/pull/76) |
 | T-060 | Release 0.2.0: the version raised in #74, the tag `v0.2.0` on main at #76, and a [GitHub release](https://github.com/ziggymax/babawus/releases/tag/v0.2.0) with the `.deb` and notes linking issue 75, the checklist run, which is closed | [#77](https://github.com/ziggymax/babawus/pull/77) |
+| T-063 | The icon in the menu and the panel is no larger than the other apps' icons: the package installs its own copy of the logo without the name, `crates/babawus/assets/io.github.ziggymax.Babawus.svg`, with a margin of 1/16 of its size on each side, as Mint-Y's app icons have. A test checks that it matches the logo (Issues.md item 139) | [#78](https://github.com/ziggymax/babawus/pull/78) |

@@ -93,3 +93,26 @@ fn draw(svg: &'static [u8], size: i32) -> Texture {
     .expect("the built-in pictures can be drawn");
     Texture::for_pixbuf(&pixbuf)
 }
+
+#[cfg(test)]
+mod tests {
+    /// The icon the package installs for the menu and the panel (Issues.md item 139).
+    const MENU_ICON: &str = include_str!("../assets/io.github.ziggymax.Babawus.svg");
+
+    /// The menu icon is the logo without the name, with a margin of 1/16 of its size on each
+    /// side, as Mint-Y's app icons have. Nothing else may differ, so a new logo needs a new
+    /// menu icon too.
+    #[test]
+    fn the_menu_icon_is_the_logo_with_a_margin() {
+        let logo = std::str::from_utf8(super::LOGO).unwrap();
+        let size = "   width=\"90mm\"\n   height=\"90mm\"\n   viewBox=\"0 0 90.000001 90\"";
+        let with_margin = "   width=\"102.857143mm\"\n   height=\"102.857143mm\"\n   \
+                           viewBox=\"-6.4285715 -6.4285715 102.857143 102.857143\"";
+        assert_eq!(
+            logo.matches(size).count(),
+            1,
+            "the logo is no longer 90 × 90 mm"
+        );
+        assert_eq!(MENU_ICON, logo.replace(size, with_margin));
+    }
+}
