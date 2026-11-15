@@ -97,7 +97,7 @@ pub struct Backup {
     pub home: PathBuf,
     pub now: Arc<dyn Fn() -> SystemTime + Send + Sync>,
     /// Where a backup that counts is noted for the reminder at login, on the computer's own
-    /// file system, if anywhere (Issues.md item 137).
+    /// file system, if anywhere (issue 137).
     pub state_file: Option<PathBuf>,
 }
 
@@ -105,7 +105,7 @@ pub struct Backup {
 struct Plan {
     folder: PathBuf,
     selection: Selection,
-    /// N for this account (Issues.md item 136).
+    /// N for this account (issue 136).
     older_versions: u32,
     run_check_days: u32,
 }

@@ -1,6 +1,6 @@
 //! The configuration editor's overview: this computer and account, and every entry on the
 //! medium with each backup profile's numbers, with Save and Back. See "Configure USB media" in
-//! Requirements.md and Issues.md items 83-85. What to show comes from
+//! Requirements.md and issues 83-85. What to show comes from
 //! [`babawus_core::setup_screen`]; this module only puts it on the screen, and passes what the
 //! poweruser presses on to the window.
 
@@ -37,7 +37,7 @@ pub enum SetupEvent {
         folder: String,
         username: String,
     },
-    /// A backup profile's numbers were changed (Issues.md item 136).
+    /// A backup profile's numbers were changed (issue 136).
     Numbers {
         id: String,
         username: String,

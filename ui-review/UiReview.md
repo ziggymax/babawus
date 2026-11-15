@@ -1,6 +1,6 @@
 # Review of the look (T-032)
 
-This document lists everything a user of Babawus can see, so that each item can be looked at on its own and get a decision. How the review runs is in [Issues.md](../Issues.md) items 112–116:
+This document lists everything a user of Babawus can see, so that each item can be looked at on its own and get a decision. How the review runs is in issues 112–116:
 
 1. This list of items.
 2. A screenshot of each item, taken on the VM as `ui-review/<number>-<name>.png`, for example `S08-not-set-up.png`. Items marked **DE** are also taken in German, as `S08-not-set-up-de.png`. The screenshots are not committed (item 114), so each item says in words what it shows. *(Done on 2026-11-10: 79 screenshots of 60 items. Six items couldn't be reached, and each says why. Under **Noticed**, each item has what was seen while taking it.)*
@@ -13,13 +13,13 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 
 | Task | What | Items |
 | --- | --- | --- |
-| T-037 | The window opens at 1024 × 768, and pages that scroll start at the top (Issues.md item 118). *Done in PR #51: every screen fits at that size, except "Choose what to back up…", which T-041 changes.* | G03, F01, F06, F07 |
-| T-038 | The start screen's layout: larger stick pictures, one explanation area for the status and every message, fewer text styles, buttons at their natural width. *Done in PR #52, with texts for a stick that is plugged in but not listed (Issues.md items 120 and 121).* | G01, S02, S06, S14–S17 |
+| T-037 | The window opens at 1024 × 768, and pages that scroll start at the top (issue 118). *Done in PR #51: every screen fits at that size, except "Choose what to back up…", which T-041 changes.* | G03, F01, F06, F07 |
+| T-038 | The start screen's layout: larger stick pictures, one explanation area for the status and every message, fewer text styles, buttons at their natural width. *Done in PR #52, with texts for a stick that is plugged in but not listed (issues 120 and 121).* | G01, S02, S06, S14–S17 |
 | T-039 | The verdict screen: fewer text styles, no repeated reason, a fitting text after a stopped backup. *Done in PR #54.* | G02, V03, V05 |
-| T-040 | Setup of this stick: clearer adding and linking texts. *Done in PR #55: a backup profile is one account on one computer, and a computer is "the computer called “laptop”" (Issues.md item 122).* | C01, C06, C10 |
+| T-040 | Setup of this stick: clearer adding and linking texts. *Done in PR #55: a backup profile is one account on one computer, and a computer is "the computer called “laptop”" (issue 122).* | C01, C06, C10 |
 | T-041 | Choose what to back up, plus About and "already open". *Done in PR #56.* | T01, T02, T04, W05, W06 |
 | T-035 | Bug: the Ext4 note only appears after another change. *Done in PR #57.* | F03 |
-| T-036 | No copied details: the log is the one place for diagnosing (Issues.md item 117). *Done in PR #58, with the first 100 errors of a run logged (Issues.md item 124).* | V04 |
+| T-036 | No copied details: the log is the one place for diagnosing (issue 117). *Done in PR #58, with the first 100 errors of a run logged (issue 124).* | V04 |
 
 **Numbers.** A letter for the screen, and a number for the state: G for general decisions that apply to several screens, W for the window and its menu, S for the start screen, B for a running backup, V for the verdict, H for history and "What's backed up", F for preparing a stick, C for "Setup of this stick", T for "Choose what to back up…". Numbers never change once screenshots exist. A new item gets the next free number in its group.
 
@@ -129,7 +129,7 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 ### G03 The window's size
 - **Applies to:** every screen; found under F01, F06 and F07.
 - **Comments (2026-11-10):** Having to scroll to find buttons or read text is to be avoided, at least at the window's normal size. It is fair to assume that no screen smaller than Full HD (1920 × 1080) is used, so the window can open at 1024 × 768. That should remove the need to scroll at the default size, while keeping the format page's layout and wording.
-- **Decision:** Babawus opens at 1024 × 768 (Issues.md item 118). Each screen is checked at that size for scrolling. A page that scrolls still starts at the top whenever it is opened or changes part.
+- **Decision:** Babawus opens at 1024 × 768 (issue 118). Each screen is checked at that size for scrolling. A page that scrolls still starts at the top whenever it is opened or changes part.
 
 ## The window and its menu
 
@@ -384,7 +384,7 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 - **Shows:** the details in a fixed-width font, with codes such as `NAME_INVALID_CHARS`, and Copy.
 - **Screenshots:** `V04-details-copied.png`.
 - **Comments:** Users shouldn't copy and paste diagnostic details: the log overlaps with this, a single place for diagnosing is easier, and it doesn't depend on a user doing anything (2026-11-10).
-- **Decision:** "Details for your poweruser" and Copy are removed. The log must be enough for diagnosing on its own. Issues.md item 117, task T-036.
+- **Decision:** "Details for your poweruser" and Copy are removed. The log must be enough for diagnosing on its own. issue 117, task T-036.
 
 ### V05 Backup not finished: you stopped it
 - **Shows:** "Backup not finished", "You stopped the backup.", and what to do.
@@ -492,7 +492,7 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 ### F08 Formatting failed, nothing changed
 - **How:** You, in the second account, with the stick still mounted for the first, cancel the password dialog.
 - **Shows:** "Formatting failed", why, and "Nothing on the stick was changed."
-- **Screenshots:** none: since item 110, "Prepare…" isn't offered for a stick open for another account, which was the way to reach it. It can't be reached in normal use.
+- **Screenshots:** none: since issue 110, "Prepare…" isn't offered for a stick open for another account, which was the way to reach it. It can't be reached in normal use.
 - **Comments:** None.
 - **Decision:** No change. It can't be reached in normal use.
 
@@ -565,7 +565,7 @@ Every item has a decision. Most items need no change. What changes, as tasks in 
 - **Screenshots:** `C10-link.png`.
 - **Noticed:** The suggested name was "steen-virtualbox-2", because the stick already had a `steen-virtualbox` folder from earlier backups. Correct, but it looks odd.
 - **Comments:** The wording can be hard to parse: "Link this computer to laptop?" reads as "link this computer to this computer" for someone sitting at a laptop. Something like "Link this computer to the backup profile called 'laptop'?" is better, if more verbose (2026-11-10).
-- **Decision:** Names of entries are always marked as names: "Link this computer to the backup profile called “laptop”?", and the button "Link to “laptop”…". The same for accounts: "Link your account to the backup profile called “anna”?". "steen-virtualbox-2" stays. The setup page and these questions use the same words for an entry, so if "backup profile" is used here, the page uses it too. The term becomes official in Requirements.md and Concept.md with the change (Issues.md item 119, task T-040).
+- **Decision:** Names of entries are always marked as names: "Link this computer to the backup profile called “laptop”?", and the button "Link to “laptop”…". The same for accounts: "Link your account to the backup profile called “anna”?". "steen-virtualbox-2" stays. The setup page and these questions use the same words for an entry, so if "backup profile" is used here, the page uses it too. The term becomes official in Requirements.md and Concept.md with the change (issue 119, task T-040).
 
 ## Choose what to back up
 

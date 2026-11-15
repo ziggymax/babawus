@@ -12,7 +12,7 @@ gtk4.workspace = true
 [package.metadata.deb]
 maintainer = "Steen K <steen@kroeyer.net>"
 section = "utils"
-# Shown below the summary by the installer (Issues.md item 111).
+# Shown below the summary by the installer (issue 111).
 extended-description = """\
 Babawus backs up your important files to a USB stick, with one button.
 

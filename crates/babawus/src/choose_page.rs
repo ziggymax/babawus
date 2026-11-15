@@ -1,5 +1,5 @@
 //! "Choose what to back up…": a tree of the home folder with a tick box on each row, the name
-//! patterns, and live totals, with Done and Cancel. See Issues.md items 82 and 86-89. What each
+//! patterns, and live totals, with Done and Cancel. See issues 82 and 86-89. What each
 //! row shows comes from [`babawus_core::choose_screen`]; this module puts it on the screen and
 //! keeps the choice until the window takes it back.
 //!

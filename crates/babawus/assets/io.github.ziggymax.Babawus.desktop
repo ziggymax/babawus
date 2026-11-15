@@ -4,7 +4,7 @@ Name=Backup
 Comment=Back up files to USB media
 Exec=babawus
 # An absolute path, not the icon name: when installed with Captain, Cinnamon's menu
-# showed a gear until the next login. See Issues.md item 101.
+# showed a gear until the next login. See issue 101.
 Icon=/usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg
 Terminal=false
 Categories=Utility;Archiving;

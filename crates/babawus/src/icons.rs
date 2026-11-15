@@ -96,7 +96,7 @@ fn draw(svg: &'static [u8], size: i32) -> Texture {
 
 #[cfg(test)]
 mod tests {
-    /// The icon the package installs for the menu and the panel (Issues.md item 139).
+    /// The icon the package installs for the menu and the panel (issue 139).
     const MENU_ICON: &str = include_str!("../assets/io.github.ziggymax.Babawus.svg");
 
     /// The menu icon is the logo without the name, with a margin of 1/16 of its size on each

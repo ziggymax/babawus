@@ -1,6 +1,6 @@
 //! What the format view shows: the drives that may be formatted, the warning, and how
 //! formatting went. See "Format USB media" and "Formatting a medium" in Requirements.md, and
-//! Issues.md items 78-81. The UI only puts these texts on the screen.
+//! issues 78-81. The UI only puts these texts on the screen.
 
 use std::collections::HashSet;
 
@@ -115,14 +115,14 @@ pub fn warning(choice: &DriveChoice, language: Language) -> String {
 }
 
 /// Whether Ext4 can be chosen. Formatting Ext4 needs an administrator's password, so anyone
-/// else gets exFAT only, and formatting never starts what it can't finish. See Issues.md item
+/// else gets exFAT only, and formatting never starts what it can't finish. See issue
 /// 108.
 pub fn ext4_allowed(administrator: bool) -> bool {
     administrator
 }
 
 /// The line under the Ext4 choice, if any: for an administrator who has chosen it, that it
-/// asks for their password, and for anyone else, why it can't be chosen. See Issues.md items
+/// asks for their password, and for anyone else, why it can't be chosen. See issues
 /// 108 and 109.
 pub fn ext4_note(
     administrator: bool,

@@ -1,6 +1,6 @@
 //! "Choose what to back up…": a tree of the home folder with a tick box on each row, the name
 //! patterns, and live totals. See "Configure USB media" and "Exclusions" in Requirements.md, and
-//! Issues.md items 82 and 86-89. The UI only puts these rows and texts on the screen.
+//! issues 82 and 86-89. The UI only puts these rows and texts on the screen.
 
 use std::ffi::OsStr;
 use std::io;
@@ -41,7 +41,7 @@ pub struct Row {
     pub ticked: bool,
     pub can_toggle: bool,
     /// A folder whose tick box is partly ticked: it is ticked with something inside it
-    /// unticked by hand, or unticked with something inside it ticked. See Issues.md item 123.
+    /// unticked by hand, or unticked with something inside it ticked. See issue 123.
     pub partly: bool,
     /// It is left out, so its name is crossed out.
     pub crossed: bool,
@@ -252,7 +252,7 @@ impl Choice {
         }
     }
 
-    /// Ticks or unticks `entry`, as described in Issues.md item 86. Returns whether anything
+    /// Ticks or unticks `entry`, as described in issue 86. Returns whether anything
     /// changed.
     pub fn toggle(&mut self, system: &dyn FileSystem, home: &Path, entry: &Entry) -> bool {
         let relative = entry.relative.as_path();
@@ -308,7 +308,7 @@ impl Choice {
     }
 
     /// Whether a hidden entry at `relative` is shown although hidden entries are not: it, or
-    /// something below it, is selected or left out. See Issues.md item 87.
+    /// something below it, is selected or left out. See issue 87.
     pub fn keeps_in_sight(&self, relative: &Path) -> bool {
         self.selected
             .iter()

@@ -27,7 +27,7 @@ const PICTURE_SIZE: i32 = 24;
 pub struct InfoPage {
     pub root: Box,
     /// The run of each row of the history, in order, while right-clicking a row offers the log.
-    /// Empty otherwise (Issues.md item 135).
+    /// Empty otherwise (issue 135).
     log_runs: Rc<RefCell<Vec<String>>>,
     /// "Show in the log", in the current language.
     log_label: Rc<RefCell<String>>,
@@ -192,7 +192,7 @@ impl InfoPage {
     }
 
     /// Shows the history. `rows` is `None` if the log could not be read. With `log_menu`,
-    /// right-clicking a run offers to show it in the log (Issues.md item 135).
+    /// right-clicking a run offers to show it in the log (issue 135).
     pub fn show_history(
         &self,
         medium: &str,

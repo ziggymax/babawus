@@ -1,6 +1,6 @@
 //! A row of buttons that wraps like words: each keeps its own width and sits close to the one
 //! before, and one that doesn't fit starts a new line. GTK 4.14 has no such container, and its
-//! `FlowBox` lines its children up in columns, which spreads them out (Issues.md item 125).
+//! `FlowBox` lines its children up in columns, which spreads them out (issue 125).
 
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;

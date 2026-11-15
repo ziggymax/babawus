@@ -82,7 +82,7 @@ pub fn this_hostname(fs: &dyn FileSystem) -> io::Result<String> {
 const ADMINISTRATOR_GROUPS: [&str; 2] = ["sudo", "admin"];
 
 /// Whether an account in the groups named `groups` is an administrator, whose own password
-/// polkit accepts. See Issues.md item 108.
+/// polkit accepts. See issue 108.
 pub fn is_administrator<'a>(groups: impl IntoIterator<Item = &'a str>) -> bool {
     groups
         .into_iter()

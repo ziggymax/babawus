@@ -30,7 +30,7 @@ macro_rules! texts {
     };
 }
 
-// German follows Issues.md items 90-92: "du", and "Betreuer" for the poweruser.
+// German follows issues 90-92: "du", and "Betreuer" for the poweruser.
 texts! {
     WindowTitle: "Backup", "Sicherung";
     Menu: "Menu", "Menü";
@@ -378,7 +378,7 @@ pub fn size(bytes: u64, language: Language) -> String {
 }
 
 /// The name's long form in parts, each marked whether it is one of the letters that spell
-/// "Babawus" (Issues.md item 132).
+/// "Babawus" (issue 132).
 const NAME_LONG_FORM: [(&str, bool); 10] = [
     ("Ba", true),
     ("sic ", false),
@@ -394,8 +394,7 @@ const NAME_LONG_FORM: [(&str, bool); 10] = [
 
 /// The comment in About, as Pango markup: the name's long form with the letters that spell
 /// "Babawus" in bold, in every language, because it is where the name comes from. In any other
-/// language than English, that language's own comment follows on the line below (Issues.md
-/// item 132).
+/// language than English, that language's own comment follows on the line below (issue 132).
 pub fn about_comments(language: Language) -> String {
     let mut markup: String = NAME_LONG_FORM
         .iter()

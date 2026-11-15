@@ -1,6 +1,6 @@
 //! The configuration editor's overview: the number of older versions, every computer and
 //! account on a medium, and adding, linking and removing them. See "Configure USB media" in
-//! Requirements.md and Issues.md items 83-85. Changes collect in an [`Editor`] until they are
+//! Requirements.md and issues 83-85. Changes collect in an [`Editor`] until they are
 //! saved; the UI only puts [`OverviewShown`] on the screen.
 
 use std::ffi::OsString;
@@ -126,7 +126,7 @@ impl Editor {
         self.saved.as_ref() != Some(&self.config)
     }
 
-    /// Sets N for the account `username` on the computer `id` (Issues.md item 136).
+    /// Sets N for the account `username` on the computer `id` (issue 136).
     pub fn set_older_versions(&mut self, id: &str, username: &str, older_versions: u32) {
         if let Some(account) = self.config.account_mut(id, username) {
             account.older_versions = older_versions;

@@ -2,7 +2,7 @@
 
 Run this on real USB sticks before each release. It covers what the automated tests can't: the GUI, formatting, pulling out a stick, ejecting, and installing the package (see "Testing" in [Requirements.md](Requirements.md)).
 
-**To record a run**, open a GitHub issue titled "Release 0.1.0 checklist" (with the version being released), and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks.md](Tasks.md) before the release goes ahead (see Issues.md items 94–96).
+**To record a run**, open a GitHub issue titled "Release 0.1.0 checklist" (with the version being released), and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks.md](Tasks.md) before the release goes ahead (see issues 94–96).
 
 Each step says what to do, then **→** what should be seen. Texts in quotes are what Babawus shows in English. Run the whole list in English, except where a step says otherwise.
 
@@ -23,7 +23,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 ## Installing (T-025)
 
 - [ ] Double-click the `.deb` in the file manager. → The installer shows "Basic Backup With Usb Storage" (it capitalises every word), and below it three short paragraphs about Babawus. Install it. → It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
-- [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see Issues.md item 101).
+- [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see issue 101).
 - [ ] Start it from the menu. → A window titled "Backup" opens. With no stick plugged in, it says "Plug in your backup stick".
 - [ ] Start it again from the menu while it is open. → No second window: the open one comes to the front.
 
@@ -61,7 +61,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Tick `BabawusTest` and open it. → Everything in it is ticked. `notes.tmp` is crossed out, with "Left out by the name pattern *.tmp". The totals count, then show the files and size, with the free space on the stick.
 - [ ] Open `Letters` and untick `old`. → It is crossed out, "Left out", and the totals go down. `Letters` and `BabawusTest` now show partly ticked boxes.
 - [ ] Press "Done", then "Save". → "Stick setup saved." The start screen shows stick A as "Ready", "No backup yet".
-- [ ] A stick set up with Babawus 0.1.0, if you have one: plug it in. → "Needs attention", and "Change setup…" offers only "Start a new setup…" (Issues.md item 136). Its backups stay on it.
+- [ ] A stick set up with Babawus 0.1.0, if you have one: plug it in. → "Needs attention", and "Change setup…" offers only "Start a new setup…" (issue 136). Its backups stay on it.
 - [ ] Damage the setup by hand: open `.babawus/babawus_config` on stick A in a text editor, change `older_versions = 10` to `11` in your backup profile, and save. Replug the stick. → "Needs attention". "Change setup…" warns that the setup "was changed outside Babawus, or is damaged", and shows 11 in your backup profile. Set it back to 10, press the + of "Remind after days without a backup" once, and press "Save". → "Ready" again. The file now says `older_versions = 10` and `run_check_days = 8` in your profile, and its `[babawus]` table has this version of Babawus and the time it was saved.
 
 ## Backing up
@@ -97,12 +97,12 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Change `big.bin` again, start a backup to stick A, and pull the stick out while it says "Backing up…". → "Backup not finished", "The stick was removed.", and "Run the backup again. If it happens again, contact your poweruser." Files skipped before the pull may be listed, such as `meeting: notes.txt`, but nothing that the pull caused: no "Couldn't be written". Note in the issue what was listed.
 - [ ] Plug stick A back in, and start a backup. → It finishes, catching up on `big.bin`. The history shows the interrupted run as "Backup not finished", "The backup was interrupted.", and this one after it.
 
-There is no step for pulling out a stick during "Finishing…": it lasted less than a third of a second, too short to hit by hand. The automated tests cover it (see Issues.md item 103).
+There is no step for pulling out a stick during "Finishing…": it lasted less than a third of a second, too short to hit by hand. The automated tests cover it (see issue 103).
 
 ## Ejecting
 
 - [ ] After a backup that counts ("All good" or "Some files were skipped"), press "Eject BACKUP-A". → "Ejecting BACKUP-A…", then a pop-up: "You can pull out BACKUP-A now.", with OK. The stick's light goes out, and it leaves the file manager. Press OK. → The start screen, without the stick.
-- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again." Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See Issues.md item 129.)
+- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again." Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See issue 129.)
 - [ ] In the terminal, leave the stick (`cd ~`), and press "Eject" again. → A pop-up: "You can pull out BACKUP-A now." Press OK. → The start screen, without stick A.
 - [ ] With both sticks plugged in and stick A selected, press stick B's Eject button. → A pop-up: "You can pull out BACKUP-B now." Press OK. → Stick B has left the list, and stick A is still selected, with "Start backup" below it.
 

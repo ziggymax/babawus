@@ -211,7 +211,7 @@ fn a_file_that_can_not_be_parsed_can_only_be_replaced() {
 
 #[test]
 fn a_file_in_the_layout_of_0_1_0_is_damaged_and_can_only_be_replaced() {
-    // There were no real users of 0.1.0, so its layout isn't read (Issues.md item 136).
+    // There were no real users of 0.1.0, so its layout isn't read (issue 136).
     let text = sealed(
         "format = 1\nolder_versions = 10\n\n[[computer]]\nid = \"0123456789abcdef0123456789abcdef\"\n\
          folder = \"mint\"\nhostname = \"mint\"\n\n[[computer.account]]\nusername = \"usera\"\n\
