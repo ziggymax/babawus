@@ -128,7 +128,7 @@ fn an_unfinished_run_says_to_run_it_again() {
 }
 
 #[test]
-fn a_run_the_user_stopped_needs_no_poweruser() {
+fn a_run_the_user_stopped_needs_nothing_looked_up() {
     let shown = shown(outcome(Reason::Cancelled), Some(47));
     assert_eq!(shown.title, "Backup not finished");
     assert_eq!(shown.reason.as_deref(), Some("You stopped the backup."));

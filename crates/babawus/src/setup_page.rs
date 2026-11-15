@@ -2,7 +2,7 @@
 //! medium with each backup profile's numbers, with Save and Back. See "Configure USB media" in
 //! Requirements.md and issues 83-85. What to show comes from
 //! [`babawus_core::setup_screen`]; this module only puts it on the screen, and passes what the
-//! poweruser presses on to the window.
+//! user presses on to the window.
 
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
@@ -23,7 +23,7 @@ use crate::icons;
 const MARGIN: i32 = 32;
 const SPACING: i32 = 12;
 
-/// Something the poweruser pressed in a part of the page that is built anew each time.
+/// Something the user pressed in a part of the page that is built anew each time.
 #[derive(Clone, Debug)]
 pub enum SetupEvent {
     Here(HereAction),

@@ -37,7 +37,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 ## Formatting (Advanced)
 
 - [ ] Plug in stick A. → It appears in the list, with a grey stick and its own round Eject button, if it isn't a Babawus medium yet. Select it. → No "Start backup" below it.
-- [ ] Choose Menu → Advanced. → The title bar shows an orange "Advanced" marker, and "Prepare…" and, for a Babawus medium, "Change setup…" appear, on the same row as the user's buttons, after them.
+- [ ] Choose Menu → Advanced. → "Turn on the advanced functions?" asks first, with "Cancel" and "Continue". Press Esc. → Advanced stays off. Choose Menu → Advanced again and press "Continue". → The title bar shows an orange "Advanced" marker, and "Prepare…" and, for a Babawus medium, "Change setup…" appear, on the same row as the everyday buttons, after them.
 - [ ] Press "Prepare…". → "Prepare a stick" lists stick A with its maker, size and what is on it, and no internal disks. Stick A is chosen, a name such as "BACKUP-A" is filled in, and exFAT is chosen. The warning names the stick and what will be erased. "Erase and format" is greyed out.
 - [ ] Type a name with a space in it. → "Use 1 to 11 letters, digits and dashes, with no spaces." shows, and the button stays greyed out. Put the suggested name back.
 - [ ] Tick "I understand that everything on this stick will be erased". → "Erase and format" turns red, and can be pressed.
@@ -50,7 +50,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Format stick A with exFAT. → No password is asked for, and "BACKUP-A is ready".
 - [ ] Select stick B, which your account formatted with Ext4. Press "Change setup…", "Add this computer and your account", and "Choose what to back up…", tick a folder with a file in it, then "Done" and "Save", and "Start backup". → "All good". Note in the issue any password that was asked for, and whose.
 - [ ] Close Babawus, and log back in to your own account. Pull out both sticks and plug them back in.
-- [ ] Turn Advanced off in the menu. → The marker and the poweruser's buttons go away. Close and start Babawus. → Advanced is off.
+- [ ] Turn Advanced off in the menu. → It asks nothing, and the marker and the advanced buttons go away. Close and start Babawus. → Advanced is off.
 
 ## Setting up
 
@@ -67,7 +67,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 ## Backing up
 
 - [ ] Select stick A, press "Start backup". → The backup screen fills the window: "Finding the files to back up…", then "Backing up…" with counters and a bar, then "Finishing… Don't pull out the stick yet."
-- [ ] Wait for the verdict. → "Some files were skipped", amber "!", with the skipped files grouped by reason ("Name has characters this stick can't store: 1 file", "Couldn't be read: 1 file"), "Contact your poweruser.", what was copied, and "Last backup: today at" the time it finished.
+- [ ] Wait for the verdict. → "Some files were skipped", amber "!", with the skipped files grouped by reason ("Name has characters this stick can't store: 1 file #25", "Couldn't be read: 1 file #19"), "Look up its number in Help to see what to do.", what was copied, and "Last backup: today at" the time it finished.
 - [ ] Open `.babawus/babawus_log.txt` on stick A in a text editor. → The run's start entry, with `account`, `version` and `hostname`; an `ERROR` entry for each skipped file, with codes such as `NAME_INVALID_CHARS` and `UNREADABLE`; and the end entry with `verdict=SKIPPED`. Paste the run's lines into the issue.
 - [ ] Press "Back", then "Start backup" again. → "Some files were skipped" again, for the same two files, and it is quick, because nothing else changed.
 - [ ] Press "Show history". → Both runs, newest first, each with the time, the verdict, the reason, what was copied, how many were skipped, and whose run it was.
@@ -94,8 +94,8 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 ## Pulling out a stick
 
-- [ ] Change `big.bin` again, start a backup to stick A, and pull the stick out while it says "Backing up…". → "Backup not finished", "The stick was removed.", and "Run the backup again. If it happens again, contact your poweruser." Files skipped before the pull may be listed, such as `meeting: notes.txt`, but nothing that the pull caused: no "Couldn't be written". Note in the issue what was listed.
-- [ ] Plug stick A back in, and start a backup. → It finishes, catching up on `big.bin`. The history shows the interrupted run as "Backup not finished", "The backup was interrupted.", and this one after it.
+- [ ] Change `big.bin` again, start a backup to stick A, and pull the stick out while it says "Backing up…". → "Backup not finished", "The stick was removed. #10", and "Run the backup again. If it happens again, look up its number in Help." Files skipped before the pull may be listed, such as `meeting: notes.txt`, but nothing that the pull caused: no "Couldn't be written". Note in the issue what was listed.
+- [ ] Plug stick A back in, and start a backup. → It finishes, catching up on `big.bin`. The history shows the interrupted run as "Backup not finished", "The backup was interrupted. #11", and this one after it.
 
 There is no step for pulling out a stick during "Finishing…": it lasted less than a third of a second, too short to hit by hand. The automated tests cover it (see issue 103).
 

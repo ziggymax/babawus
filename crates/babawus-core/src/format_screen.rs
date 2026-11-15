@@ -10,7 +10,7 @@ use crate::media::{Snapshot, Volume};
 use crate::text::{Text, size};
 use crate::udisks::{FormatError, Step};
 
-/// A drive the poweruser can choose to format.
+/// A drive that can be chosen to format.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DriveChoice {
     /// The udisks2 drive ID.
@@ -149,7 +149,7 @@ pub struct Failure {
     /// The drive still holds what it held before.
     pub nothing_erased: bool,
     reason: FailureReason,
-    /// What udisks2 or the system said, for the poweruser.
+    /// What udisks2 or the system said, to find out what went wrong.
     pub message: Option<String>,
 }
 
@@ -193,7 +193,7 @@ pub struct ResultShown {
     pub title: String,
     /// What it means, and what to do next.
     pub detail: String,
-    /// What udisks2 or the system said, for the poweruser.
+    /// What udisks2 or the system said, to find out what went wrong.
     pub message: Option<String>,
 }
 

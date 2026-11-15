@@ -58,7 +58,7 @@ pub enum Loaded {
     Ready(Config),
     /// The file needs a newer Babawus, and must never be written.
     NewerFormat,
-    /// The medium needs attention. With a configuration, the poweruser can check it and save it.
+    /// The medium needs attention. With a configuration, it can be checked and saved under Advanced.
     /// Without one, nothing in the file can be trusted, and only a new configuration can be
     /// started.
     Damaged(Option<Config>),
@@ -514,7 +514,7 @@ pub fn folders_on_medium(medium: &dyn FileSystem, root: &Path) -> io::Result<Vec
 /// saves the configuration.
 ///
 /// The configuration comes last, so that an interrupted link can simply be repeated. If both
-/// folders exist, nothing is changed, because the poweruser has to resolve that by hand.
+/// folders exist, nothing is changed, because that has to be resolved by hand.
 pub fn link_account(
     medium: &dyn FileSystem,
     root: &Path,

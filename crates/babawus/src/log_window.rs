@@ -1,4 +1,4 @@
-//! The log window: a stick's log for the poweruser, one row per line, with one run highlighted.
+//! The log window: a stick's log, under Advanced, one row per line, with one run highlighted.
 //! It isn't modal, and follows changes to the log until it is closed. What to show comes from
 //! [`babawus_core::log_view`]. See "See a stick's log" in Requirements.md and issue 135.
 

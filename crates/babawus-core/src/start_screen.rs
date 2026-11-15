@@ -156,7 +156,7 @@ pub enum Action {
 }
 
 impl Action {
-    /// The order on the screen: the user's, then the poweruser's.
+    /// The order on the screen: the everyday actions, then the advanced ones.
     pub const ALL: [Self; 4] = [
         Self::ShowHistory,
         Self::WhatsBackedUp,
@@ -165,7 +165,7 @@ impl Action {
     ];
 
     /// Only shown while Advanced is on.
-    pub fn for_poweruser(self) -> bool {
+    pub fn is_advanced(self) -> bool {
         matches!(self, Self::Prepare | Self::ChangeSetup)
     }
 
@@ -235,7 +235,7 @@ pub struct Shown<'a> {
 }
 
 /// The details of `shown`, at the time `now`, which `clock` turns into a date and time to
-/// show. `advanced` shows the poweruser's actions too.
+/// show. `advanced` shows the advanced actions too.
 pub fn details(
     shown: &Shown,
     now: SystemTime,
@@ -276,7 +276,7 @@ pub fn details(
     let babawus = status.is_some_and(Status::is_babawus);
     let buttons = Action::ALL
         .into_iter()
-        .filter(|action| advanced || !action.for_poweruser())
+        .filter(|action| advanced || !action.is_advanced())
         .filter(|action| match action {
             Action::ShowHistory => checked.is_some_and(|checked| checked.has_history),
             Action::WhatsBackedUp => ready,

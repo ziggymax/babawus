@@ -1,6 +1,6 @@
 # Babawus Requirements
 
-This document is the authoritative description of how Babawus behaves. [Concept.md](Concept.md) explains what Babawus is and why, and who its two roles, the user and the poweruser, are. If the two documents ever disagree, this document wins.
+This document is the authoritative description of how Babawus behaves. [Concept.md](Concept.md) explains what Babawus is and why, who it is for, and its everyday and advanced functions. If the two documents ever disagree, this document wins.
 
 The user stories describe what users see and do. The technical requirements describe what they don't see, but which must be exact, such as how files and folders are handled on the medium. The terms below have a fixed meaning in both documents.
 
@@ -9,7 +9,8 @@ The user stories describe what users see and do. The technical requirements desc
 | Term | Meaning |
 |---|---|
 | Account | A user account on a computer, identified by its user name. Also called a user account. |
-| Advanced | The menu item that shows the poweruser's actions until Babawus is closed (see "Start Babawus and see status"). |
+| Advanced | The menu item that shows the advanced functions until Babawus is closed, after a warning (see "Start Babawus and see status"). |
+| Advanced functions | Formatting and preparing media, changing their setup, and adding, linking or removing computers and accounts. Only shown under Advanced (see Concept.md). |
 | Backup | A file or folder copied to a medium, or the act of making those copies (see *run*). |
 | Backup profile | What is set up for one account on one computer: its files and folders, its exclusions and its folder on the medium. It is an account's entry, inside its computer's entry. A computer is not a backup profile. The screen uses this term, never "entry" (issues 119 and 122). |
 | Babawus medium | A medium that Babawus has formatted and set up, recognised by its configuration file. |
@@ -32,7 +33,6 @@ The user stories describe what users see and do. The technical requirements desc
 | N | The limit on how many older versions of each file are kept, set for each backup profile. |
 | Newest copy | The copy of a file at its normal place on the medium. |
 | Older version | A replaced copy of a file, kept in a version folder. |
-| Poweruser | The more technical person, who formats and configures media (see Concept.md). |
 | Pruning | Removing older versions beyond the limit N. |
 | Ready | The status of a medium this user can back up to on this computer. |
 | Reason | The plain-words explanation that comes with a verdict or a skipped file. In the log it is written as a fixed reason code, for example `MEDIUM_FULL`. |
@@ -76,23 +76,23 @@ Working out a status reads the medium, so it happens off the main thread. Until 
 
 **The actions** (issue 134). In the list:
 
-| Action | Shown for | Role |
+| Action | Shown for | Kind |
 |---|---|---|
 | Start backup | The selected medium, below its row, once it is known to be a Babawus medium; so at most one shows. It only works on a Ready medium: otherwise it is greyed out, and its tooltip says why | User |
 | Eject | Every medium, as a round button in its row. It ejects that medium, whether it is selected or not, and leaves the selection as it was. While a medium is being ejected, every Eject button is greyed out (see "Offer to eject media after a successful backup operation") | User |
 
 Below the selected medium's details:
 
-| Action | Shown for | Role |
+| Action | Shown for | Kind |
 |---|---|---|
-| Show history | A Babawus medium whose log has at least one run (see "View the history of a medium") | User |
-| What's backed up | A Ready medium (see "See which files and folders a medium covers") | User |
-| Prepare… | A medium that may be formatted (see "Format USB media") | Poweruser |
-| Change setup… | A Babawus medium (see "Configure USB media") | Poweruser |
+| Show history | A Babawus medium whose log has at least one run (see "View the history of a medium") | Everyday |
+| What's backed up | A Ready medium (see "See which files and folders a medium covers") | Everyday |
+| Prepare… | A medium that may be formatted (see "Format USB media") | Advanced |
+| Change setup… | A Babawus medium (see "Configure USB media") | Advanced |
 
-These buttons come right after the details' texts, below a thin line, which isn't shown when there are no buttons. They keep their own width, the user's first and then the poweruser's, on one row; when there isn't room, they wrap like words, each close to the one before (issues 125 and 134).
+These buttons come right after the details' texts, below a thin line, which isn't shown when there are no buttons. They keep their own width, the everyday ones first and then the advanced ones, on one row; when there isn't room, they wrap like words, each close to the one before (issues 125 and 134).
 
-**Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Each time Advanced is chosen to turn it on, a warning asks first: "Turn on the advanced functions?", "They can erase a stick, and change what is backed up to it and for whom. A mistake can cost backups. Only continue if you know what you are doing.", with "Cancel" and "Continue". "Cancel" has the focus, so Enter or Esc keeps Advanced off. Turning it off asks nothing (issue 152). Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
+**Advanced.** The advanced functions only appear after choosing Advanced in the menu. Each time Advanced is chosen to turn it on, a warning asks first: "Turn on the advanced functions?", "They can erase a stick, and change what is backed up to it and for whom. A mistake can cost backups. Only continue if you know what you are doing.", with "Cancel" and "Continue". "Cancel" has the focus, so Enter or Esc keeps Advanced off. Turning it off asks nothing (issue 152). Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the advanced functions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 
 ### Update Babawus media status
 
@@ -119,7 +119,7 @@ As a user I want Babawus to offer to eject a medium that has just been used for 
 
 ### Format USB media
 
-As a poweruser I want Babawus to provide me with the means to format a USB medium in one of the two supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the medium, give me the opportunity to cancel the operation before anything is changed on the USB medium, and only actually format the medium after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new medium for use with Babawus, based on my requirements for platform interoperability of the medium, wishes for file name and path length compatibility, or resilience against file system corruption.
+As a user, under Advanced, I want Babawus to provide me with the means to format a USB medium in one of the two supported formats, exFAT or Ext4. Babawus should provide ample warning that this will erase all existing data on the medium, give me the opportunity to cancel the operation before anything is changed on the USB medium, and only actually format the medium after my explicit "yes-I-really-want-to-do-this" acknowledgment. That way I can prepare a new medium for use with Babawus, based on my requirements for platform interoperability of the medium, wishes for file name and path length compatibility, or resilience against file system corruption.
 
 Babawus always formats a medium before using it for the first time; a medium is never prepared "as it is". Formatting covers the whole device, and the warning says that any other partitions on it are erased too, and that formatting cannot be cancelled once it has started. While formatting, I give the medium a label (see "Formatting a medium").
 
@@ -129,7 +129,7 @@ While formatting, the view shows "Formatting BACKUP-B…" and that it may take a
 
 ### Configure USB media
 
-As a poweruser I want Babawus to provide me with the means of easily creating and/or editing the Babawus configuration file on a USB medium. Specifically:
+As a user, under Advanced, I want Babawus to provide me with the means of easily creating and/or editing the Babawus configuration file on a USB medium. Specifically:
 
 - Use a "file explorer" of some sort to browse existing files and folders on the PC and select those I want to have backed up. Both files and folders can be selected: a selected folder is backed up with everything in it, a selected file on its own.
 - Exclude files and folders in two ways: name patterns (see "Exclusions"), and specific folders that I pick in the same file explorer.
@@ -150,7 +150,7 @@ A damaged configuration that can be parsed opens with a warning to check it and 
 
 ### Maintain a log
 
-As a poweruser I want Babawus to maintain a log of the runs performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text (see "Format of the log"). All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each run has these entries:
+As a user I want Babawus to maintain a log of the runs performed on a medium, in `.babawus/babawus_log.txt`. The log is plain text (see "Format of the log"). All timestamps are in local time with the UTC offset, for example `2026-11-03 17:54:00 +0100`, so that entries from computers in different time zones can be compared. Each run has these entries:
 
 - A start entry with the timestamp, the `username@computer folder` the backup runs for, the version of Babawus, and the computer's hostname.
 - An entry for each anomaly (error) seen during the run, including each skipped file, with an error code and the path of the file relative to the home folder. The first 100 errors are logged individually (issue 124). If there are more, a single entry "Multiple errors, further errors are only counted" is written, and the rest are only counted.
@@ -177,7 +177,7 @@ Every verdict other than "All good" gives the reason in plain words (for example
 
 An interrupted run (the medium pulled out, or the computer closed or shut down) leaves nothing to clean up by hand: the next backup simply continues and catches up (see "Writing a new copy safely"), and the history shows the interrupted run as "Backup not finished" (see "Interrupted runs in the log").
 
-The log is the one place for diagnosing a run. Users don't copy details for the poweruser: the log is always there, whether or not anyone did anything, and holds what the poweruser needs, in fixed codes that read the same whatever the language (issue 117).
+The log is the one place for diagnosing a run. Nobody copies details down: the log is always there, whether or not anyone did anything, and holds what is needed to find out what went wrong, in fixed codes that read the same whatever the language (issue 117).
 
 The verdict screen takes the place of the backup screen when the run ends. It shows a mark next to the verdict: a green tick for "All good", an amber "!" for "Some files were skipped" and "Backup not finished", and a red cross for "Backup failed". Below it come the reason, the skipped files by reason, the next step, what was copied ("Copied: 12 files (3.4 MB)", or "Everything was already up to date."), and the last backup. "Some files were skipped" needs no reason below it, because it says it already. The screen has three text styles: the label, the verdict with its mark, and one style for everything below, in which only the next step is bold (`ui-review/UiReview.md` items G02, V03 and V05). When the run counts as a backup, an "Eject" button offers to eject the medium (see "Offer to eject media after a successful backup operation"). "Back" returns to the start screen.
 
@@ -185,7 +185,7 @@ The verdict screen takes the place of the backup screen when the run ends. It sh
 
 As a user I want to be able to see, for a Ready medium, in plain words which files and folders on this computer are backed up to it for my account. This is shown on request, through "What's backed up", not in the details on the start screen, which only show the medium itself, its status and, for a Ready medium, when it was last used for a backup (see "See when I last made a backup"). That way I can check that my important files are covered, and see differences between media.
 
-"What's backed up" fills the window with the files and folders selected for my account, in the order of the configuration, each with a folder or file picture. Babawus looks each one up on this computer. One from which nothing would be backed up is marked with an amber "!" and says why: it doesn't exist any more, it is left out by an exclusion, it is outside my home folder, it is a link, or it can't be read. Below come the exclusions, under "Left out": the excluded folders, then the name patterns in one line ("Anything named .cache, *.tmp or *~, in any folder"). If nothing is selected, it says so and to contact the poweruser. "Back" returns to the start screen.
+"What's backed up" fills the window with the files and folders selected for my account, in the order of the configuration, each with a folder or file picture. Babawus looks each one up on this computer. One from which nothing would be backed up is marked with an amber "!" and says why: it doesn't exist any more, it is left out by an exclusion, it is outside my home folder, it is a link, or it can't be read. Below come the exclusions, under "Left out": the excluded folders, then the name patterns in one line ("Anything named .cache, *.tmp or *~, in any folder"). If nothing is selected, it says so, and that it can be chosen under Advanced, with “Change setup…”. "Back" returns to the start screen.
 
 ### See when I last made a backup
 
@@ -205,7 +205,7 @@ Started as `babawus --checklastbackup`, Babawus first looks at when this account
 
 - A backup counts as for "See when I last made a backup": "All good" or "Some files were skipped". Days are calendar days in local time, so with `run_check_days = 7` the reminder comes from the 8th day on. `run_check_days = 0` never reminds.
 - The stick is usually not plugged in at login, so each backup that counts notes when it finished, with the account's `run_check_days` from that stick, in `$XDG_STATE_HOME/babawus/last_backup` (by default `~/.local/state/babawus/last_backup`). It is a small TOML file, with the time in the log's form. The latest backup counts, whichever stick it went to. A file that can't be read counts as no file, and a backup that can't be noted is still a backup.
-- Babawus doesn't add itself to the startup programs. The poweruser adds `babawus --checklastbackup` in "Startup Applications" for each account that wants the reminder (see the README).
+- Babawus doesn't add itself to the startup programs. `babawus --checklastbackup` is added in "Startup Applications" for each account that wants the reminder (see the README).
 - If Babawus is already open for this account, `--checklastbackup` brings its window forward like any other start.
 
 ### View the history of a medium
@@ -216,7 +216,7 @@ As a user I want to be able to view the history of backups made on a medium, in 
 
 ### See a stick's log
 
-As a poweruser I want to see the log on a medium laid out clearly, starting from a run in the history, so that I can look into what happened in that run and around it without opening the file by hand (issue 135).
+As a user, under Advanced, I want to see the log on a medium laid out clearly, starting from a run in the history, so that I can look into what happened in that run and around it without opening the file by hand (issue 135).
 
 While Advanced is on, right-clicking a run in the history shows a small menu at the pointer with "Show in the log". Without Advanced, right-clicking does nothing. "Show in the log" opens a window of its own, "Log of BACKUP-A", which isn't modal: the main window can be used while it is open. It shows the whole log, one row per line, as close to the file as possible, in a fixed-width font: the timestamp as written, the first 8 digits of the run ID, the entry type, the `key=value` pairs as "key value", and any closing English text, dimmed. `ERROR` is red, `START` blue, and `END` takes the colour of its verdict's mark. Each run's lines are shaded alike, alternating from run to run, and the chosen run's lines are highlighted; if they aren't in view, the window scrolls to them. Garbled or incomplete lines are shown dimmed, as they are in the file. Long lines don't wrap: the window scrolls sideways too.
 
@@ -224,19 +224,19 @@ There is at most one log window per medium: "Show in the log" for another run of
 
 ### Add a computer or user account to a medium
 
-As a poweruser I want to add a computer or a user account to a medium, choosing which files and folders to back up for it, without losing any backups already on the medium. I do this on that computer, logged in as that user. Babawus records the computer's ID (see "Identifying a computer") and suggests a folder name for it that is not yet used on the medium. That way several computers and accounts can share a medium.
+As a user, under Advanced, I want to add a computer or a user account to a medium, choosing which files and folders to back up for it, without losing any backups already on the medium. I do this on that computer, logged in as that user. Babawus records the computer's ID (see "Identifying a computer") and suggests a folder name for it that is not yet used on the medium. That way several computers and accounts can share a medium.
 
 ### Link a computer or user account to an existing entry
 
-As a poweruser I want to link a computer to an existing computer entry on a medium, for example a replacement computer after a loss, or a computer that has been reinstalled and therefore has a new computer ID. Likewise, I want to link a user account to an existing account entry after the account's user name has changed. I do this on that computer, logged in as that user. Babawus updates the computer ID, or renames the user folder under `backup`, the entry in the configuration and the account's name in the log, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name, and "Last backup" and the history still show the account's earlier runs.
+As a user, under Advanced, I want to link a computer to an existing computer entry on a medium, for example a replacement computer after a loss, or a computer that has been reinstalled and therefore has a new computer ID. Likewise, I want to link a user account to an existing account entry after the account's user name has changed. I do this on that computer, logged in as that user. Babawus updates the computer ID, or renames the user folder under `backup`, the entry in the configuration and the account's name in the log, and keeps all existing backups and older versions. That way backups continue where they left off, instead of starting over under a new name, and "Last backup" and the history still show the account's earlier runs.
 
-Linking an account refuses to overwrite: if the new user folder already exists on the medium and the old one does too, Babawus stops and changes nothing, and the poweruser resolves it by hand. The folder and the log are changed first and the configuration last, so an interrupted link can simply be repeated.
+Linking an account refuses to overwrite: if the new user folder already exists on the medium and the old one does too, Babawus stops and changes nothing, and it has to be resolved by hand. The folder and the log are changed first and the configuration last, so an interrupted link can simply be repeated.
 
 A change of hostname alone needs no action, because computers are recognised by their ID, not their hostname.
 
 ### Remove a computer or user account from a medium
 
-As a poweruser I want to remove a computer or user account from a medium, for example a retired or lost computer. Babawus removes the entry from the configuration only. The backups of that computer or account stay on the medium, and I can delete them by hand if I want the space back. Unlike other changes to an entry, removing it can be done from any computer, because the computer being removed may no longer exist, and nothing is deleted. That way the configuration stays tidy without risking any backups.
+As a user, under Advanced, I want to remove a computer or user account from a medium, for example a retired or lost computer. Babawus removes the entry from the configuration only. The backups of that computer or account stay on the medium, and I can delete them by hand if I want the space back. Unlike other changes to an entry, removing it can be done from any computer, because the computer being removed may no longer exist, and nothing is deleted. That way the configuration stays tidy without risking any backups.
 
 ### Back up from a computer or account that has not been added
 
@@ -248,11 +248,11 @@ As a user, if the medium runs out of space during a backup, or a file to be copi
 
 ### Set the number of older versions to keep
 
-As a poweruser I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N), for each backup profile, because some accounts' files change more often, or matter more, than others (issue 136). N is between 1 and 99, and 10 for a new backup profile. N = 0 is not allowed, because it would remove the protection against accidentally overwritten files. When I lower N, the extra versions are removed on the next backup (see "Handling of file versioning"). That way I can balance history against space on the medium.
+As a user, under Advanced, I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N), for each backup profile, because some accounts' files change more often, or matter more, than others (issue 136). N is between 1 and 99, and 10 for a new backup profile. N = 0 is not allowed, because it would remove the protection against accidentally overwritten files. When I lower N, the extra versions are removed on the next backup (see "Handling of file versioning"). That way I can balance history against space on the medium.
 
 ### Change the language
 
-As a user I want to change the language of Babawus from inside the application. The languages are those whose language files Babawus could read at start (see "Translations"); English and German come with it. The Language menu lists them by their own names, sorted: Deutsch, English (issue 149). The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, or if the language I chose is no longer there, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds the language's code, for example `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. German addresses the user as "du", and calls the poweruser "Betreuer" (issues 90 and 91). Where texts are longer, as in German, the action buttons wrap onto another line, so that the window needn't grow. That way I can use Babawus in the language I understand best.
+As a user I want to change the language of Babawus from inside the application. The languages are those whose language files Babawus could read at start (see "Translations"); English and German come with it. The Language menu lists them by their own names, sorted: Deutsch, English (issue 149). The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, or if the language I chose is no longer there, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds the language's code, for example `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. German addresses the user as "du" (issue 90). Where texts are longer, as in German, the action buttons wrap onto another line, so that the window needn't grow. That way I can use Babawus in the language I understand best.
 
 ## Technical requirements
 
@@ -285,7 +285,7 @@ The path of a source file or folder is truncated at the home folder when it is w
 - File belonging to userb on `mint`: `/home/userb/Documents/hello.odt` -> `<medium>/backup/mint/userb/Documents/hello.odt`
 - Folder belonging to userc on `mint-2`: `/home/userc/project/hooray` -> `<medium>/backup/mint-2/userc/project/hooray`
 
-`<computer folder>` is the folder name stored in the configuration for the computer's ID (see "Identifying a computer"). `<username>` is the account's user name at the time of the backup, converted to lower case. exFAT does not distinguish upper and lower case in names, so converting to lower case makes both file systems behave the same. If the computer's ID is not in the configuration, or the user name has changed, the computer or account is treated as not added to the medium, until the poweruser either adds it or links it to the existing entry (see "Link a computer or user account to an existing entry").
+`<computer folder>` is the folder name stored in the configuration for the computer's ID (see "Identifying a computer"). `<username>` is the account's user name at the time of the backup, converted to lower case. exFAT does not distinguish upper and lower case in names, so converting to lower case makes both file systems behave the same. If the computer's ID is not in the configuration, or the user name has changed, the computer or account is treated as not added to the medium, until it is either added or linked to the existing entry, under Advanced (see "Link a computer or user account to an existing entry").
 
 ### Identifying a computer
 
@@ -302,7 +302,7 @@ For each computer added to a medium, the configuration holds:
 
 ### Handling of file versioning
 
-Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set by the poweruser for each backup profile in the configuration.
+Babawus never overwrites the newest copy of a user's file, and never deletes it. Older versions are kept, up to a limit N set under Advanced for each backup profile in the configuration.
 
 A source file needs to be backed up again when its size or its last modification time differs from that of its newest copy on the medium. "Differs" is used rather than "is newer", so a file that has been replaced by an older copy is also backed up. To make this work, every copy written to the medium keeps the last modification time of its source file. Modification times are compared with a tolerance of 2 seconds, because exFAT may store them with less precision than the source file system. exFAT also can't store times before 1980 or after 2107, and moves them to the nearest time it can store. On exFAT, Babawus therefore compares such a time as that nearest time. Otherwise the file would look changed on every run, and each new copy would push out a real older version.
 
@@ -334,7 +334,7 @@ An older version that cannot be removed is tried again on the next run. It is lo
 
 If the name of the version folder or of the older version would be longer than the medium allows for a single name (255 bytes on Ext4, 255 characters on exFAT), the file is not updated: the existing newest copy stays as it is, the temporary file is removed, and the file is listed as skipped in the verdict. Users are expected to keep file and folder names reasonably short.
 
-Pruning (step 5) is not limited to files that get a new version. In every run, whenever Babawus visits a source file that has a version folder on the medium, it prunes that folder down to N, even if the file itself has not changed. So when the poweruser lowers N, the space comes back on the next run. Version folders of files that were deleted from the source are not visited, so they keep their versions, in line with the rule that deleted files are never removed from the medium.
+Pruning (step 5) is not limited to files that get a new version. In every run, whenever Babawus visits a source file that has a version folder on the medium, it prunes that folder down to N, even if the file itself has not changed. So when N is lowered, the space comes back on the next run. Version folders of files that were deleted from the source are not visited, so they keep their versions, in line with the rule that deleted files are never removed from the medium.
 
 Here is an example, with N = 3. Before any overwrites:
 
@@ -413,7 +413,7 @@ Only regular files and folders are backed up, including empty folders. Symbolic 
 
 Below a selected folder, Babawus does not enter folders that belong to another file system (for example cloud folders, network shares or other disks mounted inside the home folder). A selected file or folder may itself be on any file system.
 
-- **A selection that does not exist any more** is skipped with the code `SELECTION_MISSING`, so that the poweruser learns that something is no longer being backed up.
+- **A selection that does not exist any more** is skipped with the code `SELECTION_MISSING`, so that it shows that something is no longer being backed up.
 - **A selection inside something excluded** stays excluded, because an excluded folder is skipped with everything in it.
 - **Overlapping selections** (a folder, and a file in it) are backed up once.
 - **A selection with `..` in its path** is skipped with the code `OUTSIDE_HOME`, so that a damaged configuration can never write outside the account's folder on the medium.
@@ -447,7 +447,7 @@ Any other error that the file system reports while writing is also caught, and t
 ### Changes in the source
 
 - **A file becomes a folder** with the same name: the old file on the medium is moved into its version folder, as an ordinary older version, and then the folder is created and backed up.
-- **A folder becomes a file** with the same name: the file is skipped with the code `TYPE_CONFLICT`, and the poweruser resolves it by hand. Versioning a whole folder is not done, because pruning it later would delete backups of files that may no longer exist in the source.
+- **A folder becomes a file** with the same name: the file is skipped with the code `TYPE_CONFLICT`, and it has to be resolved by hand. Versioning a whole folder is not done, because pruning it later would delete backups of files that may no longer exist in the source.
 - **A file renamed only in case** (for example `report.pdf` → `Report.pdf`): on exFAT, Babawus looks up names on the medium without regard to case, and treats the renamed file as the same file. The next time the file changes, the new copy takes the source's current case; until then the old case stays on the medium. On Ext4, a case change is an ordinary rename: the file is backed up under its new name, and the old copy stays on the medium.
 - **A file that changes during copying:** Babawus compares the file's size and modification time before and after copying. If they differ, it discards the temporary file and tries once more. If the file changes again, it is skipped with the code `CHANGED_DURING_COPY` ("the file was in use").
 - **A file that cannot be read** (no permission, or a read error): it is skipped with the code `UNREADABLE`.
@@ -466,7 +466,7 @@ A **USB medium** is a drive that udisks2 reports with `Removable` set and `Conne
 
 Babawus only offers to format USB media. It never offers internal disks, the system disk, or any disk with a partition that is currently in use other than the medium itself. A partition is in use if it is active swap, if another device sits on it (such as encryption, LVM or RAID), or if it is mounted anywhere other than below `/media/` or `/run/media/`, where the desktop mounts removable media. A disk that udisks2 marks as a system disk (`HintSystem`) is never offered either. The format view lists devices whether they are mounted or not.
 
-Babawus always identifies a drive by its udisks2 drive ID, never by a device name such as `/dev/sda`: those names can change between boots, and the system disk can then get the name a USB stick had before. Right after the poweruser has confirmed, and before anything is changed, Babawus checks that the drive with that ID is still present and still meets the rules above. If not, it stops and changes nothing.
+Babawus always identifies a drive by its udisks2 drive ID, never by a device name such as `/dev/sda`: those names can change between boots, and the system disk can then get the name a USB stick had before. Right after formatting has been confirmed, and before anything is changed, Babawus checks that the drive with that ID is still present and still meets the rules above. If not, it stops and changes nothing.
 
 Babawus always formats a medium before using it for the first time; there is no way to prepare a medium "as it is". Formatting goes through the udisks2 service (see "Technology"), and works like this:
 
@@ -478,14 +478,14 @@ Babawus always formats a medium before using it for the first time; there is no 
     | exFAT | `0x07` | Microsoft basic data |
     | Ext4 | `0x83` | Linux file system |
 
-3. The file system is created on that partition, with the label the poweruser has entered. The label has 1 to 11 characters (the exFAT limit), using the letters `A`–`Z` and `a`–`z`, digits and `-`. Babawus suggests the first of `BACKUP-A` to `BACKUP-Z`, then `BACKUP-1`, `BACKUP-2` and so on, that no attached medium has, ignoring case.
+3. The file system is created on that partition, with the label that was entered. The label has 1 to 11 characters (the exFAT limit), using the letters `A`–`Z` and `a`–`z`, digits and `-`. Babawus suggests the first of `BACKUP-A` to `BACKUP-Z`, then `BACKUP-1`, `BACKUP-2` and so on, that no attached medium has, ignoring case.
     - **exFAT:** the defaults of `mkfs.exfat`.
     - **Ext4:** no reserved blocks (`-m 0`), and full initialisation during formatting (`-E lazy_itable_init=0,lazy_journal_init=0`), so that the medium is finished when formatting is, and Ext4 does not keep initialising in the background after the first mount. These options are passed on through the `mkfs-args` option of udisks2. The formatting user is made the owner of the root folder (the `take-ownership` option of udisks2), so that Babawus can do step 5 as an ordinary user. udisks2 asks for an administrator's password for both options, which is why only an administrator can choose Ext4. exFAT needs neither, and on Mint the user of the active desktop session can format it without a password.
 4. The medium is mounted through udisks2.
 5. On Ext4 only:
     - The root folder gets mode `0777`.
     - A default ACL is set on the root folder (the equivalent of `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`), so that files that other programs create on the medium are also readable and writable by everyone. Babawus still sets modes explicitly on everything it creates, because a computer may mount the medium without ACL support. This relies on ACL support being a default mount option, which `mkfs.ext4` sets on Mint 22.
-6. Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes a new configuration, with no computers yet. The medium then shows as "Not set up for you" until the poweruser adds this computer and account.
+6. Babawus creates `.babawus` and `backup` (mode `0777` on Ext4) and writes a new configuration, with no computers yet. The medium then shows as "Not set up for you" until this computer and account are added under Advanced.
 
 Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minute on a 16 GB stick, and longer on larger media, while exFAT is almost instant.
 
@@ -514,7 +514,7 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 - The configuration itself: for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, N (`older_versions`), the days before a reminder (`run_check_days`, see "Remind me at login when my last backup is too old"), the selected files and folders, and the exclusions.
 - The last line is the checksum, written as a TOML comment, so the file stays valid TOML. The checksum is the validation marker; there is no separate one.
 
-A file in the layout of Babawus 0.1.0, which had `format` and one `older_versions` for the whole medium at the top and no `[babawus]` table, is not read: it is damaged, and the poweruser starts a new configuration. There were no real users of 0.1.0, so Babawus carries no code for older layouts (issue 136).
+A file in the layout of Babawus 0.1.0, which had `format` and one `older_versions` for the whole medium at the top and no `[babawus]` table, is not read: it is damaged, and a new configuration is started under Advanced. There were no real users of 0.1.0, so Babawus carries no code for older layouts (issue 136).
 
 For example:
 
@@ -551,8 +551,8 @@ A medium that has a file at `.babawus/babawus_config` is a Babawus medium, whate
 
 If everything is in order, the configuration is used. Otherwise the configuration is damaged, and the medium needs attention:
 
-- **If the file can be parsed and its values are valid**, the poweruser sees the configuration in Babawus, checks it and saves it, which writes a new checksum.
-- **If not**, nothing in the file can be trusted, so the poweruser is offered to start a new configuration. That only replaces the file: all backups stay on the medium, and folders already under `backup` still count as used when new entries are added.
+- **If the file can be parsed and its values are valid**, the configuration is shown in Babawus under Advanced, to be checked and saved, which writes a new checksum.
+- **If not**, nothing in the file can be trusted, so Babawus offers to start a new configuration. That only replaces the file: all backups stay on the medium, and folders already under `backup` still count as used when new entries are added.
 
 These values are checked. Anything else makes the file invalid, including a field that Babawus does not know:
 
@@ -564,7 +564,7 @@ These values are checked. Anything else makes the file invalid, including a fiel
 - A name pattern is not empty and does not contain `/`.
 - An excluded folder is a relative path with no `.` or `..` in it.
 
-Selected files and folders are not checked here: a selection with `..` in its path is dealt with during the run (see "What is copied"), so that the poweruser learns of it.
+Selected files and folders are not checked here: a selection with `..` in its path is dealt with during the run (see "What is copied"), so that it shows in the verdict and the log.
 
 ### Writing the configuration file
 
@@ -572,7 +572,7 @@ A configuration is never written in place. It is written to a temporary file in 
 
 ### Checksum of the configuration file
 
-The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with SHA-256 (the same hash the computer ID uses, so no extra code is needed) and written as the first 16 lower-case hexadecimal digits, in a comment line. When the checksum is checked, upper and lower case hexadecimal digits are treated as equal. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is shown as "Needs attention" until the poweruser has checked and saved the configuration again in Babawus. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
+The last line of `.babawus/babawus_config` holds a checksum of all lines above it, computed with SHA-256 (the same hash the computer ID uses, so no extra code is needed) and written as the first 16 lower-case hexadecimal digits, in a comment line. When the checksum is checked, upper and lower case hexadecimal digits are treated as equal. Babawus computes the checksum when it writes the file and checks it every time it reads the file. If the checksum does not match, the medium is shown as "Needs attention" until the configuration has been checked and saved again in Babawus, under Advanced. The checksum detects damage and accidental edits; it is not meant to protect against deliberate changes.
 
 ### Format of the log
 
@@ -657,7 +657,7 @@ CI runs the formatting and lint checks and all automated tests, including the in
 
 ### Packaging
 
-Babawus is delivered as a `.deb` package, built with `cargo-deb`. The poweruser installs it by double-clicking it, updates by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
+Babawus is delivered as a `.deb` package, built with `cargo-deb`. It is installed by double-clicking it, updated by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
 
 - The package adds a desktop entry titled "Backup", with the Babawus elephant as its icon, to the application menu. The application ID is `io.github.ziggymax.Babawus`. The desktop entry names the icon file by its full path, so that the menu shows it straight after installing (issue 101). The icon has the same margin as the theme's app icons, so that it is no larger than theirs in the menu and the panel (issue 139).
 - Its summary is "Basic backup with USB storage", and a longer description below it says in plain words what Babawus does, and that preparing a stick and choosing what is backed up are advanced functions, under Advanced in the menu (issues 111 and 153).
