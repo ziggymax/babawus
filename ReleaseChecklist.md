@@ -2,7 +2,7 @@
 
 Run this on real USB sticks before each release. It covers what the automated tests can't: the GUI, formatting, pulling out a stick, ejecting, and installing the package (see "Testing" in [Requirements.md](Requirements.md)).
 
-**To record a run**, open a GitHub issue titled "Release 0.1.0 checklist" (with the version being released), and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks-Open.md](Tasks-Open.md) before the release goes ahead (see issues 94–96).
+**To record a run**, open a GitHub issue titled "Release <version> checklist", for example "Release 1.0.0 checklist", and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks-Open.md](Tasks-Open.md) before the release goes ahead (see issues 94–96).
 
 Each step says what to do, then **→** what should be seen. Texts in quotes are what Babawus shows in English. Run the whole list in English, except where a step says otherwise.
 
@@ -20,7 +20,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] The package for this release, built with `cargo deb -p babawus`. → `target/debian/babawus_<version>-1_amd64.deb` exists.
 - [ ] Babawus is not installed yet: `dpkg -s babawus` → "package 'babawus' is not installed". (If it is, uninstall it first with `sudo apt remove babawus`.)
 
-## Installing (T-025)
+## Installing
 
 - [ ] Double-click the `.deb` in the file manager. → The installer shows "Basic Backup With Usb Storage" (it capitalises every word), and below it three short paragraphs about Babawus. Install it. → It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
 - [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see issue 101).
@@ -44,7 +44,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Press "Erase and format". → "Formatting BACKUP-A…", with no way back and the window can't be closed. After a few seconds: "BACKUP-A is ready", with a green tick.
 - [ ] Press "Back". → The start screen, with stick A selected, showing "Not set up for you" and an amber "!", and a greyed-out green "Start backup" below stick A's row, whose tooltip says why.
 - [ ] Format stick B the same way, but choose Ext4. → "Ext4 asks for your password while formatting." shows below Ext4. It asks for your password, takes longer (about a minute for 16 GB), then "… is ready". (On the development VM it doesn't ask: see "Polkit" in DevEnvSetup.md.)
-- [ ] Without administrator rights (T-024): close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only their Eject buttons: no "Start backup" and no buttons in the details, also with Advanced on.
+- [ ] Without administrator rights: close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only their Eject buttons: no "Start backup" and no buttons in the details, also with Advanced on.
 - [ ] Pull out both sticks and plug them back in. → Both show "Not set up for you".
 - [ ] Turn Advanced on, and press "Prepare…". → Ext4 is greyed out, with "Only an administrator can choose Ext4, …" below it.
 - [ ] Format stick A with exFAT. → No password is asked for, and "BACKUP-A is ready".
@@ -78,7 +78,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders and the name patterns.
 - [ ] Set up stick B as for stick A, with `BabawusTest` ticked, and back up to it once. → `meeting: notes.txt` is backed up there, because Ext4 can store the name. Only `secret.txt` is skipped.
 
-## The reminder at login (T-059)
+## The reminder at login
 
 - [ ] In a terminal, run `cat ~/.local/state/babawus/last_backup`. → The time of the last backup above, and `run_check_days = 8`, from stick A's setup.
 - [ ] Run `babawus --checklastbackup`. → Nothing shows, and the command ends at once.
@@ -92,7 +92,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Press "Cancel" again, and choose "Stop backup". → It stops soon: "Backup not finished", "You stopped the backup."
 - [ ] Start again, and close the window while it copies. → The same question. Choose "Stop backup". → The window closes once the run has ended. Start Babawus: "Show history" shows the stopped run as "Backup not finished".
 
-## Pulling out a stick (T-022)
+## Pulling out a stick
 
 - [ ] Change `big.bin` again, start a backup to stick A, and pull the stick out while it says "Backing up…". → "Backup not finished", "The stick was removed.", and "Run the backup again. If it happens again, contact your poweruser." Files skipped before the pull may be listed, such as `meeting: notes.txt`, but nothing that the pull caused: no "Couldn't be written". Note in the issue what was listed.
 - [ ] Plug stick A back in, and start a backup. → It finishes, catching up on `big.bin`. The history shows the interrupted run as "Backup not finished", "The backup was interrupted.", and this one after it.
@@ -106,12 +106,12 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 - [ ] In the terminal, leave the stick (`cd ~`), and press "Eject" again. → A pop-up: "You can pull out BACKUP-A now." Press OK. → The start screen, without stick A.
 - [ ] With both sticks plugged in and stick A selected, press stick B's Eject button. → A pop-up: "You can pull out BACKUP-B now." Press OK. → Stick B has left the list, and stick A is still selected, with "Start backup" below it.
 
-## Updating (T-025)
+## Updating
 
-- [ ] Build the package again with the version raised (for example `0.1.1` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
+- [ ] Build the package again with the version raised (for example from `1.0.0` to `1.0.1` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
 - [ ] Start Babawus. → It runs, keeps the chosen language, and stick A and its history are as before.
 
-## Uninstalling (T-025)
+## Uninstalling
 
 - [ ] Uninstall with `sudo apt remove babawus`. → The "Backup" entry leaves the menu.
 - [ ] Look at stick A. → Nothing changed on it: `.babawus` and `backup` are as before.
