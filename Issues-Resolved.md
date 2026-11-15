@@ -554,3 +554,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - A file whose only fault is unknown texts is accepted, and each unknown text is named on standard error, so that a file made for a newer Babawus still works with an older one. A misspelt name leaves the real text missing, so that file is rejected anyway.
         - A debug build reads the `languages/` folder of the source tree it was built from; a release build, as in the `.deb`, reads `/usr/share/babawus/languages/`. There is no setting for it.
         - The Language menu lists the languages sorted by their own names, as shown: Dansk, Deutsch, English, Español.
+
+## Decisions on the guide to adding a language (T-074)
+
+150. **Where the guide to adding a language goes.** It is for powerusers and translators, and covers making a language file from `en.toml`, by hand or with an AI, checking it, installing it, and finding out why a file is rejected.
+    - **Decided (2026-11-15):** In a file of its own, `AddingALanguage.md` in the repository's root, linked from README.md, so that README.md doesn't grow.
