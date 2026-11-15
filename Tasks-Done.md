@@ -71,3 +71,4 @@ The tasks that are finished, in the order they were done, each with the pull req
 | T-069 | Clean up DevEnvSetup.md: the VM as it is with 0.2.1, signing in to GitHub in the browser, and the discoveries kept without their dates (issue 145) | [#86](https://github.com/ziggymax/babawus/pull/86) |
 | T-070 | Clean up ReleaseChecklist.md: it already matched 0.2.1, so only the task numbers in its headings and the old versions in its examples go; it stays the full run (issue 146) | [#87](https://github.com/ziggymax/babawus/pull/87) |
 | T-071 | Raise the version to 1.0.0-alpha.1 and update ReleasePlanning.md; the tag `v1.0.0-alpha.1` goes on main at this pull request, with no GitHub release (issue 141) | [#88](https://github.com/ziggymax/babawus/pull/88) |
+| T-072 | Compare TOML, gettext and Fluent for the language files, and choose one: TOML (issues 147 and 148) | [#89](https://github.com/ziggymax/babawus/pull/89) |
