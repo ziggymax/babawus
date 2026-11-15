@@ -32,7 +32,7 @@ const LOGO_SIZE: i32 = 64;
 fn main() -> glib::ExitCode {
     let mut args: Vec<String> = std::env::args().collect();
     // With `--checklastbackup`, Babawus only opens if the last backup is too long ago, and then
-    // first asks (Issues.md item 137). That is decided before anything is shown, so that
+    // first asks (issue 137). That is decided before anything is shown, so that
     // otherwise it closes without a trace.
     let reminder_days = if args.iter().any(|arg| arg == CHECK_OPTION) {
         args.retain(|arg| arg != CHECK_OPTION);
@@ -86,7 +86,7 @@ fn activate(app: &Application, lock: &Rc<RefCell<Option<ComputerLock>>>) {
 }
 
 /// Asks whether to back up now, because the last backup was `days` days ago. "Back up now"
-/// opens Babawus as a normal start would; "Not now", or closing, closes it (Issues.md item
+/// opens Babawus as a normal start would; "Not now", or closing, closes it (issue
 /// 137).
 fn show_reminder(app: &Application, days: i64, lock: &Rc<RefCell<Option<ComputerLock>>>) {
     let language = window::current_language(&glib::user_config_dir().join(SETTINGS_FILE));

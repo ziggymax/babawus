@@ -1,6 +1,10 @@
-# Babawus – Open issues before design
+# Babawus – Resolved issues
 
-*Survey of README.md, Concept.md (revision 5) and Requirements.md, 2026-11-04. Items are ordered by priority within each section. Items 1–6 were settled first, because each one changes what gets built, followed by items 7–30. Their decisions are recorded below and in Concept.md (revision 8) and Requirements.md.*
+The questions about Babawus that have been decided, with why. A question starts in [Issues-Unsettled.md](Issues-Unsettled.md), where it gets its number, and moves here word for word once it is decided, keeping that number. Elsewhere it is referred to as just "issue 132", so references don't go stale when it moves. GitHub issues and pull requests are "#63".
+
+The first issues came from the survey below; later ones were added as they came up, under headings saying where.
+
+*Survey of README.md, Concept.md (revision 5) and Requirements.md, 2026-11-04. Items are ordered by priority within each section. Issues 1–6 were settled first, because each one changes what gets built, followed by issues 7–30. Their decisions are recorded below and in Concept.md (revision 8) and Requirements.md.*
 
 ## A. Contradictions and risks to the design
 
@@ -68,7 +72,7 @@
 23. **Packaging.** A `.deb` package or something else. Flatpak's sandbox clashes with formatting, udisks and full access to home.
     - **Decided (2026-11-05):** A `.deb` package built with `cargo-deb`. Our own APT repository is a possible later addition.
 24. **Formatting and eject.** Use udisks2/polkit or pkexec. Decide whether xxHash64 comes from a library or is written natively.
-    - **Decided (2026-11-05):** udisks2 over D-Bus for everything, with no root code in Babawus; a single `pkexec` call is the fallback for anything udisks2 can't do (removed on 2026-11-07, because nothing needed it: see item 39). The config checksum is SHA-256, first 16 hex digits, replacing xxHash64. Rust crates count under doctrine 3.
+    - **Decided (2026-11-05):** udisks2 over D-Bus for everything, with no root code in Babawus; a single `pkexec` call is the fallback for anything udisks2 can't do (removed on 2026-11-07, because nothing needed it: see issue 39). The config checksum is SHA-256, first 16 hex digits, replacing xxHash64. Rust crates count under doctrine 3.
 25. **Platforms.** Which Mint version and desktop to target, and whether to support Wayland, X11 or both.
     - **Decided (2026-11-05):** Supported: Mint 22.x Cinnamon on X11. Everything else is best effort. The target is reviewed when a new major Mint version comes out.
 26. **Testing exFAT and Ext4 behaviour.** Loop devices need root; fake file systems may not behave like the real ones. Pick an approach.
@@ -78,7 +82,7 @@
 
 ## D. Document housekeeping
 
-28. **Pick one source of truth.** Concept and Requirements repeat each other, which has already caused small differences (items 2, 13 and 21).
+28. **Pick one source of truth.** Concept and Requirements repeat each other, which has already caused small differences (issues 2, 13 and 21).
     - **Decided (2026-11-05):** Concept.md explains what and why; Requirements.md is authoritative and wins any disagreement. Details are trimmed from Concept.md.
 29. **Add a glossary.** For example "run" vs "session", "Babawus-ready", "newest copy" and "older version".
     - **Decided (2026-11-05):** A glossary at the start of Requirements.md with all relevant terms. "Run" is the single term, replacing "session"; "Ready" replaces "Babawus-ready".
@@ -242,7 +246,7 @@ Comparing the requirements with what the configuration and log have to do turned
 ## Decisions on choosing what to back up
 
 86. **What unticking a folder inside a ticked folder does.** Its tick is inherited from the folder above.
-    - **Decided (2026-11-09):** Unticking it leaves it out: it becomes an excluded folder, and is shown crossed out. Ticking it again removes the exclusion. So one tick box per row does both, in place of the separate "Leave out" choice in item 82. A file inside a ticked folder can't be unticked on its own, because only folders and name patterns can be excluded.
+    - **Decided (2026-11-09):** Unticking it leaves it out: it becomes an excluded folder, and is shown crossed out. Ticking it again removes the exclusion. So one tick box per row does both, in place of the separate "Leave out" choice in issue 82. A file inside a ticked folder can't be unticked on its own, because only folders and name patterns can be excluded.
 87. **Whether the tree shows hidden files and folders**, whose names start with a dot.
     - **Decided (2026-11-09):** Not at first. A "Show hidden files" switch above the tree shows them. A hidden item that is already selected or left out is always shown, so that nothing chosen is out of sight.
 88. **How the name patterns are edited.**
@@ -281,7 +285,7 @@ Comparing the requirements with what the configuration and log have to do turned
     - **Decided (2026-11-10):** In an "Uninstalling" section of `README.md`. They are not shipped in the package.
 99. **How the package is installed in the checklist's first run.**
     - **Decided (2026-11-10):** By double-clicking the `.deb` at the computer and entering the password, as the checklist says, so that the path a poweruser takes is the one tested.
-100. **How the first run of the Installing, Updating and Uninstalling steps is recorded.** Item 94 calls for one issue per release, but this run is not a release.
+100. **How the first run of the Installing, Updating and Uninstalling steps is recorded.** Issue 94 calls for one issue per release, but this run is not a release.
     - **Decided (2026-11-10):** In the description of the pull request for T-025. The "Release 0.1.0 checklist" issue is kept for the release itself.
 101. **Why the menu entry showed a gear instead of the elephant.** Installed by double-clicking, with Mint's package installer Captain, the "Backup" entry in Cinnamon's menu showed a generic gear until the next login or a restart of Cinnamon. It happened on both installs that way, but on none of five installs with `apt` over SSH. The cause wasn't found: Cinnamon finds the icon by name afterwards, but its menu keeps the first miss for the rest of the session.
     - **Decided (2026-11-10):** The desktop entry names the icon file by its full path, `/usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg`, instead of by the icon name, so that the menu loads the file without asking the icon theme. Tested through Captain against a package that used the icon name: that one showed the gear, and the full path showed the elephant. The cost, that an icon theme can't replace the icon, doesn't matter for Babawus.
@@ -291,21 +295,21 @@ Comparing the requirements with what the configuration and log have to do turned
 102. **Which test files the first run uses.** `~/BabawusTest` on the VM lacked three of the checklist's files.
     - **Decided (2026-11-10):** All three are created (`Photos/big.bin` of 2 GB, `meeting: notes.txt`, and an unreadable `secret.txt`), so that the folder matches the checklist for later runs. A backup after the pull therefore says "Some files were skipped" for the last two.
 103. **Whether the stick is also pulled out during "Finishing…".** The checklist pulls it while it says "Backing up…", but the final flush is a separate path in the code.
-    - **Decided (2026-11-10):** Yes, once at each moment. If "Finishing…" is too short to hit, the run notes that. As for T-025 (item 100), the run is recorded in the description of the pull request.
+    - **Decided (2026-11-10):** Yes, once at each moment. If "Finishing…" is too short to hit, the run notes that. As for T-025 (issue 100), the run is recorded in the description of the pull request.
     - **Found (2026-11-10):** "Finishing…" can't be hit by hand. Copying the 2 GB `big.bin` to the Kingston stick took about 80 seconds, but "Finishing…" didn't show in screenshots taken every third of a second, because each file is already flushed as soon as it is copied. So the checklist has no step for it. The automated tests cover it: `check_pulling_at_every_step` pulls the medium at every step of a run, the final flush included, and a medium that can't be flushed gives "Backup not finished" with `FLUSH_FAILED`, as "Finishing a run" in Requirements.md says.
 
 ## Decisions on formatting without administrator rights (T-024)
 
 104. **What the second account formats, with only one disposable stick.** The checklist formats a second stick as Ext4 from that account.
-    - **Decided (2026-11-10):** The second account formats stick A as Ext4, which also tests the owner and default ACL that Babawus sets on an Ext4 medium (item 16). Afterwards stick A is formatted back to exFAT from the administrator's account, so that later runs find it as the checklist expects.
-    - **Done (2026-11-10):** Stick A was formatted back to exFAT as `BACKUP-A`, from the administrator's account, after the test in item 106.
+    - **Decided (2026-11-10):** The second account formats stick A as Ext4, which also tests the owner and default ACL that Babawus sets on an Ext4 medium (issue 16). Afterwards stick A is formatted back to exFAT from the administrator's account, so that later runs find it as the checklist expects.
+    - **Done (2026-11-10):** Stick A was formatted back to exFAT as `BACKUP-A`, from the administrator's account, after the test in issue 106.
 105. **How the second account is created.**
     - **Decided (2026-11-10):** As the checklist says: by the user, in Users and Groups, as a "Standard" account.
 106. **Whether the first account also uses the stick that the second account formatted.**
-    - **Decided (2026-11-10):** Yes. Before reformatting, the administrator's account adds itself to the stick and backs up once, to check that an Ext4 medium formatted by one account can be used by another (item 16).
-    - **Changed (2026-11-10):** After item 108, only an administrator can format Ext4, so the test is turned round: the administrator's account formats stick A as Ext4, and the second account adds itself and backs up once. Stick A is then formatted back to exFAT, as item 104 says.
+    - **Decided (2026-11-10):** Yes. Before reformatting, the administrator's account adds itself to the stick and backs up once, to check that an Ext4 medium formatted by one account can be used by another (issue 16).
+    - **Changed (2026-11-10):** After issue 108, only an administrator can format Ext4, so the test is turned round: the administrator's account formats stick A as Ext4, and the second account adds itself and backs up once. Stick A is then formatted back to exFAT, as issue 104 says.
 107. **How this first run is recorded.**
-    - **Decided (2026-11-10):** In the description of the pull request, as for T-025 and T-022 (items 100 and 103).
+    - **Decided (2026-11-10):** In the description of the pull request, as for T-025 and T-022 (issues 100 and 103).
 108. **Ext4 from an account without administrator rights.** In the first run, the second account's Ext4 format replaced the partition table without a password, and then needed an administrator's password to create the file system, so the stick was left erased but not formatted. udisks2 asks for `modify-device-system` both for extra `mkfs` arguments (Babawus passes `-m 0` and the `lazy_*_init` options) and for `take-ownership`, and Babawus needs one of the two so that the root folder doesn't belong to root. exFAT needs neither, and worked without a password.
     - **Decided (2026-11-10):** In "Prepare a stick", Ext4 can only be chosen by an administrator, meaning an account in the `sudo` or `admin` group, the groups that polkit asks for on Mint. For anyone else it is greyed out, with a line saying why, so that formatting never starts what it can't finish.
 109. **Whether an administrator is told about the password.** polkit asks administrators for their password too (`auth_admin_keep`), except over SSH.
@@ -336,7 +340,7 @@ Comparing the requirements with what the configuration and log have to do turned
 116. **Which window size the screenshots use.**
     - **Decided (2026-11-10):** The size Babawus opens with. A few key screens are also taken with the window as small as it goes, to check the 1366 × 768 limit.
 117. **Whether users copy diagnostic details for the poweruser.** The verdict screen had "Details for your poweruser" with a Copy button, which largely repeats what the log on the stick records. Found while reviewing the look (T-032, `ui-review/UiReview.md` item V04).
-    - **Decided (2026-11-10):** No. The details and Copy are removed from the verdict screen. The log is the single place for diagnosing: it is always there, and doesn't depend on a user doing anything. So the log must be enough on its own: each run's start also records Babawus's version and the computer's hostname, and every skipped file and error is logged, instead of the first 20 and then only a count. (Item 124 changed this to the first 100.) The log is already trimmed by size, so it can't grow without limit. The README says where the log is and that it is plain text.
+    - **Decided (2026-11-10):** No. The details and Copy are removed from the verdict screen. The log is the single place for diagnosing: it is always there, and doesn't depend on a user doing anything. So the log must be enough on its own: each run's start also records Babawus's version and the computer's hostname, and every skipped file and error is logged, instead of the first 20 and then only a count. (Issue 124 changed this to the first 100.) The log is already trimmed by size, so it can't grow without limit. The README says where the log is and that it is plain text.
 118. **The window's size.** Requirements.md said the window fits on a 1366 × 768 screen with room to spare. At the size it opened with, 848 × 635, "Prepare a stick" had to be scrolled to reach the warning and the button. Found while reviewing the look (T-032, `ui-review/UiReview.md` items F01 and G03).
     - **Decided (2026-11-10):** Babawus opens at 1024 × 768, assuming that no screen smaller than Full HD (1920 × 1080) is used. Having to scroll to find buttons or read text is avoided at that size. The window can still be made smaller, down to what each screen needs.
 119. **What the screen calls an entry.** Names of entries such as "laptop" can be read as ordinary words: "Link this computer to laptop?" reads as "link this computer to this computer" for someone at a laptop. Found while reviewing the look (T-032, `ui-review/UiReview.md` item C10).
@@ -351,7 +355,7 @@ Comparing the requirements with what the configuration and log have to do turned
 
 ## Decisions on the setup texts (T-040)
 
-122. **What a backup profile is, and how the setup page names things.** Item 119 introduced the term, and left open whether computers and accounts are both called that.
+122. **What a backup profile is, and how the setup page names things.** Issue 119 introduced the term, and left open whether computers and accounts are both called that.
     - **Decided (2026-11-10):** A **backup profile** is the settings and backups of one account on one computer: an account's entry in the configuration, inside its computer's entry. A computer is not a backup profile; it holds them. In German, "Sicherungsprofil". On screen:
         - Names of computers and backup profiles are quoted in sentences, questions and buttons: "the computer called “laptop”", "the backup profile for “anna”", "Link to “laptop”…". The list rows stay unquoted, because there a name stands on its own.
         - The setup page's list is headed "Backup profiles on this stick".
@@ -366,8 +370,8 @@ Comparing the requirements with what the configuration and log have to do turned
 
 ## Decisions on the log (T-036)
 
-124. **How many errors a run logs one by one.** Item 117 said every skipped file and error is logged, relying on trimming to bound the log. But trimming happens at the next run's start and always keeps each account's last backup, so one run with, say, 100,000 unreadable files would leave a log of several megabytes that never shrinks.
-    - **Decided (2026-11-10):** The first 100 skipped files and errors of a run are logged one by one, instead of the first 20; then one `MULTIPLE_ERRORS` entry, and the rest are only counted. Many errors are most likely caused by the same problem, and if they have different causes, the poweruser fixes what caused the first 100 and runs the backup again. Each start entry also records Babawus's version and the computer's hostname, as item 117 decided.
+124. **How many errors a run logs one by one.** Issue 117 said every skipped file and error is logged, relying on trimming to bound the log. But trimming happens at the next run's start and always keeps each account's last backup, so one run with, say, 100,000 unreadable files would leave a log of several megabytes that never shrinks.
+    - **Decided (2026-11-10):** The first 100 skipped files and errors of a run are logged one by one, instead of the first 20; then one `MULTIPLE_ERRORS` entry, and the rest are only counted. Many errors are most likely caused by the same problem, and if they have different causes, the poweruser fixes what caused the first 100 and runs the backup again. Each start entry also records Babawus's version and the computer's hostname, as issue 117 decided.
 
 ## Decisions on the start screen's buttons (T-045)
 
@@ -385,12 +389,12 @@ The user tried the package built from pull request 59 on the VM: formatting as E
 128. **How the start screen tells how ejecting went.** After Eject, the empty page said "Plug in your backup stick" with "You can pull out BACKUP-A now." in smaller type below it, which read confusingly.
     - **Decided (2026-11-11):** Every outcome of Eject is a pop-up with an OK button: "You can pull out BACKUP-A now.", or that it is still in use by a program, was already pulled out, or couldn't be ejected. "Ejecting BACKUP-A…" stays in the explanation while it goes on. Once the pop-up is closed, the start screen shows what is plugged in, for example "Plug in your backup stick". The verdict screen's "Eject BACKUP-A" uses the same pop-up, and after a successful eject Babawus goes back to the start screen; after a failed one, the verdict screen stays, so that Eject can be tried again (T-048).
 
-## Decisions from the 0.1.0 checklist run (issue 63)
+## Decisions from the 0.1.0 checklist run ([#63](https://github.com/ziggymax/babawus/issues/63))
 
 129. **What keeps a stick busy.** The checklist's "still in use" step opened stick A in the file manager and pressed Eject. On Linux Mint 22 the stick ejected anyway: Nemo watches a folder without keeping anything open on the stick, and closes its window when the stick goes. A text editor showing the stick's log didn't stop it either, because it reads the whole file and closes it. So Babawus was right to eject: nothing was using the stick in a way that could lose data. But the step and the message both name a file manager window as an example.
     - **Decided (2026-11-11):** The checklist makes the stick busy with a terminal whose current folder is on the stick (`cd` into it), which reliably keeps it in use. The message no longer names a file manager: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again.", in English and German, and Requirements.md says the same (T-051).
-130. **When and how 0.1.0 is released.** The checklist run (issue 63) passed, apart from the "still in use" step of item 129.
-    - **Decided (2026-11-11):** T-051 is fixed first, so that 0.1.0 has the right wording; the rest of the run doesn't need repeating for it. 0.1.0 is then published as a git tag `v0.1.0` on main and a GitHub release with the `.deb` attached and short notes, linking issue 63 (T-052).
+130. **When and how 0.1.0 is released.** The checklist run ([#63](https://github.com/ziggymax/babawus/issues/63)) passed, apart from the "still in use" step of issue 129.
+    - **Decided (2026-11-11):** T-051 is fixed first, so that 0.1.0 has the right wording; the rest of the run doesn't need repeating for it. 0.1.0 is then published as a git tag `v0.1.0` on main and a GitHub release with the `.deb` attached and short notes, linking [#63](https://github.com/ziggymax/babawus/issues/63) (T-052).
 
 ## Decisions on the logos (T-053)
 
@@ -491,3 +495,13 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 
 140. **How to release 0.2.1 (T-064).** Since 0.2.0, only the icon in the menu and the panel changed (T-063).
     - **Decided (2026-11-14):** Only the installing steps of the release checklist are run: 0.2.1 is installed over the released 0.2.0 as an update, the menu and panel show the new icon, and Babawus starts with its sticks and history as before. There is no checklist issue; the release notes say what was checked. One pull request raises the version and records the release in Tasks.md; the tag `v0.2.1` goes on its merge commit, and the GitHub release follows straight after.
+
+## Decisions on 1.0.0-alpha.1, the document cleanup (T-065 to T-071)
+
+141. **How the document cleanup of 1.0.0-alpha.1 is done.** ReleasePlanning.md lists Concept, Requirements, Issues, Tasks, DevEnvSetup and ReleaseChecklist for cleaning up, with Issues and Tasks each split in two.
+    - **Decided (2026-11-15):**
+        - One task and one pull request per document, in this order: Issues (T-065), Tasks (T-066), Concept (T-067), Requirements (T-068), DevEnvSetup (T-069) and ReleaseChecklist (T-070).
+        - Our issues are referred to as "issue 132", and tasks as "T-063", without a file name. GitHub issues and pull requests are always "#63", linked where possible, so the two never clash; the existing "issue 63" and "issue 75" become "#63" and "#75".
+        - "Clean up and consolidate" means: describe Babawus as it is in 0.2.1, fix what is out of date, drop the "first version" and step-by-step history, and remove repetition between the documents. The poweruser wording stays until 1.0.0-alpha.3. Claude proposes the changes, and the user reviews each pull request.
+        - A resolved issue moves to Issues-Resolved.md word for word, including any old "Open:" options, so its history stays complete. Only references are updated.
+        - A last task (T-071) raises the version to 1.0.0-alpha.1 and updates ReleasePlanning.md. After it is merged, Claude tags `v1.0.0-alpha.1` on main, with no GitHub release and no `.deb`.

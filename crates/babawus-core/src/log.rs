@@ -24,7 +24,7 @@ use crate::versions::Format;
 const TRIM_LIMIT: usize = 900_000;
 
 /// The errors of a run that are logged one by one. The rest are only counted: many errors most
-/// likely share a cause, and the first ones show it (Issues.md item 124).
+/// likely share a cause, and the first ones show it (issue 124).
 const MAX_LOGGED_ERRORS: u64 = 100;
 
 /// The code for an older version that could not be removed. This doesn't change the verdict.

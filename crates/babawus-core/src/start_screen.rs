@@ -52,7 +52,7 @@ fn free_space(root: &Path) -> Option<u64> {
 }
 
 /// The file system that udisks2 calls `id`, named as people know it, the same in every language
-/// (Issues.md item 133). Nothing if udisks2 reports none.
+/// (issue 133). Nothing if udisks2 reports none.
 fn file_system_name(id: &str) -> Option<&str> {
     Some(match id {
         "" => return None,
@@ -91,7 +91,7 @@ impl Mark {
 }
 
 /// A row of the media list. Each row has an Eject button; the status and its mark are only in
-/// the details (Issues.md item 134).
+/// the details (issue 134).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Row {
     pub label: String,
@@ -146,7 +146,7 @@ pub fn row(medium: &Medium, checked: Option<&Checked>, language: Language) -> Ro
 }
 
 /// An action for the selected medium, below its details. "Start backup" is below the
-/// medium's row in the list instead, and each row has its own Eject (Issues.md item 134).
+/// medium's row in the list instead, and each row has its own Eject (issue 134).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Action {
     ShowHistory,
@@ -218,7 +218,7 @@ pub struct Details {
     pub last_backup: Option<(String, bool)>,
     /// For any other status: what it means and what to do.
     pub explanation: Option<String>,
-    /// Only for a medium known to be a Babawus medium (Issues.md item 134).
+    /// Only for a medium known to be a Babawus medium (issue 134).
     pub start_backup: Option<StartBackup>,
     /// The actions shown, in order.
     pub buttons: Vec<Button>,
@@ -230,7 +230,7 @@ pub struct Shown<'a> {
     /// Nothing while the medium is being checked.
     pub checked: Option<&'a Checked>,
     /// Babawus may format at least one drive, so "Prepare…" can open the format view, which
-    /// lists them all. See "Formatting a medium" and Issues.md item 78.
+    /// lists them all. See "Formatting a medium" and issue 78.
     pub formattable: bool,
 }
 
@@ -281,7 +281,7 @@ pub fn details(
             Action::ShowHistory => checked.is_some_and(|checked| checked.has_history),
             Action::WhatsBackedUp => ready,
             // What is on a stick open for another account is unknown, so it isn't offered
-            // for erasing (Issues.md item 110).
+            // for erasing (issue 110).
             Action::Prepare => formattable && !matches!(status, Some(Status::OtherAccount)),
             Action::ChangeSetup => babawus,
         })
@@ -311,7 +311,7 @@ pub fn details(
     }
 }
 
-/// A USB stick that is plugged in, but isn't in the list. See Issues.md item 121.
+/// A USB stick that is plugged in, but isn't in the list. See issue 121.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Unlisted {
     /// It has a file system that isn't opened, which plugging it back in opens.

@@ -246,7 +246,7 @@ fn skipped_groups(outcome: &Outcome, language: Language) -> Vec<String> {
 /// "Last backup: today at 14:03", "Last backup: yesterday at 09:12" or "Last backup: 47 days
 /// ago (2026-09-23 at 17:54)", from when it finished, at the time `now`. Days are calendar days,
 /// as `clock` shows them, and a time in the future, from a wrong clock, counts as today. See
-/// Issues.md item 93.
+/// issue 93.
 pub(crate) fn last_backup_text(
     last: Option<LastBackup>,
     now: SystemTime,

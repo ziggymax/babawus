@@ -2,7 +2,7 @@
 //! backup is too long ago. Each backup that counts notes when it finished, with the account's
 //! `run_check_days` from the stick, in a state file of the user's, because the stick is usually
 //! not plugged in at login. See "Remind me at login when my last backup is too old" in
-//! Requirements.md and Issues.md item 137.
+//! Requirements.md and issue 137.
 
 use std::ffi::OsStr;
 use std::io;

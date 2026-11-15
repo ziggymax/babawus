@@ -1,7 +1,6 @@
 //! The log window: a stick's log for the poweruser, one row per line, with one run highlighted.
 //! It isn't modal, and follows changes to the log until it is closed. What to show comes from
-//! [`babawus_core::log_view`]. See "See a stick's log" in Requirements.md and Issues.md
-//! item 135.
+//! [`babawus_core::log_view`]. See "See a stick's log" in Requirements.md and issue 135.
 
 use std::cell::{Cell, RefCell};
 use std::path::PathBuf;

@@ -56,7 +56,7 @@ use babawus_core::reminder::state_file;
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
 /// Narrow enough that the user's four buttons fit on one line at 1024 × 768, in German too
-/// (Issues.md item 125).
+/// (issue 125).
 const LIST_WIDTH: i32 = 240;
 /// How often the backup screen is updated: at most about 10 times a second. See
 /// "Responsiveness" in Requirements.md.
@@ -64,7 +64,7 @@ const BACKUP_UPDATES: Duration = Duration::from_millis(100);
 const LOGO_SIZE: i32 = 80;
 /// Leaves room for the logo in the upper right corner of the details.
 const LOGO_ROOM: i32 = LOGO_SIZE + MARGIN;
-/// The size of a stick in the media list (Issues.md item 120).
+/// The size of a stick in the media list (issue 120).
 const STICK_SIZE: i32 = 48;
 /// The size of the marks in the explanation, close to the height of its text.
 const MARK_SIZE: i32 = 18;
@@ -90,7 +90,7 @@ const CSS: &str = "
 .babawus-eject:hover { opacity: 0.85; }
 .babawus-eject:active { opacity: 0.7; }
 .babawus-eject:disabled { opacity: 0.4; }
-/* Green on the selected row too, whose colours would otherwise win (Issues.md item 134). */
+/* Green on the selected row too, whose colours would otherwise win (issue 134). */
 .babawus-start-backup {
     font-size: 18pt;
     padding: 4px 12px;
@@ -126,7 +126,7 @@ struct Notice {
 }
 
 /// One row of the media list: the stick, its label and its Eject button, and below them
-/// "Start backup" while it is the selected Babawus stick (Issues.md item 134).
+/// "Start backup" while it is the selected Babawus stick (issue 134).
 struct RowWidgets {
     row: ListBoxRow,
     stick: Image,
@@ -145,7 +145,7 @@ struct DetailsWidgets {
     /// A notice on the empty page, such as "You can pull out BACKUP-A now.".
     empty_notice: Label,
     /// "Prepare…" on the empty page, so that a blank stick can be formatted while Advanced is
-    /// on. See Issues.md item 78.
+    /// on. See issue 78.
     empty_prepare: Button,
     title: Label,
     mark: Image,
@@ -326,7 +326,7 @@ struct Window {
     /// A stick that is plugged in but not listed, for the empty page.
     unlisted: Cell<Option<Unlisted>>,
     /// The open log windows, by the udisks2 object path of their medium's file system: at most
-    /// one per stick (Issues.md item 135).
+    /// one per stick (issue 135).
     log_windows: RefCell<HashMap<String, Rc<LogWindow>>>,
 }
 
@@ -412,7 +412,7 @@ pub fn show(app: &Application) {
 
     let window = ApplicationWindow::builder()
         .application(app)
-        // Opens at 1024 × 768 with its title bar, assuming Full HD screens (Issues.md item 118).
+        // Opens at 1024 × 768 with its title bar, assuming Full HD screens (issue 118).
         .default_width(1024)
         .default_height(768)
         .titlebar(&header)
@@ -550,7 +550,7 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
 
     // The user's buttons, then the poweruser's, on one row that wraps like words when the
     // window is narrow, or the texts are long, as in German, so that the window needn't grow
-    // (Issues.md item 134).
+    // (issue 134).
     let actions = action_row();
     let mut buttons = HashMap::new();
     for action in Action::ALL {
@@ -688,7 +688,7 @@ impl Window {
             if window.formatting() {
                 return glib::Propagation::Stop;
             }
-            // Leaving with unsaved changes asks first. See Issues.md item 84.
+            // Leaving with unsaved changes asks first. See issue 84.
             if window.setup_unsaved() {
                 window.ask_to_leave_setup(true);
                 return glib::Propagation::Stop;
@@ -762,8 +762,7 @@ impl Window {
         });
         self.window.add_action(&advanced);
 
-        // Each row's Eject, with the object path of its medium's file system (Issues.md
-        // item 134).
+        // Each row's Eject, with the object path of its medium's file system (issue 134).
         let eject = gio::SimpleAction::new("eject-stick", Some(glib::VariantTy::STRING));
         let weak = Rc::downgrade(self);
         eject.connect_activate(move |_, parameter| {
@@ -859,7 +858,7 @@ impl Window {
         // GTK gives the first selectable text the focus, which selects all of it: the name.
         // Nothing in the dialog needs copying (`ui-review/UiReview.md` W05).
         unselectable(dialog.upcast_ref());
-        // The comment is markup, which `AboutDialog` would show as it is (Issues.md item 132).
+        // The comment is markup, which `AboutDialog` would show as it is (issue 132).
         use_markup_for(dialog.upcast_ref(), &text::about_comments(language));
         dialog.present();
     }
@@ -936,7 +935,7 @@ impl Window {
             *self.notice.borrow_mut() = None;
         }
         let to_check: Vec<Medium> = media.iter().map(|(medium, _)| medium.clone()).collect();
-        // A log window closes when its stick has gone (Issues.md item 135).
+        // A log window closes when its stick has gone (issue 135).
         let gone: Vec<Rc<LogWindow>> = {
             let mut windows = self.log_windows.borrow_mut();
             let paths: HashSet<String> = media.iter().map(path).collect();
@@ -2151,7 +2150,7 @@ impl Window {
         self.media_changed();
     }
 
-    /// Shows the screen called `name`, starting at the top (Issues.md item 118).
+    /// Shows the screen called `name`, starting at the top (issue 118).
     fn show_screen(&self, name: &str) {
         if let Some(screen) = self.screens.child_by_name(name) {
             crate::scroll::to_top(&screen);
@@ -2203,7 +2202,7 @@ impl Window {
             *window.notice.borrow_mut() = None;
             window.show_details();
             window.show_backup();
-            // How it went is a pop-up, on whichever screen is showing (Issues.md item 128).
+            // How it went is a pop-up, on whichever screen is showing (issue 128).
             // After a successful eject from the verdict screen, the backup is done with too.
             let language = window.language.get();
             let message = text.fill(language, &[("label", &label)]);

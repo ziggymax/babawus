@@ -24,7 +24,7 @@ use crate::time::{log_timestamp, parse_log_timestamp, parse_utc_timestamp, utc_t
 use crate::versions::{Format, fits_on};
 
 /// The newest format this Babawus understands. A file in the layout of 0.1.0, which had no
-/// `[babawus]` table, is damaged: there were no real users yet (Issues.md item 136).
+/// `[babawus]` table, is damaged: there were no real users yet (issue 136).
 pub const FORMAT: u32 = 1;
 
 /// The table that says which Babawus wrote the file, and when.
@@ -33,7 +33,7 @@ const HEADER_TABLE: &str = "[babawus]";
 pub const DEFAULT_OLDER_VERSIONS: u32 = 10;
 pub const OLDER_VERSIONS: std::ops::RangeInclusive<u32> = 1..=99;
 pub const DEFAULT_RUN_CHECK_DAYS: u32 = 7;
-/// 0 means never remind (Issues.md item 136).
+/// 0 means never remind (issue 136).
 pub const RUN_CHECK_DAYS: std::ops::RangeInclusive<u32> = 0..=365;
 
 const MARKER: &str = "# Babawus configuration\n";
@@ -98,7 +98,7 @@ struct File {
     computers: Vec<Computer>,
 }
 
-/// The `[babawus]` table (Issues.md item 136).
+/// The `[babawus]` table (issue 136).
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Header {

@@ -1,5 +1,5 @@
 //! The format view: choose a drive, a label and a file system, confirm, then wait while it is
-//! formatted, and see how it went. See "Format USB media" in Requirements.md and Issues.md items
+//! formatted, and see how it went. See "Format USB media" in Requirements.md and issues
 //! 78-81. What to show comes from [`babawus_core::format_screen`]; this module only puts it on
 //! the screen. The window keeps what the poweruser has chosen in the widgets themselves.
 
@@ -47,7 +47,7 @@ pub struct FormatPage {
     ext4_detail: Label,
     /// Why Ext4 can't be chosen, or that it asks for a password.
     ext4_note: Label,
-    /// Whether this account is an administrator, who may choose Ext4 (Issues.md item 108).
+    /// Whether this account is an administrator, who may choose Ext4 (issue 108).
     administrator: bool,
     warning: Label,
     warning_row: Box,

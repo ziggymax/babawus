@@ -186,7 +186,7 @@ pub enum Status {
     /// A Babawus medium that is mounted read-only.
     WriteProtected,
     /// Mounted for another account, where this account can't reach it, for example at
-    /// `/media/anna/BACKUP-A`. What is on it is unknown. See Issues.md item 110.
+    /// `/media/anna/BACKUP-A`. What is on it is unknown. See issue 110.
     OtherAccount,
     NotBackupMedium,
 }

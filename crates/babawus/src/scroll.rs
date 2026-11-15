@@ -1,5 +1,5 @@
 //! Starting pages at the top. A page that scrolls starts at the top whenever it opens or
-//! changes part, so that its heading is always seen first (Issues.md item 118).
+//! changes part, so that its heading is always seen first (issue 118).
 
 use gtk4::prelude::*;
 use gtk4::{ScrolledWindow, Widget};

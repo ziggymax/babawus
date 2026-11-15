@@ -1,5 +1,5 @@
 //! The log window: a stick's log one row per line, close to the file, with styles for the UI to
-//! draw. See "See a stick's log" in Requirements.md and Issues.md item 135.
+//! draw. See "See a stick's log" in Requirements.md and issue 135.
 
 use std::io;
 use std::path::Path;
