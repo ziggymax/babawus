@@ -43,7 +43,7 @@ To the extent possible the new features are listed by priority, from highest to 
     - The language files are loaded at runtime, so a language can be added without a new build.
     - English is a language file like the others. If it is missing or broken, Babawus shows an error and stops.
     - A language file that is broken or incomplete (missing texts, wrong placeholders, syntax errors) is rejected: it is not offered in the Language menu, and the reason is written to the log.
-    - The file format is not decided yet. The first task of the version is to investigate and choose it, against our needs: switching language at once without a restart, placeholders, and tool support (candidates include Fluent, gettext and TOML).
+    - The files are TOML, one per language, in `/usr/share/babawus/languages/`, chosen over gettext and Fluent (issues 147 and 148).
 1. *Revisit the "power user concept"*. Many users will do all the work with Babawus themselves, i.e. both doing regular backups and advanced stuff (formatting drives, changing setups etc), so referring to some other non-existent "power user" may seem odd.
 A better alternative would be to use a concept simply called "Advanced features". Every time the user chooses "Advanced" from the menu, a pop-up appears with a suitable warning about the dangers of using advanced features and two options: "Cancel" or "Continue". A non-technical user can then opt out, and the tech-savvy person can just continue. No text/wording in Babawus implies anything about how/where to get help with advanced features or diagnosing problems. This covers:
     - every text that mentions a poweruser, or someone who looks after the computer
