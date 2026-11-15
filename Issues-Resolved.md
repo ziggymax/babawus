@@ -505,3 +505,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - "Clean up and consolidate" means: describe Babawus as it is in 0.2.1, fix what is out of date, drop the "first version" and step-by-step history, and remove repetition between the documents. The poweruser wording stays until 1.0.0-alpha.3. Claude proposes the changes, and the user reviews each pull request.
         - A resolved issue moves to Issues-Resolved.md word for word, including any old "Open:" options, so its history stays complete. Only references are updated.
         - A last task (T-071) raises the version to 1.0.0-alpha.1 and updates ReleasePlanning.md. After it is merged, Claude tags `v1.0.0-alpha.1` on main, with no GitHub release and no `.deb`.
+
+## Decisions on splitting the task list (T-066)
+
+142. **How Tasks-Open.md is organised.** Tasks.md had sections for the first version's parts (logic, udisks2, user interface, release) and the next version, all done or nearly empty, with T-061 and T-043, two problems seen once, left in them.
+    - **Decided (2026-11-15):** By version: "Now", the version being worked on (1.0.0-alpha.1), "Needs a decision", "Waiting" for problems seen once and not since (T-061 and T-043), and "Later versions" (T-027 and T-028). The empty sections go. Tasks-Done.md keeps the done tasks word for word, in the order they were done, with "pull request 61" written as #61, as issue 141 decided.

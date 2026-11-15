@@ -6,7 +6,7 @@ Babawus is an application designed to make it easy to maintain backups of import
  
 ## Development
 
-Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](Requirements.md) for what it must do. [Tasks.md](Tasks.md) lists all outstanding work, so add anything that is left for later there.
+Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](Requirements.md) for what it must do. [Tasks-Open.md](Tasks-Open.md) lists all outstanding work, so add anything that is left for later there.
 
 To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands below. [DevEnvSetup.md](DevEnvSetup.md) explains how to rebuild the full development VM.
 

@@ -2,7 +2,7 @@
 
 Run this on real USB sticks before each release. It covers what the automated tests can't: the GUI, formatting, pulling out a stick, ejecting, and installing the package (see "Testing" in [Requirements.md](Requirements.md)).
 
-**To record a run**, open a GitHub issue titled "Release 0.1.0 checklist" (with the version being released), and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks.md](Tasks.md) before the release goes ahead (see issues 94–96).
+**To record a run**, open a GitHub issue titled "Release 0.1.0 checklist" (with the version being released), and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks-Open.md](Tasks-Open.md) before the release goes ahead (see issues 94–96).
 
 Each step says what to do, then **→** what should be seen. Texts in quotes are what Babawus shows in English. Run the whole list in English, except where a step says otherwise.
 
@@ -119,4 +119,4 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 ## Afterwards
 
-- [ ] Every box is ticked, or has a task in Tasks.md for what it found. → Close the issue, and release.
+- [ ] Every box is ticked, or has a task in Tasks-Open.md for what it found. → Close the issue, and release.
