@@ -15,6 +15,7 @@ pub mod format_screen;
 pub mod fs;
 pub mod history_screen;
 pub mod identity;
+pub mod language;
 pub mod lock;
 pub mod log;
 pub mod log_view;

@@ -10,10 +10,10 @@ use std::path::Path;
 use crate::choose_screen::Choice;
 use crate::config::{self, Config, EntryError, Loaded, folders_on_medium};
 use crate::fs::FileSystem;
+use crate::language::Language;
 use crate::lock::{LockError, MediumLock, ThisProcess};
 use crate::log::{account_name, new_run_id};
 use crate::media::user_of;
-use crate::settings::Language;
 use crate::text::Text;
 use crate::versions::Format;
 

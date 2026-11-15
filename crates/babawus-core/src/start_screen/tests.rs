@@ -6,7 +6,9 @@ use crate::log::LastBackup;
 use crate::media::{Drive, Volume};
 use crate::time::utc_clock;
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const DAY: Duration = Duration::from_secs(86_400);
 const HOUR: Duration = Duration::from_secs(3600);
 
@@ -59,7 +61,7 @@ fn details_of(checked: Option<&Checked>, advanced: bool) -> Details {
         checked,
         formattable: true,
     };
-    details(&shown, now(), utc_clock, EN, advanced)
+    details(&shown, now(), utc_clock, en(), advanced)
 }
 
 fn actions(details: &Details) -> Vec<Action> {
@@ -82,7 +84,7 @@ fn marks_group_the_statuses_by_what_can_be_done() {
 #[test]
 fn a_row_shows_a_spinner_and_a_grey_stick_until_it_is_checked() {
     let medium = medium("sdb", "BACKUP-A");
-    let row = row(&medium, None, EN);
+    let row = row(&medium, None, en());
     assert_eq!(row.label, "BACKUP-A");
     assert!(row.checking);
     assert!(!row.babawus);
@@ -93,9 +95,9 @@ fn a_row_shows_a_spinner_and_a_grey_stick_until_it_is_checked() {
 #[test]
 fn only_a_babawus_medium_has_a_coloured_stick() {
     let medium = medium("sdb", "BACKUP-A");
-    assert!(row(&medium, Some(&checked(Status::NotSetUp)), EN).babawus);
-    assert!(row(&medium, Some(&checked(Status::WriteProtected)), EN).babawus);
-    assert!(!row(&medium, Some(&checked(Status::NotBackupMedium)), EN).babawus);
+    assert!(row(&medium, Some(&checked(Status::NotSetUp)), en()).babawus);
+    assert!(row(&medium, Some(&checked(Status::WriteProtected)), en()).babawus);
+    assert!(!row(&medium, Some(&checked(Status::NotBackupMedium)), en()).babawus);
 }
 
 #[test]
@@ -139,7 +141,7 @@ fn a_medium_without_a_file_system_names_none() {
         checked: None,
         formattable: true,
     };
-    let details = details(&shown, now(), utc_clock, EN, false);
+    let details = details(&shown, now(), utc_clock, en(), false);
     assert_eq!(details.about, "Kingston DataTraveler 3.0 · 15.5 GB");
 }
 
@@ -289,7 +291,7 @@ fn a_stick_open_for_another_account_says_so_and_offers_nothing_to_change_it() {
     assert_eq!(details.start_backup, None, "what is on it is unknown");
 
     let medium = medium("sdb", "BACKUP-A");
-    let row = row(&medium, Some(&other), EN);
+    let row = row(&medium, Some(&other), en());
     assert!(!row.babawus, "what is on it is unknown");
     assert!(!row.checking);
 }

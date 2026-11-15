@@ -8,9 +8,9 @@ use std::rc::{Rc, Weak};
 use std::time::Duration;
 
 use babawus_core::fs::RealFs;
+use babawus_core::language::Language;
 use babawus_core::log_view::{LogLine, Style, read_log_lines};
 use babawus_core::medium::LOG_FILE;
-use babawus_core::settings::Language;
 use babawus_core::text::Text;
 use babawus_core::verdict_screen::VerdictMark;
 use gtk4::prelude::*;

@@ -4,9 +4,9 @@
 
 use std::time::SystemTime;
 
+use crate::language::Language;
 use crate::log::Run;
 use crate::media::user_of;
-use crate::settings::Language;
 use crate::text::Text;
 use crate::time::ClockTime;
 use crate::verdict::Reason;

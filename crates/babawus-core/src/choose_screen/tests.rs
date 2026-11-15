@@ -3,7 +3,9 @@ use std::time::SystemTime;
 use super::*;
 use crate::fs::fake::FakeFs;
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const HOME: &str = "/home/anna";
 
 /// A home folder with documents, an old folder, a temporary file, a cloud folder on another
@@ -56,7 +58,7 @@ fn file(relative: &str) -> Entry {
 }
 
 fn row(choice: &Choice, entry: &Entry) -> Row {
-    choice.row(&system(), Path::new(HOME), entry, EN)
+    choice.row(&system(), Path::new(HOME), entry, en())
 }
 
 fn toggle(choice: &mut Choice, entry: &Entry) -> bool {
@@ -132,7 +134,7 @@ fn unticking_a_selected_folder_inside_a_ticked_one_leaves_it_out() {
 fn the_whole_home_folder_can_be_ticked() {
     let mut choice = choice(&[], &[]);
 
-    toggle(&mut choice, &home_entry(EN));
+    toggle(&mut choice, &home_entry(en()));
 
     assert_eq!(choice.selected, ["."]);
     assert!(row(&choice, &dir("Pictures")).ticked);
@@ -209,7 +211,7 @@ fn patterns_can_be_added_and_removed() {
     assert_eq!(choice.add_pattern("a/b"), Err(PatternProblem::Slash));
     assert_eq!(choice.add_pattern("*.tmp"), Err(PatternProblem::Duplicate));
     assert_eq!(choice.exclude_patterns, ["*.tmp", "node_modules"]);
-    assert!(pattern_problem_text(PatternProblem::Slash, EN).contains("untick it"));
+    assert!(pattern_problem_text(PatternProblem::Slash, en()).contains("untick it"));
 
     choice.remove_pattern("*.tmp");
 
@@ -283,8 +285,8 @@ fn the_totals_compare_with_the_free_space() {
         bytes: 4_200_000_000,
     });
 
-    let (fits, no_warning) = totals_text(totals, Some(15_500_000_000), EN);
-    let (_, warning) = totals_text(totals, Some(1_000_000_000), EN);
+    let (fits, no_warning) = totals_text(totals, Some(15_500_000_000), en());
+    let (_, warning) = totals_text(totals, Some(1_000_000_000), en());
 
     assert_eq!(
         fits,
@@ -296,9 +298,9 @@ fn the_totals_compare_with_the_free_space() {
             .unwrap()
             .starts_with("That is more than the free space")
     );
-    assert_eq!(totals_text(None, None, EN).0, "Counting…");
+    assert_eq!(totals_text(None, None, en()).0, "Counting…");
     assert_eq!(
-        totals_text(Some(Totals::default()), None, EN).0,
+        totals_text(Some(Totals::default()), None, en()).0,
         "Nothing is chosen yet."
     );
 }

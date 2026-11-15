@@ -10,6 +10,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 use crate::fs::FileSystem;
+use crate::language::{Language, Languages};
 use crate::medium::read_file;
 
 /// The settings file, in the user's configuration folder.
@@ -17,52 +18,11 @@ pub const SETTINGS_FILE: &str = "babawus/settings.toml";
 
 const TEMP_SUFFIX: &str = ".tmp";
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Language {
-    #[serde(rename = "en")]
-    English,
-    #[serde(rename = "de")]
-    German,
-}
-
-impl Language {
-    pub const ALL: [Self; 2] = [Self::English, Self::German];
-
-    /// The name of the language in that language, so that it can be found whatever is showing.
-    pub fn name(self) -> &'static str {
-        match self {
-            Self::English => "English",
-            Self::German => "Deutsch",
-        }
-    }
-
-    fn code(self) -> &'static str {
-        match self {
-            Self::English => "en",
-            Self::German => "de",
-        }
-    }
-
-    /// The first language in `system_names` that is available, otherwise English. The names are
-    /// the system's languages, best first, in forms like `de_DE.UTF-8`, `de_AT@euro` or `C`.
-    pub fn from_system<'a>(system_names: impl IntoIterator<Item = &'a str>) -> Self {
-        system_names
-            .into_iter()
-            .find_map(|name| {
-                let code = name.split(['_', '.', '@']).next()?;
-                Self::ALL
-                    .into_iter()
-                    .find(|language| language.code() == code)
-            })
-            .unwrap_or(Self::English)
-    }
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Settings {
-    /// The language the user has chosen, if any.
+    /// The code of the language the user has chosen, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub language: Option<Language>,
+    pub language: Option<String>,
 }
 
 impl Settings {
@@ -76,11 +36,17 @@ impl Settings {
             .unwrap_or_default()
     }
 
-    /// The language to show: the user's choice, otherwise the system's. See
-    /// [`Language::from_system`].
-    pub fn language<'a>(&self, system_names: impl IntoIterator<Item = &'a str>) -> Language {
+    /// The language to show: the user's choice, if it is still there, otherwise the system's.
+    /// See [`Languages::from_system`].
+    pub fn language<'a>(
+        &self,
+        languages: &Languages,
+        system_names: impl IntoIterator<Item = &'a str>,
+    ) -> Language {
         self.language
-            .unwrap_or_else(|| Language::from_system(system_names))
+            .as_deref()
+            .and_then(|code| languages.find(code))
+            .unwrap_or_else(|| languages.from_system(system_names))
     }
 
     /// Writes the settings file at `path`, and any folders it needs. The file is never written in
@@ -140,14 +106,22 @@ mod tests {
     use super::*;
     use crate::fs::RealFs;
     use crate::fs::fake::FakeFs;
+    use crate::language::testing;
     use crate::log::new_run_id;
 
-    const GERMAN: Settings = Settings {
-        language: Some(Language::German),
-    };
-    const ENGLISH: Settings = Settings {
-        language: Some(Language::English),
-    };
+    fn chosen(code: &str) -> Settings {
+        Settings {
+            language: Some(code.to_owned()),
+        }
+    }
+
+    fn german() -> Settings {
+        chosen("de")
+    }
+
+    fn english() -> Settings {
+        chosen("en")
+    }
 
     fn path() -> PathBuf {
         PathBuf::from("/home/usera/.config/babawus/settings.toml")
@@ -166,49 +140,38 @@ mod tests {
     }
 
     #[test]
-    fn german_is_found_in_the_forms_systems_use() {
-        for name in ["de", "de_DE", "de_DE.UTF-8", "de_AT@euro", "de.UTF-8"] {
-            assert_eq!(Language::from_system([name]), Language::German, "{name}");
-        }
-    }
-
-    #[test]
-    fn an_unavailable_system_language_gives_english() {
-        for names in [&["fr_FR.UTF-8"][..], &["C"], &["den_XX"], &[""], &[]] {
-            let language = Language::from_system(names.iter().copied());
-            assert_eq!(language, Language::English, "{names:?}");
-        }
-    }
-
-    #[test]
-    fn the_first_available_system_language_wins() {
-        let names = ["fr_FR", "fr", "de_DE", "en_GB", "C"];
-        assert_eq!(Language::from_system(names), Language::German);
-
-        let names = ["en_GB", "de_DE"];
-        assert_eq!(Language::from_system(names), Language::English);
-    }
-
-    #[test]
     fn the_users_choice_goes_before_the_system_language() {
-        assert_eq!(ENGLISH.language(["de_DE"]), Language::English);
+        let languages = testing::languages();
+
+        assert_eq!(
+            english().language(&languages, ["de_DE"]),
+            testing::english()
+        );
     }
 
     #[test]
     fn without_a_choice_the_system_language_is_used() {
-        assert_eq!(Settings::default().language(["de_DE"]), Language::German);
+        let languages = testing::languages();
+
+        let language = Settings::default().language(&languages, ["de_DE"]);
+
+        assert_eq!(language, testing::german());
     }
 
     #[test]
-    fn languages_have_their_own_names() {
-        let names = Language::ALL.map(Language::name);
+    fn a_chosen_language_that_is_gone_gives_the_system_language() {
+        let languages = testing::languages();
 
-        assert_eq!(names, ["English", "Deutsch"]);
+        assert_eq!(
+            chosen("fr").language(&languages, ["de_DE"]),
+            testing::german()
+        );
+        assert_eq!(chosen("fr").language(&languages, ["C"]), testing::english());
     }
 
     #[test]
     fn saved_settings_can_be_read_back() {
-        for settings in [GERMAN, ENGLISH, Settings::default()] {
+        for settings in [german(), english(), chosen("fr"), Settings::default()] {
             let fake = fake();
 
             settings.save(&fake, &path()).unwrap();
@@ -221,7 +184,7 @@ mod tests {
     fn the_file_has_the_form_in_the_requirements() {
         let fake = fake();
 
-        GERMAN.save(&fake, &path()).unwrap();
+        german().save(&fake, &path()).unwrap();
 
         assert_eq!(read_file(&fake, &path()).unwrap(), b"language = \"de\"\n");
     }
@@ -229,11 +192,11 @@ mod tests {
     #[test]
     fn saving_replaces_earlier_settings_and_leaves_no_temporary_file() {
         let fake = fake();
-        GERMAN.save(&fake, &path()).unwrap();
+        german().save(&fake, &path()).unwrap();
 
-        ENGLISH.save(&fake, &path()).unwrap();
+        english().save(&fake, &path()).unwrap();
 
-        assert_eq!(Settings::load(&fake, &path()), ENGLISH);
+        assert_eq!(Settings::load(&fake, &path()), english());
         let names = fake.read_dir(path().parent().unwrap()).unwrap();
         assert_eq!(names, ["settings.toml"]);
     }
@@ -244,9 +207,9 @@ mod tests {
         let temp = "/home/usera/.config/babawus/settings.toml.tmp";
         fake.add_file(temp, b"half", SystemTime::UNIX_EPOCH);
 
-        GERMAN.save(&fake, &path()).unwrap();
+        german().save(&fake, &path()).unwrap();
 
-        assert_eq!(Settings::load(&fake, &path()), GERMAN);
+        assert_eq!(Settings::load(&fake, &path()), german());
     }
 
     #[test]
@@ -256,12 +219,7 @@ mod tests {
 
     #[test]
     fn a_file_that_cannot_be_understood_means_no_choice() {
-        let garbled: [&[u8]; 4] = [
-            b"nonsense",
-            b"language = \"fr\"\n",
-            b"language = 3\n",
-            b"\xff\xfe",
-        ];
+        let garbled: [&[u8]; 3] = [b"nonsense", b"language = 3\n", b"\xff\xfe"];
         for contents in garbled {
             let fake = fake_with(contents);
 
@@ -281,28 +239,28 @@ mod tests {
     fn settings_from_a_newer_babawus_keep_the_language() {
         let fake = fake_with(b"language = \"de\"\ntheme = \"dark\"\n");
 
-        assert_eq!(Settings::load(&fake, &path()), GERMAN);
+        assert_eq!(Settings::load(&fake, &path()), german());
     }
 
     #[test]
     fn a_failed_save_keeps_the_old_settings_and_is_reported() {
         let fake = fake();
-        GERMAN.save(&fake, &path()).unwrap();
+        german().save(&fake, &path()).unwrap();
         let temp = "/home/usera/.config/babawus/settings.toml.tmp";
         fake.fail_path(temp, ErrorKind::PermissionDenied);
 
-        assert!(ENGLISH.save(&fake, &path()).is_err());
+        assert!(english().save(&fake, &path()).is_err());
 
-        assert_eq!(Settings::load(&fake, &path()), GERMAN);
+        assert_eq!(Settings::load(&fake, &path()), german());
     }
 
     #[test]
     fn a_failed_write_leaves_no_temporary_file() {
         let fake = fake();
-        GERMAN.save(&fake, &path()).unwrap();
+        german().save(&fake, &path()).unwrap();
         fake.set_capacity(0);
 
-        assert!(ENGLISH.save(&fake, &path()).is_err());
+        assert!(english().save(&fake, &path()).is_err());
 
         let names = fake.read_dir(path().parent().unwrap()).unwrap();
         assert_eq!(names, ["settings.toml"]);
@@ -313,41 +271,41 @@ mod tests {
         let fake = fake();
         fake.add_file("/home/usera/.config", b"", SystemTime::UNIX_EPOCH);
 
-        assert!(GERMAN.save(&fake, &path()).is_err());
+        assert!(german().save(&fake, &path()).is_err());
     }
 
     #[test]
     fn an_interrupted_save_leaves_the_old_settings_or_the_new_ones() {
         let steps = {
             let fake = fake();
-            GERMAN.save(&fake, &path()).unwrap();
+            german().save(&fake, &path()).unwrap();
             let before = fake.steps();
-            ENGLISH.save(&fake, &path()).unwrap();
+            english().save(&fake, &path()).unwrap();
             fake.steps() - before
         };
         assert!(steps >= 3);
 
         for step in 1..=steps {
             let fake = fake();
-            GERMAN.save(&fake, &path()).unwrap();
+            german().save(&fake, &path()).unwrap();
             fake.pull_at_step(fake.steps() + step);
 
-            assert!(ENGLISH.save(&fake, &path()).is_err(), "step {step}");
+            assert!(english().save(&fake, &path()).is_err(), "step {step}");
 
             fake.reinsert();
             let settings = Settings::load(&fake, &path());
-            assert!([GERMAN, ENGLISH].contains(&settings), "step {step}");
-            ENGLISH.save(&fake, &path()).unwrap();
-            assert_eq!(Settings::load(&fake, &path()), ENGLISH, "step {step}");
+            assert!([german(), english()].contains(&settings), "step {step}");
+            english().save(&fake, &path()).unwrap();
+            assert_eq!(Settings::load(&fake, &path()), english(), "step {step}");
         }
     }
 
     #[test]
     fn the_new_settings_are_flushed_before_they_replace_the_old_ones() {
         let fake = fake();
-        GERMAN.save(&fake, &path()).unwrap();
+        german().save(&fake, &path()).unwrap();
 
-        ENGLISH.save(&fake, &path()).unwrap();
+        english().save(&fake, &path()).unwrap();
 
         assert!(fake.content_is_flushed(path()));
     }
@@ -357,11 +315,11 @@ mod tests {
         let folder = std::env::temp_dir().join(format!("babawus-settings-{}", new_run_id()));
         let path = folder.join("deep/er/babawus/settings.toml");
 
-        GERMAN.save(&RealFs, &path).unwrap();
-        ENGLISH.save(&RealFs, &path).unwrap();
+        german().save(&RealFs, &path).unwrap();
+        english().save(&RealFs, &path).unwrap();
 
         let settings = Settings::load(&RealFs, &path);
         std::fs::remove_dir_all(&folder).unwrap();
-        assert_eq!(settings, ENGLISH);
+        assert_eq!(settings, english());
     }
 }

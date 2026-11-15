@@ -11,7 +11,7 @@ use crate::backup_screen::number;
 use crate::config::Account;
 use crate::exclude::Exclusions;
 use crate::fs::{FileKind, FileSystem};
-use crate::settings::Language;
+use crate::language::Language;
 use crate::text::{Text, size};
 
 /// What an account backs up, while it is being chosen. Paths are relative to the home folder,
@@ -167,9 +167,20 @@ impl Choice {
         entry: &Entry,
         language: Language,
     ) -> Row {
+        self.look(system, home, entry, Some(language))
+    }
+
+    /// The row for `entry`, with its note in `language`, or without notes if there is none.
+    fn look(
+        &self,
+        system: &dyn FileSystem,
+        home: &Path,
+        entry: &Entry,
+        language: Option<Language>,
+    ) -> Row {
         let relative = entry.relative.as_path();
         let is_dir = entry.kind == FileKind::Dir;
-        let note = |text: Text| Some(text.get(language).to_owned());
+        let note = |text: Text| language.map(|language| text.get(language).to_owned());
         if entry.kind == FileKind::Other {
             return Row {
                 ticked: false,
@@ -211,10 +222,16 @@ impl Choice {
                 can_toggle: false,
                 partly: false,
                 crossed: true,
-                note: Some(Text::ChooseNotePattern.fill(language, &[("pattern", pattern)])),
+                note: language.map(|language| {
+                    Text::ChooseNotePattern.fill(language, &[("pattern", pattern)])
+                }),
             };
         }
-        let not_text = (!entry.text).then(|| Text::ChooseNoteNotText.get(language).to_owned());
+        let not_text = if entry.text {
+            None
+        } else {
+            note(Text::ChooseNoteNotText)
+        };
         if self.is_selected(relative) {
             return Row {
                 ticked: true,
@@ -259,7 +276,7 @@ impl Choice {
         let Some(path) = stored(relative) else {
             return false;
         };
-        let row = self.row(system, home, entry, Language::English);
+        let row = self.look(system, home, entry, None);
         if !row.can_toggle {
             return false;
         }

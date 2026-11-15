@@ -4,7 +4,7 @@
 //! the screen. The window keeps what the poweruser has chosen in the widgets themselves.
 
 use babawus_core::format_screen::{DriveChoice, ResultShown, ext4_allowed, ext4_note};
-use babawus_core::settings::Language;
+use babawus_core::language::Language;
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
 use babawus_core::verdict_screen::VerdictMark;

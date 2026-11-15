@@ -18,7 +18,7 @@ use babawus_core::choose_screen::{
     Choice, Entry, children, home_entry, pattern_problem_text, totals_text,
 };
 use babawus_core::fs::{FileKind, RealFs};
-use babawus_core::settings::Language;
+use babawus_core::language::Language;
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
 use gtk4::prelude::*;
@@ -274,7 +274,7 @@ impl ChoosePage {
                 original: RefCell::new(Choice::default()),
                 home: glib::home_dir(),
                 show_hidden: Cell::new(false),
-                language: Cell::new(Language::English),
+                language: Cell::new(crate::window::languages().english()),
                 updating: Cell::new(false),
                 rows: RefCell::new(HashMap::new()),
                 changed: RefCell::new(None),

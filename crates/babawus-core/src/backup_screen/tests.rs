@@ -1,6 +1,8 @@
 use super::*;
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 
 fn tracker(messages: &[Progress]) -> Tracker {
     let mut tracker = Tracker::default();
@@ -18,7 +20,7 @@ const OVERVIEW: Progress = Progress::Overview {
 #[test]
 fn before_the_overview_the_run_is_getting_ready() {
     for messages in [&[][..], &[Progress::Scanning]] {
-        let shown = tracker(messages).shown(EN);
+        let shown = tracker(messages).shown(en());
         assert_eq!(shown.status, "Finding the files to back up…");
         assert!(shown.busy);
         assert_eq!(shown.overview, None);
@@ -30,7 +32,7 @@ fn before_the_overview_the_run_is_getting_ready() {
 
 #[test]
 fn the_overview_comes_before_any_file_is_copied() {
-    let shown = tracker(&[Progress::Scanning, OVERVIEW]).shown(EN);
+    let shown = tracker(&[Progress::Scanning, OVERVIEW]).shown(en());
     assert_eq!(shown.status, "Backing up…");
     assert!(!shown.busy);
     let overview = "To back up: 1,204 files (3.2 GB)";
@@ -46,7 +48,7 @@ fn the_counters_count_down_while_copying() {
         files_left: 300,
         bytes_left: 800_000_000,
     };
-    let shown = tracker(&[OVERVIEW, copying]).shown(EN);
+    let shown = tracker(&[OVERVIEW, copying]).shown(en());
     assert_eq!(shown.files_left.as_deref(), Some("Files left: 300"));
     assert_eq!(shown.bytes_left.as_deref(), Some("Left to copy: 800.0 MB"));
     assert_eq!(shown.fraction, Some(0.75));
@@ -61,9 +63,12 @@ fn without_bytes_the_files_show_how_far_it_has_got() {
         files_left: 1,
         bytes_left: 0,
     };
-    assert_eq!(tracker(&[overview, copying]).shown(EN).fraction, Some(0.75));
+    assert_eq!(
+        tracker(&[overview, copying]).shown(en()).fraction,
+        Some(0.75)
+    );
     let nothing = Progress::Overview { files: 0, bytes: 0 };
-    let shown = tracker(&[nothing]).shown(EN);
+    let shown = tracker(&[nothing]).shown(en());
     assert_eq!(shown.fraction, Some(1.0));
     assert_eq!(
         shown.overview.as_deref(),
@@ -77,13 +82,13 @@ fn one_file_is_not_files() {
         files: 1,
         bytes: 2000,
     };
-    let overview = tracker(&[one]).shown(EN).overview;
+    let overview = tracker(&[one]).shown(en()).overview;
     assert_eq!(overview.as_deref(), Some("To back up: 1 file (2.0 kB)"));
 }
 
 #[test]
 fn finishing_cannot_be_cancelled() {
-    let shown = tracker(&[OVERVIEW, Progress::Finishing]).shown(EN);
+    let shown = tracker(&[OVERVIEW, Progress::Finishing]).shown(en());
     assert_eq!(shown.status, "Finishing… Don't pull out the stick yet.");
     assert!(shown.busy);
     assert!(!shown.can_cancel);
@@ -94,21 +99,24 @@ fn finishing_cannot_be_cancelled() {
 fn cancel_is_pressed_once() {
     let mut tracker = tracker(&[OVERVIEW]);
     tracker.cancel();
-    let shown = tracker.shown(EN);
+    let shown = tracker.shown(en());
     assert_eq!(shown.status, "Stopping at a safe point…");
     assert!(!shown.can_cancel);
     tracker.update(Progress::Finishing);
     assert_eq!(
-        tracker.shown(EN).status,
+        tracker.shown(en()).status,
         "Finishing… Don't pull out the stick yet."
     );
 }
 
 #[test]
 fn numbers_have_their_thousands_marked() {
-    assert_eq!(number(0, EN), "0");
-    assert_eq!(number(999, EN), "999");
-    assert_eq!(number(1000, EN), "1,000");
-    assert_eq!(number(1_234_567, EN), "1,234,567");
-    assert_eq!(number(1_234_567, Language::German), "1.234.567");
+    assert_eq!(number(0, en()), "0");
+    assert_eq!(number(999, en()), "999");
+    assert_eq!(number(1000, en()), "1,000");
+    assert_eq!(number(1_234_567, en()), "1,234,567");
+    assert_eq!(
+        number(1_234_567, crate::language::testing::german()),
+        "1.234.567"
+    );
 }

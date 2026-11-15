@@ -5,7 +5,7 @@
 
 use babawus_core::coverage_screen::{CoverageShown, Picture};
 use babawus_core::history_screen::HistoryRow;
-use babawus_core::settings::Language;
+use babawus_core::language::Language;
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
 use std::cell::RefCell;

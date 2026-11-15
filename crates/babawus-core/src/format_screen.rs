@@ -5,8 +5,8 @@
 use std::collections::HashSet;
 
 use crate::format::{Refusal, label_is_valid, suggest_label};
+use crate::language::Language;
 use crate::media::{Snapshot, Volume};
-use crate::settings::Language;
 use crate::text::{Text, size};
 use crate::udisks::{FormatError, Step};
 

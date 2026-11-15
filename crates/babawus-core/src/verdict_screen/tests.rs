@@ -7,7 +7,9 @@ use crate::log::Stats;
 use crate::scan::Skipped;
 use crate::time::utc_clock;
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const DAY: Duration = Duration::from_secs(86_400);
 
 fn now() -> SystemTime {
@@ -53,7 +55,7 @@ fn skipped(path: &str, reason: Skip, files: u64) -> Skipped {
 }
 
 fn shown(outcome: Outcome, previous: Option<u32>) -> VerdictShown {
-    verdict_screen(Some(&Ended::Finished(outcome)), &context(previous), EN)
+    verdict_screen(Some(&Ended::Finished(outcome)), &context(previous), en())
 }
 
 #[test]
@@ -172,14 +174,14 @@ fn a_busy_medium_is_not_a_verdict() {
         process_id: 1,
     };
     let busy = Ended::Busy(Some(holder));
-    let shown = verdict_screen(Some(&busy), &context(Some(2)), EN);
+    let shown = verdict_screen(Some(&busy), &context(Some(2)), en());
     assert_eq!(shown.title, "Backup in progress (by anna)");
     assert_eq!(
         shown.next_step.as_deref(),
         Some("Wait until it has finished, then try again.")
     );
     assert!(!shown.offer_eject);
-    let starting = verdict_screen(Some(&Ended::Busy(None)), &context(None), EN);
+    let starting = verdict_screen(Some(&Ended::Busy(None)), &context(None), en());
     assert_eq!(
         starting.title,
         "Another backup to this stick is just starting"
@@ -188,7 +190,7 @@ fn a_busy_medium_is_not_a_verdict() {
 
 #[test]
 fn a_crash_leaves_the_backup_unfinished() {
-    let shown = verdict_screen(None, &context(Some(5)), EN);
+    let shown = verdict_screen(None, &context(Some(5)), en());
     assert_eq!(shown.title, "Backup not finished");
     assert_eq!(
         shown.reason.as_deref(),
@@ -209,7 +211,7 @@ fn the_last_backup_shows_when_it_finished_by_calendar_day() {
             skipped_files: false,
         })
     };
-    let text = |time, now| last_backup_text(last(time), now, utc_clock, EN);
+    let text = |time, now| last_backup_text(last(time), now, utc_clock, en());
 
     // 23:50, seen ten minutes after midnight, was yesterday, though it is not a day ago.
     let late = midnight - Duration::from_secs(600);
@@ -222,7 +224,7 @@ fn the_last_backup_shows_when_it_finished_by_calendar_day() {
     // A clock that was wrong can put the backup in the future.
     assert_eq!(text(evening, morning), "Last backup: today at 18:00");
     assert_eq!(
-        last_backup_text(None, morning, utc_clock, EN),
+        last_backup_text(None, morning, utc_clock, en()),
         "No backup yet"
     );
 }
@@ -235,7 +237,7 @@ fn the_last_backup_reads_well_in_german() {
         skipped_files: false,
     });
 
-    let text = last_backup_text(last, now, utc_clock, Language::German);
+    let text = last_backup_text(last, now, utc_clock, crate::language::testing::german());
 
     assert_eq!(text, "Letzte Sicherung: vor 3 Tagen (2024-10-01 um 12:00)");
 }
