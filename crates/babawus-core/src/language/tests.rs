@@ -41,18 +41,17 @@ fn codes(loaded: &Loaded) -> Vec<&'static str> {
 }
 
 #[test]
-fn the_files_in_the_source_tree_are_complete_and_offered_without_problems() {
+fn every_file_in_the_source_tree_is_complete_and_offered_without_problems() {
     let loaded = Languages::load(&RealFs, &folder()).unwrap();
 
-    let names: Vec<_> = loaded
-        .languages
-        .all()
+    let files = RealFs.read_dir(&folder()).unwrap();
+    let toml_files = files
         .iter()
-        .map(|each| each.name())
-        .collect();
-    assert_eq!(names, ["Deutsch", "English"]);
+        .filter(|name| name.to_string_lossy().ends_with(".toml"));
+    assert_eq!(loaded.languages.all().len(), toml_files.count());
     assert!(loaded.problems.is_empty(), "{:?}", loaded.problems);
     assert_eq!(loaded.languages.english(), english());
+    assert_eq!(loaded.languages.find("de"), Some(german()));
 }
 
 #[test]

@@ -24,7 +24,6 @@ Babawus 0.2.1 is released (T-064), and 1.0.0-alpha.1, the document cleanup, is d
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-074 | Write a short guide to adding a language: where the file goes, what it holds, how to check it, and how to see why a file is rejected | Todo | Issue 147 |
 | T-075 | Raise the version to 1.0.0-alpha.2 and update ReleasePlanning.md. After it is merged, tag `v1.0.0-alpha.2` on main | Todo | Issue 147 |
 
 ## Needs a decision
