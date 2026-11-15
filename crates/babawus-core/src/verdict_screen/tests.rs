@@ -97,10 +97,13 @@ fn skipped_files_are_grouped_by_reason() {
     assert_eq!(shown.title, "Some files were skipped");
     // The title says it, so no reason repeats it.
     assert_eq!(shown.reason, None);
-    assert_eq!(shown.next_step.as_deref(), Some("Contact your poweruser."));
+    assert_eq!(
+        shown.next_step.as_deref(),
+        Some("Look up its number in Help to see what to do.")
+    );
     let groups = [
-        "Couldn't be read: 5 files",
-        "Name has characters this stick can't store: 2 files",
+        "Couldn't be read: 5 files #19",
+        "Name has characters this stick can't store: 2 files #25",
     ];
     assert_eq!(shown.skipped, groups);
     // A run that skipped files still counts as a backup.
@@ -113,8 +116,8 @@ fn an_unfinished_run_says_to_run_it_again() {
     let shown = shown(outcome(Reason::MediumRemoved), Some(47));
     assert_eq!(shown.mark, VerdictMark::Attention);
     assert_eq!(shown.title, "Backup not finished");
-    assert_eq!(shown.reason.as_deref(), Some("The stick was removed."));
-    let next = "Run the backup again. If it happens again, contact your poweruser.";
+    assert_eq!(shown.reason.as_deref(), Some("The stick was removed. #10"));
+    let next = "Run the backup again. If it happens again, look up its number in Help.";
     assert_eq!(shown.next_step.as_deref(), Some(next));
     // The last backup is still the one before.
     assert_eq!(
@@ -140,8 +143,11 @@ fn a_failed_run_says_why() {
     let shown = shown(outcome(Reason::MediumFull), None);
     assert_eq!(shown.mark, VerdictMark::Failed);
     assert_eq!(shown.title, "Backup failed");
-    assert_eq!(shown.reason.as_deref(), Some("The stick is full."));
-    assert_eq!(shown.next_step.as_deref(), Some("Contact your poweruser."));
+    assert_eq!(shown.reason.as_deref(), Some("The stick is full. #14"));
+    assert_eq!(
+        shown.next_step.as_deref(),
+        Some("Look up its number in Help to see what to do.")
+    );
     assert_eq!(shown.last_backup, "No backup yet");
 }
 
@@ -184,7 +190,7 @@ fn a_busy_medium_is_not_a_verdict() {
     let starting = verdict_screen(Some(&Ended::Busy(None)), &context(None), en());
     assert_eq!(
         starting.title,
-        "Another backup to this stick is just starting"
+        "Another backup to this stick is just starting #18"
     );
 }
 
@@ -194,7 +200,7 @@ fn a_crash_leaves_the_backup_unfinished() {
     assert_eq!(shown.title, "Backup not finished");
     assert_eq!(
         shown.reason.as_deref(),
-        Some("Babawus stopped unexpectedly.")
+        Some("Babawus stopped unexpectedly. #12")
     );
     assert_eq!(
         shown.last_backup,

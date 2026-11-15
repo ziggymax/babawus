@@ -163,7 +163,7 @@ fn a_failure_before_erasing_says_nothing_was_changed() {
     let shown = result_screen("BACKUP-B", Some(&failure), en());
 
     assert!(!shown.succeeded);
-    assert!(shown.detail.ends_with("Nothing on the stick was changed."));
+    assert!(shown.detail.contains("Nothing on the stick was changed. #"));
     assert_eq!(
         shown.message.as_deref(),
         Some("The system said: Device is busy")
@@ -190,7 +190,7 @@ fn a_removed_stick_was_not_changed() {
 
     assert_eq!(
         shown.detail,
-        "The stick was removed. Nothing on the stick was changed."
+        "The stick was removed. Nothing on the stick was changed. #41"
     );
     assert_eq!(shown.message, None);
 }

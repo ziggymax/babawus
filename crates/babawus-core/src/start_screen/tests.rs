@@ -169,12 +169,7 @@ fn a_ready_medium_shows_the_last_backup() {
 fn any_other_status_explains_what_to_do() {
     let details = details_of(Some(&checked(Status::NotSetUp)), false);
     assert_eq!(details.status, "Not set up for you");
-    assert!(
-        details
-            .explanation
-            .unwrap()
-            .contains("Contact your poweruser")
-    );
+    assert!(details.explanation.unwrap().contains("under Advanced"));
     let in_progress = checked(Status::InProgress {
         user: "anna".to_owned(),
     });
