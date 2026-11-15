@@ -1,76 +1,6 @@
-# Babawus tasks
+# Babawus done tasks
 
-This is the central list of outstanding work. If something still needs doing, it is here.
-
-## How this list works
-
-- **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
-- **`Requirements.md` says what Babawus does, `Issues-Unsettled.md` and `Issues-Resolved.md` record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in `Issues-Unsettled.md`, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-072.
-- **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
-- **Pull requests** mention the tasks they finish, and update this list. A finished task moves to "Done", with a link to its pull request.
-
-| Status | Meaning |
-| --- | --- |
-| Todo | Not started |
-| In progress | Being worked on now |
-| Blocked | Can't go on: the task says what it is waiting for |
-
-Sections run from what comes next to what may never happen. Within a section, tasks are in the order to do them.
-
-## Now
-
-Babawus 0.2.1 is released (T-064), after 0.2.0 (T-060) and 0.1.0 (T-052). Work on 1.0.0-alpha.1, the first of three versions leading to 1.0.0 (ReleasePlanning.md), has started. T-043 waits for its problem to show again.
-
-## 1.0.0-alpha.1: the document cleanup
-
-How it is done is decided in issue 141. One pull request per task.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-066 | Split Tasks.md into Tasks-Open.md and Tasks-Done.md. Tasks keep their numbers; references become "T-063" | Todo | ReleasePlanning.md, issue 141 |
-| T-067 | Clean up Concept.md: as Babawus is in 0.2.1, without the first version's history or repetition of Requirements.md | Todo | ReleasePlanning.md, issue 141 |
-| T-068 | Clean up Requirements.md the same way | Todo | ReleasePlanning.md, issue 141 |
-| T-069 | Clean up DevEnvSetup.md the same way | Todo | ReleasePlanning.md, issue 141 |
-| T-070 | Clean up ReleaseChecklist.md the same way | Todo | ReleasePlanning.md, issue 141 |
-| T-071 | Raise the version to 1.0.0-alpha.1 and update ReleasePlanning.md; after the merge, tag `v1.0.0-alpha.1` on main, with no GitHub release | Todo | ReleasePlanning.md, issue 141 |
-
-## First version: logic
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-061 | Find out why `computer_lock::tests::a_released_lock_can_be_taken_and_records_only_the_new_user` failed once on CI (pull request 74), reading back the first user's name instead of the second's. Not reproduced locally in 20 tries. If it can't be made to happen again, close it | Todo | Pull request 74 |
-
-## First version: udisks2
-
-Everything here is done.
-
-## First version: user interface
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-043 | Find out why the buttons under "You on this computer" were once drawn squeezed under the line below them, after the setup had been read again in another state. Seen once on the VM while checking T-040 (pull request 55), and not again in four tries; main may have it too. If it can't be made to happen again, close it | Todo | Pull request 55 |
-
-## First version: release
-
-Everything here is done.
-
-## Next version
-
-From the user's testing of 0.1.0 (2026-11-12 and 2026-11-13). Everything here is done.
-
-## Needs a decision
-
-Nothing is waiting for a decision.
-
-## Later versions
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-027 | A "check this medium" function, for example using stored checksums | Todo | Requirements: "Not in the first version" |
-| T-028 | Detect moved files, to avoid storing them twice. An APT repository, so that updates arrive through the Update Manager, could come at the same time | Todo | Requirements: "Not in the first version", "Packaging" |
-
-## Done
+The tasks that are finished, in the order they were done, each with the pull request that finished it. A task moves here word for word from [Tasks-Open.md](Tasks-Open.md), and keeps its number.
 
 | ID | Task | Pull request |
 | --- | --- | --- |
@@ -120,7 +50,7 @@ Nothing is waiting for a decision.
 | T-048 | Say how ejecting went in a pop-up with OK, on the start screen and the verdict screen, instead of a notice on the page; after a successful eject from the verdict screen, go back to the start screen | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-049 | Keep the window's height after leaving "Choose what to back up…": since T-041 that page doesn't scroll as a whole, and while hidden it still set the window's least height, so Cancel made the window grow from 797 to 942 pixels. Each screen now asks only for its own height | [#60](https://github.com/ziggymax/babawus/pull/60) |
 | T-050 | The name under the elephant in the logo is black with a thinner outline, instead of green with a black one. A change by the user to `assets/BabawusLogo.svg` and `assets/BabawusLogo-plain.svg` | [#61](https://github.com/ziggymax/babawus/pull/61) |
-| T-044 | Find the test that fails now and then. On CI for pull request 61, `exfat_is_reported` timed out: udisks2 never reported the test stick's label and file system. The test sticks are formatted outside udisks2, which relies on udev to look at a device again once it has been written; on a busy machine that look can come too early or be lost. The test helper now asks udev to look again after formatting, and waits for it, and a wait that gives up says what udisks2 reported instead | [#62](https://github.com/ziggymax/babawus/pull/62) |
+| T-044 | Find the test that fails now and then. On CI for [#61](https://github.com/ziggymax/babawus/pull/61), `exfat_is_reported` timed out: udisks2 never reported the test stick's label and file system. The test sticks are formatted outside udisks2, which relies on udev to look at a device again once it has been written; on a busy machine that look can come too early or be lost. The test helper now asks udev to look again after formatting, and waits for it, and a wait that gives up says what udisks2 reported instead | [#62](https://github.com/ziggymax/babawus/pull/62) |
 | T-051 | After the 0.1.0 checklist run: the "still in use" message names a terminal or a file being copied instead of a file manager window; the checklist makes the stick busy with a terminal in it; and the checklist's texts that changed since it was written ("Add this computer and your account", the partly ticked boxes, the second stick shown after ejecting the first) are brought up to date | [#64](https://github.com/ziggymax/babawus/pull/64) |
 | T-052 | Release 0.1.0: the tag `v0.1.0` on main at #64, and a [GitHub release](https://github.com/ziggymax/babawus/releases/tag/v0.1.0) with the `.deb` and notes linking [#63](https://github.com/ziggymax/babawus/issues/63), the checklist run, which is closed | [#65](https://github.com/ziggymax/babawus/pull/65) |
 | T-053 | The new logos: the one with the name only in the upper right corner of the start screen; the one without, `assets/BabawusLogo-NoText-plain.svg`, for the menu icon the package installs, the About pop-up and the "already open" message (issue 131) | [#66](https://github.com/ziggymax/babawus/pull/66) |
@@ -135,3 +65,4 @@ Nothing is waiting for a decision.
 | T-063 | The icon in the menu and the panel is no larger than the other apps' icons: the package installs its own copy of the logo without the name, `crates/babawus/assets/io.github.ziggymax.Babawus.svg`, with a margin of 1/16 of its size on each side, as Mint-Y's app icons have. A test checks that it matches the logo (issue 139) | [#78](https://github.com/ziggymax/babawus/pull/78) |
 | T-064 | Release 0.2.1, with the menu icon of T-063: the version raised, the tag `v0.2.1` on main at this pull request, and a [GitHub release](https://github.com/ziggymax/babawus/releases/tag/v0.2.1) with the `.deb`. Only the installing steps of the checklist were run, as an update over 0.2.0 (issue 140) | [#79](https://github.com/ziggymax/babawus/pull/79) |
 | T-065 | Split Issues.md into Issues-Unsettled.md and Issues-Resolved.md. Issues keep their numbers and move word for word; references everywhere, code comments too, become "issue 132", and GitHub issues "#63". Every issue was already decided, so Issues-Unsettled.md starts empty (issue 141) | [#82](https://github.com/ziggymax/babawus/pull/82) |
+| T-066 | Split Tasks.md into Tasks-Open.md and Tasks-Done.md. Tasks keep their numbers; references become "T-063". Tasks-Open.md is organised by version, with a section for problems waiting to show again (issue 142) | [#83](https://github.com/ziggymax/babawus/pull/83) |

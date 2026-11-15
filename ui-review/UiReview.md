@@ -5,11 +5,11 @@ This document lists everything a user of Babawus can see, so that each item can 
 1. This list of items.
 2. A screenshot of each item, taken on the VM as `ui-review/<number>-<name>.png`, for example `S08-not-set-up.png`. Items marked **DE** are also taken in German, as `S08-not-set-up-de.png`. The screenshots are not committed (item 114), so each item says in words what it shows. *(Done on 2026-11-10: 79 screenshots of 60 items. Six items couldn't be reached, and each says why. Under **Noticed**, each item has what was seen while taking it.)*
 3. The items are gone through one by one, and each gets its comments and a decision below. Decisions that apply across several screens are items of group G, and the items they apply to point to them. *(Done on 2026-11-10.)*
-4. The user interface is changed, and the changes become tasks in [Tasks.md](../Tasks.md).
+4. The user interface is changed, and the changes become tasks in [Tasks-Open.md](../Tasks-Open.md).
 
 ## Outcome
 
-Every item has a decision. Most items need no change. What changes, as tasks in [Tasks.md](../Tasks.md):
+Every item has a decision. Most items need no change. What changes, as tasks in [Tasks-Open.md](../Tasks-Open.md):
 
 | Task | What | Items |
 | --- | --- | --- |
