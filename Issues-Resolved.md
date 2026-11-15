@@ -510,3 +510,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 
 142. **How Tasks-Open.md is organised.** Tasks.md had sections for the first version's parts (logic, udisks2, user interface, release) and the next version, all done or nearly empty, with T-061 and T-043, two problems seen once, left in them.
     - **Decided (2026-11-15):** By version: "Now", the version being worked on (1.0.0-alpha.1), "Needs a decision", "Waiting" for problems seen once and not since (T-061 and T-043), and "Later versions" (T-027 and T-028). The empty sections go. Tasks-Done.md keeps the done tasks word for word, in the order they were done, with "pull request 61" written as #61, as issue 141 decided.
+
+## Decisions on cleaning up Concept.md (T-067)
+
+143. **How far Concept.md is trimmed.** It repeated much of the exact behaviour that Requirements.md also states, such as the configuration file's name and checksum, how computer folders are named, the formatting warning, the rules for versions and the verdicts' wording.
+    - **Decided (2026-11-15):** Keep the why, cut the how. Every section and its reasoning stays: who Babawus is for, what it protects against, why exFAT or Ext4, why there is no restore function. Exact details that Requirements.md owns are cut, and the text points there instead. The revision history and the "First version" section go, and what had changed since is brought up to date: the login reminder, the log in place of a text to copy, the start screen's list, and N per backup profile.
