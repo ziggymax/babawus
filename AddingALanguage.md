@@ -25,7 +25,8 @@ InProgress = "Sauvegarde en cours (par {user})"
 
 - **Every text must be there**, and none may be empty. The names are the same in every file, so the English file shows which texts there are.
 - **Placeholders** in braces, such as `{user}` or `{files}`, are filled in by Babawus. Keep each one exactly as in English, in whatever place the sentence needs it. Don't translate what is inside the braces.
-- **Lines starting with `#`** are comments, which Babawus ignores. The English file uses them to explain some texts.
+- **The Help** is the text `Help`, at the end of the file, written over many lines between `"""` and `"""`. Keep its layout: a line starting with "# " is a heading, a line starting with "- " a bullet, and a line starting with "#" and a number, such as "#14", begins the explanation of that numbered message. Translate the text after the number, and keep every number. If one is missing, Babawus still offers the language, and says which numbers are missing.
+- **Lines starting with `#`** are comments, which Babawus ignores, except inside the Help, where they are headings and entries. The English file uses them to explain some texts.
 - **Quotes:** a text is written between straight double quotes. A double quote inside a text needs a backslash, `\"`, so it is easier to use the language's own quotation marks, such as « » or „ “.
 
 ## Writing the file

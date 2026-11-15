@@ -218,3 +218,20 @@ fn the_first_available_system_language_wins() {
     );
     assert_eq!(languages.from_system(["en_GB", "de_DE"]), english());
 }
+
+#[test]
+fn a_help_without_an_entry_for_a_number_is_warned_about_but_offered() {
+    let without = other("fr", "Français")
+        .replace("\n#3 Babawus can't see", "\nBabawus can't see")
+        .replace("\n#40 Only an administrator", "\nOnly an administrator");
+
+    let loaded = load(&[("en.toml", ENGLISH_FILE), ("fr.toml", &without)]).unwrap();
+
+    assert_eq!(codes(&loaded), ["en", "fr"]);
+    assert_eq!(
+        loaded.problems,
+        [format!(
+            "{FOLDER}/fr.toml: the Help has no entry for #3, #40"
+        )]
+    );
+}

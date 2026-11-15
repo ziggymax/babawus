@@ -24,7 +24,6 @@ Babawus 0.2.1 is released (T-064). 1.0.0-alpha.1, the document cleanup (T-065 to
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-079 | A built-in Help in the menu, in a window of its own that isn't modal, with a plain-text search and an entry for every numbered message, in English and German | Todo | ReleasePlanning.md, issue 151 |
 | T-080 | Raise the version to 1.0.0-alpha.3 and update ReleasePlanning.md. After it is merged, tag `v1.0.0-alpha.3` on main | Todo | Issue 151 |
 
 ## Needs a decision

@@ -585,3 +585,12 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - The user pointed out that "look up the number above in Help" suggests that the number is shown above the message, while it comes at its end. So a verdict's next step says "Look up its number in Help to see what to do.", or "Run the backup again. If it happens again, look up its number in Help." The text `NextContact` is renamed `NextLookUp`.
         - The `.deb` description says "Preparing a stick and choosing what is backed up are advanced functions, under Advanced in the menu."
         - 56 messages are numbered, #1 to #56: the stick explanations, the verdicts' reasons, every skip reason, and the eject, history, log, format, setup and choose errors, plus "more than the free space". Where a message has a heading and an advice line, the number follows the advice; in the list of skipped files it ends each line, as in "Couldn't be read: 3 files #19". Not numbered: "You stopped the backup.", "Some files could not be backed up.", whose skipped lines have their own numbers, the short statuses in the list, and the hints while choosing files or typing a pattern.
+
+## Decisions on the built-in Help (T-079)
+
+154. **How the Help window, its search and its entries for the numbered messages work.**
+    - **Decided (2026-11-15):**
+        - Help is opened with "Help" in the menu, between Advanced and About, and with F1. It opens a window of its own, "Help" ("Hilfe"), about 640 × 700, which isn't modal. Opening it again brings the open one to the front. It follows a change of language at once, and closes with Babawus.
+        - Searching is find as you type: a search field at the top of the window highlights every match, ignoring upper and lower case, and scrolls to the first; Enter goes to the next, Shift+Enter to the one before. Next to the field, "2 of 5" or "Not found". Searching "#14" lands on that message's entry.
+        - After the sections on what Babawus does, why and how, comes "# Messages", with one entry per number, in order: a line such as "#14 The stick is full.", shown in bold, then a short paragraph on what it means and what to do. A line starting with "#" and a number is such an entry, and Babawus checks that each number has one (issue 151).
+        - The user reviewed Claude's English draft of the Help and approved it, with one change: #40 says "Formatting as Ext4 needs an account with sudo rights and the password for that account. Choose exFAT instead, or prepare the stick from an administrator's account."

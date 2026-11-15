@@ -13,6 +13,7 @@ pub mod exclude;
 pub mod format;
 pub mod format_screen;
 pub mod fs;
+pub mod help;
 pub mod history_screen;
 pub mod identity;
 pub mod language;
