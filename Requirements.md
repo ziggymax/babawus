@@ -1,26 +1,10 @@
 # Babawus Requirements
 
-This document contains the requirements for Babawus. The introductory part provides an overview and some basic definitions.
+This document is the authoritative description of how Babawus behaves. [Concept.md](Concept.md) explains what Babawus is and why, and who its two roles, the user and the poweruser, are. If the two documents ever disagree, this document wins.
 
-This document is the authoritative description of how Babawus behaves. `Concept.md` explains what Babawus is and why. If the two ever disagree, this document wins.
-
-## Introduction
-
-The requirements are generally separated into two different parts:
-
-- A *user-centric* part that defines requirements for parts and behaviors of Babawus that users can directly see and/or engage with.
-- A *technical* part that defines requirements for parts and behaviors of Babawus that users cannot directly see or engage with, but which are important for clearly defining and removing ambiguities for low-level file and folder operations.
-
-While the primary aim of Babawus is to make it as simple as possible to perform simple periodic backup operations, some amount of configuration and administrative functions are needed to set up a USB medium for use with Babawus. Thus the requirements for Babawus operate with two roles:
-
-- A **User** only uses Babawus to do backups with media that have already been prepared for use.
-- A **Poweruser** uses Babawus to format USB media and configure them for use with Babawus.
-
-There is no login or other identification of Babawus users, so a user's role is simply defined by the features of Babawus the user wants to use. The two roles are mostly used to provide hints to the implementation of the user interface. A user should be able to use Babawus for doing simple plug-and-play backups without seeing any of the fancy technical stuff a poweruser may want/need to use.
+The user stories describe what users see and do. The technical requirements describe what they don't see, but which must be exact, such as how files and folders are handled on the medium. The terms below have a fixed meaning in both documents.
 
 ## Glossary
-
-These terms have a fixed meaning in this document and in `Concept.md`.
 
 | Term | Meaning |
 |---|---|
@@ -37,7 +21,7 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 | Eject | Unmounting a medium and powering off the device. |
 | Entry | A computer or account in the configuration. On screen, an account's entry is a *backup profile*, and a computer's entry is the computer. |
 | Exclusion | A name pattern or a specific folder that is left out of a backup. |
-| Format version | The value of the `format` field, which states the version of the configuration file format. |
+| Format version | The value of `config_format`, which states the version of the configuration file format. |
 | History | The list of past runs on a medium, read from the log. |
 | Home folder | The folder the system defines for an account (`$HOME`). |
 | Label | The short name a medium gets when it is formatted, for example `BACKUP-A`. |
@@ -48,7 +32,7 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 | N | The limit on how many older versions of each file are kept, set for each backup profile. |
 | Newest copy | The copy of a file at its normal place on the medium. |
 | Older version | A replaced copy of a file, kept in a version folder. |
-| Poweruser | The more technical person, who formats and configures media (see "Introduction"). |
+| Poweruser | The more technical person, who formats and configures media (see Concept.md). |
 | Pruning | Removing older versions beyond the limit N. |
 | Ready | The status of a medium this user can back up to on this computer. |
 | Reason | The plain-words explanation that comes with a verdict or a skipped file. In the log it is written as a fixed reason code, for example `MEDIUM_FULL`. |
@@ -58,7 +42,7 @@ These terms have a fixed meaning in this document and in `Concept.md`.
 | Source file | A file on the computer that is to be backed up. |
 | Status | The plain-words state of a medium in the media list. |
 | Temporary file | A file in `.babawus/tmp/`, used while writing a new copy or trimming the log. |
-| User | The non-technical person who runs backups (see "Introduction"). |
+| User | The non-technical person who runs backups (see Concept.md). |
 | Verdict | One of the four outcomes of a run: All good, Some files were skipped, Backup not finished, Backup failed. |
 | Version folder | The folder that holds a file's older versions, for example `report[]pdf`. |
 
@@ -110,7 +94,6 @@ These buttons come right after the details' texts, below a thin line, which isn'
 
 **Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 
-
 ### Update Babawus media status
 
 As a user I want Babawus to continuously update the list of attached USB media. That way I can attach or detach USB media I want to use or not use and see the change reflected in Babawus.
@@ -126,13 +109,9 @@ As a user I want Babawus to continuously provide me with information showing me 
 - After starting the backup, but before any files are transferred, I want to see an overview of the number of files that will be copied and the sum total of the size of the files (in bytes) to be backed up.
 - During the backup process I want Babawus to update counters of remaining files and bytes to back up each time a file has been copied. The byte counter also moves while a large file is being copied, so that a large file on a slow medium does not look as if Babawus has hung. It counts bytes that have reached the medium, not bytes that are still waiting in the computer's memory (see "Writing a new copy safely").
 
-While a backup runs, the backup screen fills the window, so that nothing else can be started or ejected meanwhile. It shows the medium's label, what is going on ("Finding the files to back up…", "Backing up…" or "Finishing… Don't pull out the stick yet."), the overview, the counters, and a bar that shows how far the copying has got by bytes.
+While a backup runs, the backup screen fills the window, so that nothing else can be started or ejected meanwhile. It shows the medium's label, what is going on ("Finding the files to back up…", "Backing up…", "Stopping at a safe point…" after Cancel, or "Finishing… Don't pull out the stick yet."), the overview, the counters, and a bar that shows how far the copying has got by bytes.
 
 I also want a Cancel button, in case I regret starting a long backup. Babawus asks me to confirm. If it is still copying a file to the temporary folder, it stops right away and discards the temporary file, so that a very large file does not delay the cancel. Otherwise it first finishes the steps for the file it is working on (so it never stops between moving the old copy and renaming the new one, see "Handling of file versioning"). It then ends with the verdict "Backup not finished". Cancel can't be pressed while the run is finishing, because by then it is quicker to let it end. If the run ends while Babawus is asking, the question goes away. Closing the window during a backup asks the same question. If I agree to stop, the window closes once the run has ended properly, with its end entry in the log; otherwise the backup goes on.
-
-### Provide feedback after a backup operation
-
-As a user I want Babawus to show me a summary when a backup process completes. Number of files and bytes successfully copied, a list of files that for some reason could not be copied and any other errors. That way I can know for sure if my backup has run to successful completion.
 
 ### Offer to "eject" media after a successful backup operation
 
@@ -183,7 +162,7 @@ That way I have some good data to help me find the cause of errors.
 
 ### Get a clear verdict
 
-As a user I want every backup run to end with a clear, unmistakable verdict, with a single next step I can take without fixing anything myself. That way I am never in doubt about whether my files are safe. The verdicts are defined by what I should do next:
+As a user I want every backup run to end with a clear, unmistakable verdict, with a single next step I can take without fixing anything myself, and a summary of what was copied and what was skipped. That way I am never in doubt about whether my files are safe. The verdicts are defined by what I should do next:
 
 | Verdict | When | Next step |
 |---|---|---|
@@ -195,6 +174,8 @@ As a user I want every backup run to end with a clear, unmistakable verdict, wit
 If several of these happen in one run, the worst verdict wins: Backup failed, then Backup not finished, then Some files were skipped, then All good.
 
 Every verdict other than "All good" gives the reason in plain words (for example "the medium is full" or "the medium was removed"). Skipped files are grouped by reason (for example "3 files have characters in their names that this medium can't store"). The verdict also tells me how long it has been since my last backup (see "See when I last made a backup").
+
+An interrupted run (the medium pulled out, or the computer closed or shut down) leaves nothing to clean up by hand: the next backup simply continues and catches up (see "Writing a new copy safely"), and the history shows the interrupted run as "Backup not finished" (see "Interrupted runs in the log").
 
 The log is the one place for diagnosing a run. Users don't copy details for the poweruser: the log is always there, whether or not anyone did anything, and holds what the poweruser needs, in fixed codes that read the same whatever the language (issue 117).
 
@@ -211,7 +192,6 @@ As a user I want to be able to see, for a Ready medium, in plain words which fil
 As a user I want the details of a Ready medium on the start screen to show how long it has been since my last backup on this computer to that medium, and when it finished (for example "Last backup: today at 14:03", "Last backup: yesterday at 09:12" or "Last backup: 47 days ago (2026-09-23 at 17:54)"). That way I am reminded to make a backup when it has been a while, and can tell which of several backups on one day was the last.
 
 - Days are calendar days in local time, so a backup at 23:50 reads "yesterday" just after midnight. A time in the future, from a wrong clock, counts as today (see issue 93).
-
 - Only my own account on this computer counts (`username@computer folder`), not backups by other computers or accounts on a shared medium.
 - Both "All good" and "Some files were skipped" count as a backup, because the run finished. If the last backup skipped files, a small warning mark is shown next to the date.
 - Before my first backup to the medium, "No backup yet" is shown.
@@ -262,12 +242,6 @@ As a poweruser I want to remove a computer or user account from a medium, for ex
 
 As a user, if the computer or user account I am using has not been added to a medium, I want the media list to show this plainly ("Not set up for you: contact your poweruser"), and not let me start a backup on that medium. That way I see why before I try, and know what to do. (If the configuration changes between showing the list and starting the backup, the run copies nothing and ends with "Backup failed", with the reason that the medium is not set up for this computer or user. The same goes for a medium that has lost its `.babawus` folder or configuration file by then. A configuration file that can't be used, because it is damaged or needs a newer Babawus, ends the same way, with the reason that the configuration is damaged or outdated. Either way, such a medium may mean anything to this Babawus, so the run leaves it untouched: no lock and no log entry. If the medium's root folder has gone, the medium was removed, and the verdict is "Backup not finished".)
 
-### Recover from an interrupted backup
-
-As a user I want to be told when a backup starts that I should not remove the medium until the verdict appears. If a backup is interrupted anyway (the medium is pulled out, or the computer is closed or shut down), I want the next backup to simply continue and catch up, without anything having to be cleaned up by hand. That way an accident does not leave me with a broken backup.
-
-The history shows an interrupted run as "Backup not finished" (see "Interrupted runs in the log").
-
 ### Handle a full medium
 
 As a user, if the medium runs out of space during a backup, or a file to be copied does not fit in the space left (see "Writing a new copy safely"), I want Babawus to stop cleanly, without damaging any copy already on the medium, and tell me so in plain words in the verdict, with "Contact your poweruser" as the next step. That way I know my backup is incomplete and what to do about it.
@@ -278,7 +252,7 @@ As a poweruser I want to set, in the configuration of a medium, how many older v
 
 ### Change the language
 
-As a user I want to change the language of Babawus from inside the application. Initially English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. German addresses the user as "du", and calls the poweruser "Betreuer" (see issues 90-92). Where texts are longer, as in German, the action buttons wrap onto another line, so that the window needn't grow. That way I can use Babawus in the language I understand best.
+As a user I want to change the language of Babawus from inside the application. English and German are available. The change takes effect at once, without a restart. Babawus remembers my choice for my account on this computer, in `~/.config/babawus/settings.toml` (following `$XDG_CONFIG_HOME` if set). Until I have made a choice, Babawus uses the system language if it is available, otherwise English. If the system lists several languages, the first one that is available counts. The file holds `language = "en"` or `language = "de"`. A settings file that is missing or can't be understood counts as no choice, and if the choice can't be saved, it still applies until Babawus is closed. The settings file is never written in place. Files on the medium (the configuration header and the log) are always in English; Babawus translates what it shows from them. The language is chosen in the menu in the title bar. German addresses the user as "du", and calls the poweruser "Betreuer" (issues 90 and 91). Where texts are longer, as in German, the action buttons wrap onto another line, so that the window needn't grow. That way I can use Babawus in the language I understand best.
 
 ## Technical requirements
 
@@ -549,7 +523,7 @@ For example:
     # If it is edited by hand, the medium needs attention until it has been saved in Babawus.
     [babawus]
     config_format = 1
-    config_app_version = "0.1.0"
+    config_app_version = "0.2.1"
     config_update_local = "2026-11-13 12:43:40 +0100"
     config_update_utc = "2026-11-13 11:43:40 UTC"
 
@@ -649,7 +623,7 @@ At the start of each run, after taking the medium's lock, Babawus writes the mis
 
 ### Technology
 
-- **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. It builds against GTK 4.14, the version in Mint 22, and uses nothing newer. If this does not work out, the fallback is Python with GTK 3.
+- **Language and toolkit.** Babawus is written in Rust, with plain GTK 4 through gtk4-rs, without libadwaita, so that it follows the system theme as far as possible. It builds against GTK 4.14, the version in Mint 22, and uses nothing newer.
 - **Structure.** All logic (versioning, configuration, log, name rules, verdicts) lives in a library with no UI code, and a thin UI sits on top.
 - **Dependencies.** Rust crates count as dependencies: each must be well maintained and replace more than a handful of lines, and the list stays short.
 - **Translations.** Every text the user sees comes from a small catalogue of Babawus's own in the library, with one entry per text and language, not from gettext, because the language must change at once without a restart. A test checks that every text exists in every language. When the language changes, the UI sets all its texts again.
@@ -690,7 +664,7 @@ Babawus is delivered as a `.deb` package, built with `cargo-deb`. The poweruser 
 
 The supported platform is Linux Mint 22.x with the Cinnamon desktop on X11. Everything else (the MATE and Xfce editions of Mint, Wayland, other Linux distributions) is best effort: Babawus should work there, but this is not tested or guaranteed. The target is reviewed when a new major version of Mint comes out.
 
-### Not in the first version
+### Not in Babawus yet
 
 - **Checking copies.** Copies are not read back and compared after writing. Babawus relies on write errors and `fsync`. Reading back right away usually comes from the computer's memory cache rather than the medium, and on slow USB sticks it would roughly double the time a backup takes. A "check this medium" function, for example using stored checksums, may come in a later version.
-- **Automatic detection of moved files.** Detecting files that were only moved or renamed, to avoid storing them twice, is deferred to a later version. In the first version, a moved or renamed file is simply backed up again at its new location, and the copy at its old location stays on the medium.
+- **Automatic detection of moved files.** Detecting files that were only moved or renamed, to avoid storing them twice, may come in a later version. Until then, a moved or renamed file is simply backed up again at its new location, and the copy at its old location stays on the medium.

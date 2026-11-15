@@ -28,7 +28,6 @@ How it is done is decided in issue 141. One pull request per task.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-068 | Clean up Requirements.md the same way | Todo | ReleasePlanning.md, issue 141 |
 | T-069 | Clean up DevEnvSetup.md the same way | Todo | ReleasePlanning.md, issue 141 |
 | T-070 | Clean up ReleaseChecklist.md the same way | Todo | ReleasePlanning.md, issue 141 |
 | T-071 | Raise the version to 1.0.0-alpha.1 and update ReleasePlanning.md; after the merge, tag `v1.0.0-alpha.1` on main, with no GitHub release | Todo | ReleasePlanning.md, issue 141 |
@@ -50,5 +49,5 @@ Problems seen once and not since. Each is closed if it can't be made to happen a
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-027 | A "check this medium" function, for example using stored checksums | Todo | Requirements: "Not in the first version" |
-| T-028 | Detect moved files, to avoid storing them twice. An APT repository, so that updates arrive through the Update Manager, could come at the same time | Todo | Requirements: "Not in the first version", "Packaging" |
+| T-027 | A "check this medium" function, for example using stored checksums | Todo | Requirements: "Not in Babawus yet" |
+| T-028 | Detect moved files, to avoid storing them twice. An APT repository, so that updates arrive through the Update Manager, could come at the same time | Todo | Requirements: "Not in Babawus yet", "Packaging" |
