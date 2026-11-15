@@ -153,12 +153,12 @@ fn the_screen_lists_the_selection_and_what_is_left_out() {
 }
 
 #[test]
-fn nothing_selected_says_who_to_ask() {
+fn nothing_selected_says_where_to_choose() {
     let shown = coverage_screen(&gather(&medium(&[]), "anna"), "anna", en());
 
     assert_eq!(
         shown.intro,
-        "Nothing has been chosen for backup yet. Contact your poweruser."
+        "Nothing has been chosen for backup yet. It can be chosen under Advanced, with “Change setup…”. #37"
     );
     assert!(shown.items.is_empty());
 }

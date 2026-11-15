@@ -102,7 +102,7 @@ fn a_run_with_no_end_was_interrupted() {
     assert_eq!(rows[0].verdict, "Backup not finished");
     assert_eq!(
         rows[0].reason.as_deref(),
-        Some("The backup was interrupted.")
+        Some("The backup was interrupted. #11")
     );
     assert_eq!(rows[0].copied, None);
 }
@@ -140,7 +140,7 @@ fn a_failed_run_gives_its_reason() {
 
     assert_eq!(rows[0].mark, VerdictMark::Failed);
     assert_eq!(rows[0].verdict, "Backup failed");
-    assert_eq!(rows[0].reason.as_deref(), Some("The stick is full."));
+    assert_eq!(rows[0].reason.as_deref(), Some("The stick is full. #14"));
     assert_eq!(
         rows[0].copied.as_deref(),
         Some("Copied: 3 files (900.0 kB)")

@@ -110,7 +110,7 @@ texts! {
     NextWait,
     NextRunAgain,
     NextRunAgainLater,
-    NextContact,
+    NextLookUp,
     NothingToCopy,
     Copied,
     OneFile,
@@ -319,9 +319,93 @@ texts! {
 }
 
 impl Text {
-    /// The text in `language`.
+    /// The number of a message that tells of a problem, which Babawus shows after it, as in
+    /// "The stick is full. #14", so that it can be looked up in Help. The numbers never change
+    /// and are never reused (issues 151 and 153).
+    pub fn number(self) -> Option<u16> {
+        Some(match self {
+            Self::StickNotOpenedAdvice => 1,
+            Self::StickCantBeUsedAdvice => 2,
+            Self::NoUdisks => 3,
+            Self::AlreadyOpenDetail => 4,
+            Self::ExplainNotSetUp => 5,
+            Self::ExplainNeedsAttention => 6,
+            Self::ExplainWriteProtected => 7,
+            Self::ExplainOtherAccount => 8,
+            Self::ExplainNotBackupMedium => 9,
+            Self::ReasonMediumRemoved => 10,
+            Self::ReasonInterrupted => 11,
+            Self::ReasonCrashed => 12,
+            Self::ReasonFlushFailed => 13,
+            Self::ReasonMediumFull => 14,
+            Self::ReasonNotAdded => 15,
+            Self::ReasonConfigDamaged => 16,
+            Self::ReasonCannotWrite => 17,
+            Self::VerdictBusy => 18,
+            Self::SkipUnreadable => 19,
+            Self::SkipDisappeared => 20,
+            Self::SkipNotWritable => 21,
+            Self::SkipTypeConflict => 22,
+            Self::SkipChangedDuringCopy => 23,
+            Self::SkipVersionNameTooLong => 24,
+            Self::SkipNameInvalidChars => 25,
+            Self::SkipNameTrailingDot => 26,
+            Self::SkipNameNotUtf8 => 27,
+            Self::SkipPathTooLong => 28,
+            Self::SkipVersionFolderForm => 29,
+            Self::SkipCaseClash => 30,
+            Self::SkipSelectionMissing => 31,
+            Self::SkipOutsideHome => 32,
+            Self::EjectBusy => 33,
+            Self::EjectFailed => 34,
+            Self::HistoryUnreadable => 35,
+            Self::LogUnreadable => 36,
+            Self::CoverageNothing => 37,
+            Self::CoverageUnreadable => 38,
+            Self::FormatNoDrives => 39,
+            Self::FormatExt4NeedsAdministrator => 40,
+            Self::FormatGone => 41,
+            Self::FormatNotAllowed => 42,
+            Self::FormatNotPrepared => 43,
+            Self::FormatFailedReason => 44,
+            Self::FormatPartlyErased => 45,
+            Self::SetupDamaged => 46,
+            Self::SetupUnreadable => 47,
+            Self::SetupNewerFormat => 48,
+            Self::SetupNotBabawus => 49,
+            Self::SetupNoComputerId => 50,
+            Self::SetupBusy => 51,
+            Self::SetupInvalid => 52,
+            Self::SetupBothFolders => 53,
+            Self::SetupSaveFailed => 54,
+            Self::ChooseUnreadable => 55,
+            Self::ChooseTooBig => 56,
+            _ => return None,
+        })
+    }
+
+    /// The text in `language`, without its number.
+    pub fn without_number(self, language: Language) -> &'static str {
+        language.plain_text(self)
+    }
+
+    /// The text in `language`, with its number if it has one.
     pub fn get(self, language: Language) -> &'static str {
         language.text(self)
+    }
+
+    /// `parts` in `language`, one after the other, with their numbers together at the end, so
+    /// that no number stands in the middle of a message (issue 153).
+    pub fn joined(parts: &[Self], language: Language) -> String {
+        let mut text = parts
+            .iter()
+            .map(|part| part.without_number(language))
+            .collect::<Vec<_>>()
+            .join(" ");
+        for number in parts.iter().filter_map(|part| part.number()) {
+            text.push_str(&format!(" #{number}"));
+        }
+        text
     }
 
     /// The text in `language`, with each placeholder `{name}` in `values` replaced.
@@ -404,6 +488,53 @@ fn escape_markup(text: &str) -> String {
 mod tests {
     use super::*;
     use crate::language::testing::{english, german};
+
+    #[test]
+    fn the_numbers_run_from_1_to_56_with_none_twice() {
+        let mut numbers: Vec<u16> = Text::ALL.iter().filter_map(|text| text.number()).collect();
+        numbers.sort_unstable();
+
+        assert_eq!(numbers, (1..=56).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn a_numbered_message_ends_with_its_number_in_every_language() {
+        assert_eq!(
+            Text::ReasonMediumFull.get(english()),
+            "The stick is full. #14"
+        );
+        assert_eq!(
+            Text::ReasonMediumFull.get(german()),
+            "Der Stick ist voll. #14"
+        );
+        assert_eq!(
+            Text::ReasonMediumFull.without_number(english()),
+            "The stick is full."
+        );
+        assert_eq!(Text::Ready.get(english()), "Ready");
+    }
+
+    #[test]
+    fn a_numbered_message_with_placeholders_is_filled_before_its_number() {
+        let text = Text::SetupBusy.fill(english(), &[("user", "anna")]);
+
+        assert!(text.starts_with("The stick is in use by a backup for anna."));
+        assert!(text.ends_with(" #51"));
+    }
+
+    #[test]
+    fn joined_messages_put_their_numbers_at_the_end() {
+        let text = Text::joined(
+            &[Text::FormatFailedReason, Text::FormatPartlyErased],
+            english(),
+        );
+
+        assert_eq!(
+            text,
+            "Formatting didn't work. The stick has been erased, but isn't ready for backups. \
+             Format it again. #44 #45"
+        );
+    }
 
     #[test]
     fn placeholders_are_filled() {

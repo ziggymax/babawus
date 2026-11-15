@@ -47,8 +47,10 @@ struct LanguageFile {
     name: String,
     decimal: String,
     thousands: String,
-    /// In the order of [`Text::ALL`].
+    /// In the order of [`Text::ALL`], each followed by its number if it has one.
     texts: Vec<String>,
+    /// The same, without the numbers.
+    plain: Vec<String>,
 }
 
 impl Language {
@@ -74,6 +76,10 @@ impl Language {
 
     pub(crate) fn text(self, text: Text) -> &'static str {
         &self.0.texts[text as usize]
+    }
+
+    pub(crate) fn plain_text(self, text: Text) -> &'static str {
+        &self.0.plain[text as usize]
     }
 
     pub fn is_english(self) -> bool {
@@ -243,7 +249,7 @@ fn check(
         match parsed.texts.remove(text.name()) {
             Some(value) if !value.trim().is_empty() => {
                 if let Some(english) = english
-                    && placeholders(&value) != placeholders(english.text(text))
+                    && placeholders(&value) != placeholders(english.plain_text(text))
                 {
                     wrong.push(text.name());
                 }
@@ -262,12 +268,21 @@ fn check(
         ));
     }
 
+    let numbered = Text::ALL
+        .iter()
+        .zip(&texts)
+        .map(|(text, value)| match text.number() {
+            Some(number) => format!("{value} #{number}"),
+            None => value.clone(),
+        })
+        .collect();
     let file = LanguageFile {
         code: header.code,
         name: header.name,
         decimal: header.decimal,
         thousands: header.thousands,
-        texts,
+        texts: numbered,
+        plain: texts,
     };
     Ok((file, parsed.texts.into_keys().collect()))
 }

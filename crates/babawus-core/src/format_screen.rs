@@ -222,7 +222,7 @@ pub fn result_screen(label: &str, failure: Option<&Failure>, language: Language)
     ResultShown {
         succeeded: false,
         title: Text::FormatFailed.get(language).to_owned(),
-        detail: format!("{} {}", reason.get(language), state.get(language)),
+        detail: Text::joined(&[reason, state], language),
         message: failure
             .message
             .as_ref()

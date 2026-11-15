@@ -125,7 +125,7 @@ fn finished(outcome: &Outcome, context: &Context, language: Language) -> Verdict
             Some(Text::NextRunAgainLater)
         }
         Verdict::NotFinished => Some(Text::NextRunAgain),
-        Verdict::Skipped | Verdict::Failed => Some(Text::NextContact),
+        Verdict::Skipped | Verdict::Failed => Some(Text::NextLookUp),
     };
     let copied = copied_text(&outcome.stats, verdict, language);
     let previous = if counts {
@@ -235,10 +235,15 @@ fn skipped_groups(outcome: &Outcome, language: Language) -> Vec<String> {
         .into_iter()
         .map(|(text, files)| {
             let files = files_text(files, language);
-            Text::SkippedGroup.fill(
+            let line = Text::SkippedGroup.fill(
                 language,
-                &[("reason", text.get(language)), ("files", &files)],
-            )
+                &[("reason", text.without_number(language)), ("files", &files)],
+            );
+            // The number ends the line rather than the reason (issue 153).
+            match text.number() {
+                Some(number) => format!("{line} #{number}"),
+                None => line,
+            }
         })
         .collect()
 }
