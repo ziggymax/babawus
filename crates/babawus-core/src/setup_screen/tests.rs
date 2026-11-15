@@ -7,7 +7,9 @@ use crate::fs::fake::FakeFs;
 use crate::log::read_runs;
 use crate::medium::{CONFIG_FILE, LOCK_FILE};
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const ID: &str = "0123456789abcdef0123456789abcdef";
 const OTHER_ID: &str = "fedcba9876543210fedcba9876543210";
 const BOOT: &str = "11111111-2222-3333-4444-555555555555";
@@ -134,7 +136,7 @@ fn a_configuration_that_can_be_parsed_but_is_damaged_must_be_saved() {
             .older_versions,
         12
     );
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
     assert!(shown.banner.unwrap().contains("Check it, then save it"));
     assert!(shown.can_save);
 }
@@ -150,7 +152,7 @@ fn a_configuration_that_can_not_be_parsed_can_only_be_started_again() {
     let editor = Editor::start_new(&setup.medium()).unwrap();
     assert!(editor.config.computers.is_empty());
     assert!(editor.unsaved());
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
     assert_eq!(shown.banner, None, "nothing in it to check");
     assert!(shown.can_save);
 }
@@ -180,7 +182,7 @@ fn a_missing_computer_can_be_added_or_linked() {
     let setup = Setup::new(Some(&config(None)));
     let editor = setup.editor();
 
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
 
     assert!(
         shown
@@ -220,7 +222,7 @@ fn adding_here_adds_the_computer_and_the_account_until_saved() {
         setup.loaded().account(ID, "anna").is_none(),
         "not saved yet"
     );
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
     assert_eq!(
         shown.here.text,
         "Your backup profile, “anna”, is set up on this computer (“laptop”)."
@@ -267,7 +269,7 @@ fn saving_waits_for_a_live_lock() {
     let error = editor.save(&setup.medium(), &setup.here()).unwrap_err();
 
     assert!(matches!(&error, SaveError::Busy(Some(user)) if user == "bert"));
-    assert!(save_error_text(&error, EN).contains("for bert"));
+    assert!(save_error_text(&error, en()).contains("for bert"));
     assert!(editor.unsaved());
     let loaded = setup.loaded();
     assert_eq!(
@@ -293,7 +295,7 @@ fn a_missing_account_can_be_added_or_linked_to_an_earlier_name() {
     let setup = Setup::new(Some(&config(Some(&["anne"]))));
     let editor = setup.editor();
 
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
 
     assert_eq!(
         shown.here.actions,
@@ -372,7 +374,7 @@ fn the_entries_say_which_is_this_computer_and_you() {
     let setup = Setup::new(Some(&config));
     let editor = setup.editor();
 
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
 
     assert_eq!(
         shown.computers[0].title,
@@ -399,7 +401,7 @@ fn a_new_medium_says_nothing_is_set_up() {
     let setup = Setup::new(Some(&Config::new()));
     let editor = setup.editor();
 
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
 
     assert!(shown.computers.is_empty());
     assert!(shown.empty.is_some());
@@ -413,7 +415,7 @@ fn a_computer_without_an_id_can_not_be_added() {
     setup.this = this("");
     let mut editor = setup.editor();
 
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
 
     assert!(shown.here.actions.is_empty());
     assert!(editor.add_here(&setup.here()).is_err());
@@ -426,7 +428,7 @@ fn every_backup_profile_shows_its_own_numbers_which_can_be_changed() {
 
     editor.set_older_versions(OTHER_ID, "bert", 3);
     editor.set_run_check_days(OTHER_ID, "bert", 30);
-    let shown = overview(&editor, &setup.here(), EN);
+    let shown = overview(&editor, &setup.here(), en());
 
     let numbers = |folder: &str| {
         let computer = shown

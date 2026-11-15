@@ -3,7 +3,9 @@ use std::path::PathBuf;
 use super::*;
 use crate::media::{Block, Drive};
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const STICK: &str = "/org/freedesktop/UDisks2/drives/Kingston";
 const STICK_ID: &str = "Kingston-DataTraveler-3.0-08606E694BE4E320B7282A6C";
 const OTHER: &str = "/org/freedesktop/UDisks2/drives/SanDisk";
@@ -74,7 +76,7 @@ fn babawus() -> HashSet<String> {
 
 #[test]
 fn each_drive_says_what_is_on_it() {
-    let choices = drive_choices(&snapshot(), &babawus(), EN);
+    let choices = drive_choices(&snapshot(), &babawus(), en());
 
     assert_eq!(
         choices,
@@ -100,16 +102,16 @@ fn a_volume_with_no_label_says_so() {
     snapshot.volumes.push(volume(SDC1, OTHER, "", "vfat", true));
     snapshot.blocks.push(block(SDC1, OTHER, Some(SDC)));
 
-    let choices = drive_choices(&snapshot, &babawus(), EN);
+    let choices = drive_choices(&snapshot, &babawus(), en());
 
     assert_eq!(choices[1].contents, "No name (FAT)");
 }
 
 #[test]
 fn the_warning_says_what_is_erased_and_that_it_cannot_be_stopped() {
-    let choices = drive_choices(&snapshot(), &babawus(), EN);
+    let choices = drive_choices(&snapshot(), &babawus(), en());
 
-    let text = warning(&choices[0], EN);
+    let text = warning(&choices[0], en());
 
     assert!(
         text.contains("Kingston DataTraveler 3.0 · 15.5 GB"),
@@ -128,10 +130,10 @@ fn the_suggested_label_ignores_the_drives_own_labels() {
 
 #[test]
 fn a_label_problem_names_the_rule() {
-    assert_eq!(label_problem("BACKUP-A", EN), None);
-    assert!(label_problem("", EN).is_some());
-    assert!(label_problem("MY BACKUP", EN).is_some());
-    assert!(label_problem("BACKUP-12345", EN).is_some());
+    assert_eq!(label_problem("BACKUP-A", en()), None);
+    assert!(label_problem("", en()).is_some());
+    assert!(label_problem("MY BACKUP", en()).is_some());
+    assert!(label_problem("BACKUP-12345", en()).is_some());
 }
 
 #[test]
@@ -144,7 +146,7 @@ fn formatting_needs_a_drive_a_valid_label_and_the_checkbox() {
 
 #[test]
 fn success_says_to_set_the_stick_up() {
-    let shown = result_screen("BACKUP-B", None, EN);
+    let shown = result_screen("BACKUP-B", None, en());
 
     assert!(shown.succeeded);
     assert_eq!(shown.title, "BACKUP-B is ready");
@@ -158,7 +160,7 @@ fn a_failure_before_erasing_says_nothing_was_changed() {
         message: "Device is busy".to_owned(),
     });
 
-    let shown = result_screen("BACKUP-B", Some(&failure), EN);
+    let shown = result_screen("BACKUP-B", Some(&failure), en());
 
     assert!(!shown.succeeded);
     assert!(shown.detail.ends_with("Nothing on the stick was changed."));
@@ -175,7 +177,7 @@ fn a_failure_after_erasing_says_to_format_again() {
         message: "mkfs failed".to_owned(),
     });
 
-    let shown = result_screen("BACKUP-B", Some(&failure), EN);
+    let shown = result_screen("BACKUP-B", Some(&failure), en());
 
     assert!(shown.detail.contains("Format it again"), "{}", shown.detail);
 }
@@ -184,7 +186,7 @@ fn a_failure_after_erasing_says_to_format_again() {
 fn a_removed_stick_was_not_changed() {
     let failure = Failure::of(&FormatError::Refused(Refusal::Gone));
 
-    let shown = result_screen("BACKUP-B", Some(&failure), EN);
+    let shown = result_screen("BACKUP-B", Some(&failure), en());
 
     assert_eq!(
         shown.detail,
@@ -200,7 +202,7 @@ fn a_failure_while_setting_up_says_the_stick_is_not_ready() {
         message: "Permission denied".to_owned(),
     });
 
-    let shown = result_screen("BACKUP-B", Some(&failure), EN);
+    let shown = result_screen("BACKUP-B", Some(&failure), en());
 
     assert!(shown.detail.starts_with("The stick was formatted, but"));
 }
@@ -213,16 +215,16 @@ fn only_an_administrator_can_choose_ext4() {
 
 #[test]
 fn anyone_else_is_told_why_ext4_cannot_be_chosen() {
-    let note = ext4_note(false, false, EN).unwrap();
+    let note = ext4_note(false, false, en()).unwrap();
     assert!(note.starts_with("Only an administrator can choose Ext4"));
-    assert_eq!(ext4_note(false, true, EN), Some(note));
+    assert_eq!(ext4_note(false, true, en()), Some(note));
 }
 
 #[test]
 fn an_administrator_who_chooses_ext4_is_told_about_the_password() {
-    assert_eq!(ext4_note(true, false, EN), None);
+    assert_eq!(ext4_note(true, false, en()), None);
     assert_eq!(
-        ext4_note(true, true, EN),
+        ext4_note(true, true, en()),
         Some("Ext4 asks for your password while formatting.")
     );
 }

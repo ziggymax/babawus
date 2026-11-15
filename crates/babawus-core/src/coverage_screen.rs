@@ -7,8 +7,8 @@ use std::path::{Component, Path};
 
 use crate::config::{self, Loaded};
 use crate::fs::{FileKind, FileSystem};
+use crate::language::Language;
 use crate::media::Viewer;
-use crate::settings::Language;
 use crate::text::Text;
 
 /// What a selected file or folder is, on this computer.

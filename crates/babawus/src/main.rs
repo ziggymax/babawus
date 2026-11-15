@@ -16,6 +16,7 @@ use std::time::SystemTime;
 
 use babawus_core::computer_lock::{COMPUTER_LOCK_FILE, ComputerLock, Taken};
 use babawus_core::fs::RealFs;
+use babawus_core::language::{self, Languages};
 use babawus_core::reminder::{self, CHECK_OPTION, state_file};
 use babawus_core::settings::SETTINGS_FILE;
 use babawus_core::text::Text;
@@ -48,13 +49,34 @@ fn main() -> glib::ExitCode {
     } else {
         None
     };
+    // Without a usable English file there are no texts to show, so Babawus only says so
+    // (issue 147). Problems with other files are for the poweruser, on standard error.
+    let no_english = match Languages::load(&RealFs, &language::folder()) {
+        Ok(loaded) => {
+            for problem in &loaded.problems {
+                eprintln!("Babawus: {problem}");
+            }
+            window::set_languages(loaded.languages);
+            None
+        }
+        Err(reason) => {
+            eprintln!("Babawus can't start: {reason}");
+            Some(reason)
+        }
+    };
     let app = Application::builder().application_id(APP_ID).build();
     // Kept until the application ends. The system releases it at the latest when the process ends.
     let lock = Rc::new(RefCell::new(None));
     let reminder = Cell::new(reminder_days);
-    app.connect_activate(move |app| match reminder.take() {
-        Some(days) => show_reminder(app, days, &lock),
-        None => activate(app, &lock),
+    app.connect_activate(move |app| {
+        if let Some(reason) = &no_english {
+            show_no_english(app, reason);
+            return;
+        }
+        match reminder.take() {
+            Some(days) => show_reminder(app, days, &lock),
+            None => activate(app, &lock),
+        }
     });
     // GTK doesn't know the option, so it is left out of what GTK sees.
     app.run_with_args(&args)
@@ -96,6 +118,7 @@ fn show_reminder(app: &Application, days: i64, lock: &Rc<RefCell<Option<Computer
     back_up.add_css_class("suggested-action");
     let window = message_window(
         app,
+        Text::WindowTitle.get(language),
         &heading,
         Text::ReminderQuestion.get(language),
         &[&not_now, &back_up],
@@ -122,7 +145,13 @@ fn show_already_open(app: &Application, user: &str) {
     let message = Text::AlreadyOpen.fill(language, &[("user", user)]);
     let ok = Button::with_label(Text::Ok.get(language));
     ok.add_css_class("suggested-action");
-    let window = message_window(app, &message, Text::AlreadyOpenDetail.get(language), &[&ok]);
+    let window = message_window(
+        app,
+        Text::WindowTitle.get(language),
+        &message,
+        Text::AlreadyOpenDetail.get(language),
+        &[&ok],
+    );
     let closing = window.clone();
     ok.connect_clicked(move |_| closing.close());
     window.set_default_widget(Some(&ok));
@@ -130,15 +159,36 @@ fn show_already_open(app: &Application, user: &str) {
     ok.grab_focus();
 }
 
-/// A small window with the logo, `heading` in bold, `detail`, and `buttons` at the bottom
+/// Says that Babawus can't start, because its English language file is missing or broken. With
+/// no texts to show in any language, this message is in English, written here.
+fn show_no_english(app: &Application, reason: &str) {
+    if let Some(window) = app.windows().first() {
+        window.present();
+        return;
+    }
+    let close = Button::with_label("Close");
+    close.add_css_class("suggested-action");
+    let detail = format!(
+        "Its English language file is missing or damaged, so it has no texts to show. \
+         Installing Babawus again puts the file back.\n\n{reason}"
+    );
+    let window = message_window(app, "Backup", "Babawus can't start", &detail, &[&close]);
+    let closing = window.clone();
+    close.connect_clicked(move |_| closing.close());
+    window.set_default_widget(Some(&close));
+    window.present();
+    close.grab_focus();
+}
+
+/// A small window titled `title`, with the logo, `heading` in bold, `detail`, and `buttons` at the bottom
 /// right.
 fn message_window(
     app: &Application,
+    title: &str,
     heading: &str,
     detail: &str,
     buttons: &[&Button],
 ) -> ApplicationWindow {
-    let language = window::current_language(&glib::user_config_dir().join(SETTINGS_FILE));
     let heading = Label::builder()
         .use_markup(true)
         .label(format!("<b>{}</b>", glib::markup_escape_text(heading)))
@@ -171,7 +221,7 @@ fn message_window(
     content.append(&texts);
     ApplicationWindow::builder()
         .application(app)
-        .title(Text::WindowTitle.get(language))
+        .title(title)
         .default_width(480)
         .resizable(false)
         .child(&content)

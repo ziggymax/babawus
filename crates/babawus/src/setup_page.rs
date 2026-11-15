@@ -8,7 +8,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use babawus_core::config::{OLDER_VERSIONS, RUN_CHECK_DAYS};
-use babawus_core::settings::Language;
+use babawus_core::language::Language;
 use babawus_core::setup_screen::{ComputerShown, HereAction, OverviewShown};
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;

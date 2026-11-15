@@ -4,7 +4,7 @@
 //! only puts it on the screen.
 
 use babawus_core::backup_screen::Shown;
-use babawus_core::settings::Language;
+use babawus_core::language::Language;
 use babawus_core::text::Text;
 use babawus_core::verdict_screen::VerdictShown;
 use gtk4::prelude::*;

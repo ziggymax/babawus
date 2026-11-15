@@ -8,7 +8,9 @@ use crate::lock::ThisProcess;
 use crate::medium::CONFIG_FILE;
 use crate::versions::Format;
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const ID: &str = "0123456789abcdef0123456789abcdef";
 const ROOT: &str = "/media/anna/BACKUP-A";
 const HOME: &str = "/home/anna";
@@ -116,7 +118,7 @@ fn a_damaged_configuration_is_unreadable() {
 fn the_screen_lists_the_selection_and_what_is_left_out() {
     let gathered = gather(&medium(&[".", "notes.txt", "Gone"]), "anna");
 
-    let shown = coverage_screen(&gathered, "anna", EN);
+    let shown = coverage_screen(&gathered, "anna", en());
 
     assert_eq!(
         shown,
@@ -152,7 +154,7 @@ fn the_screen_lists_the_selection_and_what_is_left_out() {
 
 #[test]
 fn nothing_selected_says_who_to_ask() {
-    let shown = coverage_screen(&gather(&medium(&[]), "anna"), "anna", EN);
+    let shown = coverage_screen(&gather(&medium(&[]), "anna"), "anna", en());
 
     assert_eq!(
         shown.intro,
@@ -169,7 +171,7 @@ fn nothing_left_out_has_no_heading() {
         exclude_folders: Vec::new(),
     };
 
-    let shown = coverage_screen(&Gathered::Covered(coverage), "anna", EN);
+    let shown = coverage_screen(&Gathered::Covered(coverage), "anna", en());
 
     assert_eq!(shown.left_out_heading, None);
     assert!(shown.left_out.is_empty());
@@ -177,7 +179,7 @@ fn nothing_left_out_has_no_heading() {
 
 #[test]
 fn a_medium_that_no_longer_has_the_account_says_so() {
-    let shown = coverage_screen(&Gathered::NotSetUp, "anna", EN);
+    let shown = coverage_screen(&Gathered::NotSetUp, "anna", en());
 
     assert!(
         shown

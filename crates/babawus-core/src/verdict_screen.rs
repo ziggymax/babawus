@@ -6,10 +6,10 @@ use std::time::SystemTime;
 
 use crate::backup_screen::number;
 use crate::copy::Skip;
+use crate::language::Language;
 use crate::log::{LastBackup, Stats};
 use crate::media::user_of;
 use crate::run::{Ended, Outcome};
-use crate::settings::Language;
 use crate::text::{Text, size};
 use crate::time::ClockTime;
 use crate::verdict::{Reason, Verdict};

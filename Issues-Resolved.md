@@ -546,3 +546,11 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Fluent (`.ftl`):** Mozilla's format, made for switching at runtime, with real plural forms for every language and placeholders written `{ $files }`. Through the `fluent-bundle` crate it brings 24 crates. Weblate and Pontoon read it. It is the most capable of the three, and the most to depend on, while Babawus's texts are mostly plain sentences.
     - **Recommendation:** TOML. It meets every need with no new dependency, it keeps the texts' names, and English is a file like the others. If a language with more plural forms is added later, plurals can be revisited then.
     - **Decided (2026-11-15):** TOML, as recommended. Asked whether a long text, such as a built-in help of a few hundred lines, also works well: it does, as a multi-line string, which keeps its lines and blank lines and needs no escaping beyond a backslash or three quotes in a row, while gettext would make it one entry that goes out of date with any change to the English, and Fluent wants every line indented. Whether the help sits in the language file or in a file of its own is decided in 1.0.0-alpha.3.
+
+## Decisions on loading the language files (T-073)
+
+149. **The details of loading the language files.** Issues 147 and 148 settled the format, the folder and where a rejected file's reason goes. Three things were left: what to do with texts a file has that Babawus doesn't know, where a build run with cargo finds its files, and the order of the Language menu.
+    - **Decided (2026-11-15):**
+        - A file whose only fault is unknown texts is accepted, and each unknown text is named on standard error, so that a file made for a newer Babawus still works with an older one. A misspelt name leaves the real text missing, so that file is rejected anyway.
+        - A debug build reads the `languages/` folder of the source tree it was built from; a release build, as in the `.deb`, reads `/usr/share/babawus/languages/`. There is no setting for it.
+        - The Language menu lists the languages sorted by their own names, as shown: Dansk, Deutsch, English, Español.

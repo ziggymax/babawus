@@ -2,8 +2,8 @@
 //! during a backup operation" and "Finishing a run" in Requirements.md. The UI only puts these
 //! texts on the screen.
 
+use crate::language::Language;
 use crate::run::Progress;
-use crate::settings::Language;
 use crate::text::{Text, size};
 
 /// Where a run is, gathered from its progress messages.
@@ -115,15 +115,12 @@ fn overview(files: u64, bytes: u64, language: Language) -> String {
 
 /// A whole number with its thousands marked, for example "1,204".
 pub fn number(value: u64, language: Language) -> String {
-    let separator = match language {
-        Language::English => ',',
-        Language::German => '.',
-    };
+    let separator = language.thousands();
     let digits = value.to_string();
     let mut grouped = String::new();
     for (index, digit) in digits.chars().enumerate() {
         if index > 0 && (digits.len() - index).is_multiple_of(3) {
-            grouped.push(separator);
+            grouped.push_str(separator);
         }
         grouped.push(digit);
     }

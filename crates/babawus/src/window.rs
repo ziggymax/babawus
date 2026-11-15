@@ -23,11 +23,12 @@ use babawus_core::history_screen::history;
 use babawus_core::identity::{
     is_administrator, this_computer_id, this_hostname, this_users_groups,
 };
+use babawus_core::language::{Language, Languages};
 use babawus_core::lock::ThisProcess;
 use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
-use babawus_core::settings::{Language, SETTINGS_FILE, Settings};
+use babawus_core::settings::{SETTINGS_FILE, Settings};
 use babawus_core::setup_screen::{
     self, Editor, Here, HereAction, Opened, SaveError, overview, save_error_text,
 };
@@ -483,11 +484,28 @@ pub fn show(app: &Application) {
     this_window.window.present();
 }
 
+/// The languages read at start, before any window opens.
+static LANGUAGES: std::sync::OnceLock<Languages> = std::sync::OnceLock::new();
+
+/// Keeps the languages read at start, for every window. Called once, before any window opens.
+pub fn set_languages(languages: Languages) {
+    LANGUAGES
+        .set(languages)
+        .expect("the languages are only read once");
+}
+
+/// The languages read at start.
+pub fn languages() -> &'static Languages {
+    LANGUAGES
+        .get()
+        .expect("the languages are read before any window opens")
+}
+
 /// The language to show at the start: the user's choice, otherwise the system's.
 pub fn current_language(settings_path: &std::path::Path) -> Language {
     let settings = Settings::load(&RealFs, settings_path);
     let system_names = glib::language_names();
-    settings.language(system_names.iter().map(|name| name.as_str()))
+    settings.language(languages(), system_names.iter().map(|name| name.as_str()))
 }
 
 fn add_css() {
@@ -735,18 +753,18 @@ impl Window {
         let language = gio::SimpleAction::new_stateful(
             "language",
             Some(glib::VariantTy::STRING),
-            &self.language.get().name().to_variant(),
+            &self.language.get().code().to_variant(),
         );
         let weak = Rc::downgrade(self);
         language.connect_activate(move |action, parameter| {
             let Some(window) = weak.upgrade() else { return };
-            let Some(name) = parameter.and_then(|parameter| parameter.str()) else {
+            let Some(code) = parameter.and_then(|parameter| parameter.str()) else {
                 return;
             };
-            let Some(chosen) = Language::ALL.into_iter().find(|each| each.name() == name) else {
+            let Some(chosen) = languages().find(code) else {
                 return;
             };
-            action.set_state(&name.to_variant());
+            action.set_state(&code.to_variant());
             window.choose_language(chosen);
         });
         self.window.add_action(&language);
@@ -817,7 +835,7 @@ impl Window {
     fn choose_language(&self, language: Language) {
         self.language.set(language);
         let settings = Settings {
-            language: Some(language),
+            language: Some(language.code().to_owned()),
         };
         // The choice is only remembered for next time, so this doesn't get in the user's way.
         if let Err(error) = settings.save(&RealFs, &self.settings_path) {
@@ -831,14 +849,14 @@ impl Window {
 
     fn menu_model(&self) -> gio::Menu {
         let language = self.language.get();
-        let languages = gio::Menu::new();
-        for each in Language::ALL {
+        let submenu = gio::Menu::new();
+        for each in languages().all() {
             let item = gio::MenuItem::new(Some(each.name()), None);
-            item.set_action_and_target_value(Some("win.language"), Some(&each.name().to_variant()));
-            languages.append_item(&item);
+            item.set_action_and_target_value(Some("win.language"), Some(&each.code().to_variant()));
+            submenu.append_item(&item);
         }
         let menu = gio::Menu::new();
-        menu.append_submenu(Some(Text::MenuLanguage.get(language)), &languages);
+        menu.append_submenu(Some(Text::MenuLanguage.get(language)), &submenu);
         menu.append(Some(Text::MenuAdvanced.get(language)), Some("win.advanced"));
         menu.append(Some(Text::MenuAbout.get(language)), Some("win.about"));
         menu

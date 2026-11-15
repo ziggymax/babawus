@@ -5,7 +5,9 @@ use crate::log::{End, Stats};
 use crate::time::utc_clock;
 use crate::verdict::Verdict;
 
-const EN: Language = Language::English;
+fn en() -> Language {
+    crate::language::testing::english()
+}
 const HOUR: Duration = Duration::from_secs(3600);
 const DAY: Duration = Duration::from_secs(86_400);
 
@@ -47,7 +49,7 @@ fn good(account: &str, started: SystemTime) -> Run {
 }
 
 fn rows(runs: &[Run], in_progress: Option<&str>) -> Vec<HistoryRow> {
-    history(runs, in_progress, now(), utc_clock, EN)
+    history(runs, in_progress, now(), utc_clock, en())
 }
 
 #[test]

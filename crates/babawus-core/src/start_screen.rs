@@ -6,9 +6,9 @@ use std::path::Path;
 use std::time::SystemTime;
 
 use crate::fs::FileSystem;
+use crate::language::Language;
 use crate::log::read_runs;
 use crate::media::{Medium, Snapshot, Status, Viewer};
-use crate::settings::Language;
 use crate::text::{Text, size};
 use crate::time::ClockTime;
 use crate::verdict_screen::last_backup_text;
