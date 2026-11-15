@@ -28,7 +28,6 @@ How it is done is decided in issue 141. One pull request per task.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-067 | Clean up Concept.md: as Babawus is in 0.2.1, without the first version's history or repetition of Requirements.md | Todo | ReleasePlanning.md, issue 141 |
 | T-068 | Clean up Requirements.md the same way | Todo | ReleasePlanning.md, issue 141 |
 | T-069 | Clean up DevEnvSetup.md the same way | Todo | ReleasePlanning.md, issue 141 |
 | T-070 | Clean up ReleaseChecklist.md the same way | Todo | ReleasePlanning.md, issue 141 |
