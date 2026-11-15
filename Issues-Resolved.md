@@ -525,3 +525,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 
 145. **How the guide signs in to GitHub.** It said to use a fine-grained token limited to this repository, but the VM is signed in through `gh auth login` in the browser, with an OAuth token whose scopes include `repo` and `workflow`, and which reaches every repository of the account.
     - **Decided (2026-11-15):** The guide describes the browser sign-in, as used: GitHub.com, HTTPS, web browser, and approving the request in the browser, since a request that isn't approved ends with `access_denied`. The security notes say that the token reaches every repository, and how to revoke it. Besides that, the guide is brought up to date with the VM as it is: a 32 GB disk, two test sticks, `automount-open` turned off, and the size of `target/`; and dated history is dropped from the discoveries, which are kept.
+
+## Decisions on cleaning up ReleaseChecklist.md (T-070)
+
+146. **Whether the release checklist says how to pick a partial run.** It always assumes a full run from a clean install, but for 0.2.1 only the installing steps were run, as an update (issue 140).
+    - **Decided (2026-11-15):** No. The checklist stays the full run. Whether a small release runs only part of it is decided for each release and recorded as an issue, as for 0.2.1. Otherwise only history is removed: the task numbers in the headings, and the versions 0.1.0 and 0.1.1 in the examples.

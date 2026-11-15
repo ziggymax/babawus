@@ -28,7 +28,6 @@ How it is done is decided in issue 141. One pull request per task.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-070 | Clean up ReleaseChecklist.md the same way | Todo | ReleasePlanning.md, issue 141 |
 | T-071 | Raise the version to 1.0.0-alpha.1 and update ReleasePlanning.md; after the merge, tag `v1.0.0-alpha.1` on main, with no GitHub release | Todo | ReleasePlanning.md, issue 141 |
 
 ## Needs a decision
