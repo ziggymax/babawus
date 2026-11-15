@@ -21,7 +21,7 @@ pub enum VerdictMark {
     Good,
     /// An amber "!": the backup is incomplete, but nothing is broken.
     Attention,
-    /// A red cross: the backup can't succeed without the poweruser.
+    /// A red cross: the backup can't succeed until something is fixed.
     Failed,
 }
 

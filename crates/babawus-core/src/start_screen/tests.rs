@@ -215,7 +215,7 @@ fn the_users_actions_appear_when_they_apply() {
 }
 
 #[test]
-fn the_poweruser_actions_only_appear_with_advanced() {
+fn the_advanced_actions_only_appear_with_advanced() {
     let details = details_of(Some(&checked(Status::NotSetUp)), true);
     let all = [Action::ShowHistory, Action::Prepare, Action::ChangeSetup];
     assert_eq!(actions(&details), all);

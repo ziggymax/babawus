@@ -1,7 +1,7 @@
 //! The format view: choose a drive, a label and a file system, confirm, then wait while it is
 //! formatted, and see how it went. See "Format USB media" in Requirements.md and issues
 //! 78-81. What to show comes from [`babawus_core::format_screen`]; this module only puts it on
-//! the screen. The window keeps what the poweruser has chosen in the widgets themselves.
+//! the screen. The window keeps what the user has chosen in the widgets themselves.
 
 use babawus_core::format_screen::{DriveChoice, ResultShown, ext4_allowed, ext4_note};
 use babawus_core::language::Language;

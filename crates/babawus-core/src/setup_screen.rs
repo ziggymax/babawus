@@ -55,7 +55,7 @@ pub struct Editor {
     saved: Option<Config>,
     /// The folders under `backup`, which new computers can't use.
     on_medium: Vec<OsString>,
-    /// The configuration was damaged, so the poweruser should check it and save it.
+    /// The configuration was damaged, so it should be checked and saved.
     pub damaged: bool,
 }
 

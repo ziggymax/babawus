@@ -188,7 +188,7 @@ struct BackupState {
 
 /// How far the format view has got.
 enum FormatStage {
-    /// The poweruser is choosing. What they chose is kept in the widgets.
+    /// The user is choosing. What they chose is kept in the widgets.
     Choosing,
     /// Formatting the medium that will be labelled `label`.
     Working {
@@ -205,14 +205,14 @@ enum FormatStage {
     },
 }
 
-/// The format view, from opening it until the poweruser goes back.
+/// The format view, from opening it until the user goes back.
 struct FormatState {
     stage: FormatStage,
     /// The drives that may be formatted, as last listed.
     choices: Vec<DriveChoice>,
     /// The udisks2 drive ID of the chosen drive.
     drive: Option<String>,
-    /// The poweruser has typed a label, so it is no longer replaced by the suggestion.
+    /// The user has typed a label, so it is no longer replaced by the suggestion.
     label_edited: bool,
 }
 
@@ -235,7 +235,7 @@ enum SetupNotice {
     Error(String),
 }
 
-/// The configuration editor, from opening it until the poweruser goes back.
+/// The configuration editor, from opening it until the user goes back.
 struct SetupState {
     /// The label of the medium.
     label: String,
@@ -566,7 +566,7 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     explained.append(&explanation);
     explained.append(&notice);
 
-    // The user's buttons, then the poweruser's, on one row that wraps like words when the
+    // The everyday buttons, then the advanced ones, on one row that wraps like words when the
     // window is narrow, or the texts are long, as in German, so that the window needn't grow
     // (issue 134).
     let actions = action_row();
@@ -1594,7 +1594,7 @@ impl Window {
     }
 
     /// Reading or writing for the editor numbered `generation` has finished. It is dropped if
-    /// the poweruser has gone back since.
+    /// the user has gone back since.
     fn setup_read(&self, generation: u64, stage: SetupStage, notice: Option<SetupNotice>) {
         if let Some(setup) = self.setup.borrow_mut().as_mut()
             && setup.generation == generation
@@ -2063,7 +2063,7 @@ impl Window {
     }
 
     /// The chosen drive may have changed. A different drive needs confirming again, and gets
-    /// the suggested label unless the poweruser has typed one.
+    /// the suggested label unless the user has typed one.
     fn format_drive_chosen(&self) {
         let chosen = self.format_page.chosen_drive();
         let suggestion = {
@@ -2102,7 +2102,7 @@ impl Window {
             .is_some_and(|format| matches!(format.stage, FormatStage::Working { .. }))
     }
 
-    /// Formats the chosen drive, once the poweruser has confirmed.
+    /// Formats the chosen drive, once the user has confirmed.
     fn start_format(self: &Rc<Self>) {
         let page = &self.format_page;
         let label = page.label.text().to_string();

@@ -50,7 +50,7 @@ fn main() -> glib::ExitCode {
         None
     };
     // Without a usable English file there are no texts to show, so Babawus only says so
-    // (issue 147). Problems with other files are for the poweruser, on standard error.
+    // (issue 147). Problems with other files go to standard error.
     let no_english = match Languages::load(&RealFs, &language::folder()) {
         Ok(loaded) => {
             for problem in &loaded.problems {
