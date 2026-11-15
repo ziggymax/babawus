@@ -559,3 +559,20 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 
 150. **Where the guide to adding a language goes.** It is for powerusers and translators, and covers making a language file from `en.toml`, by hand or with an AI, checking it, installing it, and finding out why a file is rejected.
     - **Decided (2026-11-15):** In a file of its own, `AddingALanguage.md` in the repository's root, linked from README.md, so that README.md doesn't grow.
+
+## Decisions on 1.0.0-alpha.3, Advanced features and Help (T-076 to T-080)
+
+151. **How 1.0.0-alpha.3 is set up.** ReleasePlanning.md replaces the poweruser with "Advanced features": choosing Advanced shows a warning with "Cancel" and "Continue", and no text in Babawus says anything about how or where to get help. A small built-in Help, in a window of its own that isn't modal, explains the what, why and how of Babawus. Today 13 English texts mention a poweruser or "whoever looks after this computer", the 13 German ones say "Betreuer", and Concept.md and Requirements.md use "poweruser" as a role.
+    - **Decided (2026-11-15):**
+        - Five tasks: T-076, the warning when choosing Advanced; T-077, new wording for every text in English and German, the `.deb` description, and an audit of all texts for any other such wording; T-078, Concept.md and Requirements.md without the poweruser role; T-079, the built-in Help; T-080, raising the version to 1.0.0-alpha.3, after which Claude tags it.
+        - Instead of "Contact your poweruser.", a text says what is wrong and where it is fixed under Advanced, without saying who does it, for example "It can be set up under Advanced." Where Advanced can't fix it, such as udisks2 not running or a computer without an ID, the text says what is wrong, and Help explains more.
+        - The documents have one user and two kinds of use: everyday functions (back up, history, status, language) and advanced functions (format, set up, link, remove), the latter behind Advanced and its warning. The user may do both, or have someone else do the advanced part. Installing and restoring are described as tasks, not tied to a person.
+        - The Help text is one more text in each language file, a multi-line string, checked like every other text (issue 148).
+        - The Help is plain text: a line starting with "# " is a heading, shown in bold; blank lines separate paragraphs; a line starting with "- " is a bullet. The Help window has a simple plain-text search.
+        - The user asked, too, that every warning and error message carry a number, so that it can be looked up in Help. Each text that tells of a problem (the stick explanations, the verdicts' reasons, the skip reasons, and the setup, format and eject errors) gets a fixed number in the code, never changed or reused. Babawus adds it after the translated text, as in "This stick is full. #14", so a translation can't lose or change it, and it is the same in every language. The numbers come with T-077; Help's entries for them with T-079.
+        - When a language's Help has no entry for a number, Babawus names it on standard error, but still offers the language. A test makes sure that English and German cover every number.
+
+## Decisions on the warning for Advanced (T-076)
+
+152. **What the warning says when Advanced is chosen.**
+    - **Decided (2026-11-15):** It shows each time Advanced is chosen to turn it on, but not when turning it off. "Turn on the advanced functions?", then "They can erase a stick, and change what is backed up to it and for whom. A mistake can cost backups. Only continue if you know what you are doing.", with "Cancel" and "Continue". "Cancel" has the focus, so Enter or Esc keeps Advanced off. In German: „Erweiterte Funktionen einschalten?“, „Mit ihnen kann ein Stick gelöscht und geändert werden, was auf ihn gesichert wird und für wen. Ein Fehler kann Sicherungen kosten. Mach nur weiter, wenn du weißt, was du tust.“, „Abbrechen“ and „Weiter“.

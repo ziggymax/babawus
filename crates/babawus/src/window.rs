@@ -773,10 +773,11 @@ impl Window {
         let weak = Rc::downgrade(self);
         advanced.connect_activate(move |action, _| {
             let Some(window) = weak.upgrade() else { return };
-            let on = !window.advanced.get();
-            action.set_state(&on.to_variant());
-            window.advanced.set(on);
-            window.set_texts();
+            if window.advanced.get() {
+                window.set_advanced(action, false);
+            } else {
+                window.ask_for_advanced(action);
+            }
         });
         self.window.add_action(&advanced);
 
@@ -830,6 +831,39 @@ impl Window {
             }
         });
         self.window.add_action(&about);
+    }
+
+    /// Turns Advanced on or off, and shows or hides what goes with it.
+    fn set_advanced(&self, action: &gio::SimpleAction, on: bool) {
+        action.set_state(&on.to_variant());
+        self.advanced.set(on);
+        self.set_texts();
+    }
+
+    /// Warns before Advanced is turned on, and turns it on only after "Continue". "Cancel" has
+    /// the focus, so Enter or Esc keeps it off (issue 152).
+    fn ask_for_advanced(self: &Rc<Self>, action: &gio::SimpleAction) {
+        let language = self.language.get();
+        let dialog = AlertDialog::builder()
+            .message(Text::AdvancedQuestion.get(language))
+            .detail(Text::AdvancedDetail.get(language))
+            .buttons([
+                Text::Cancel.get(language),
+                Text::AdvancedContinue.get(language),
+            ])
+            .cancel_button(0)
+            .default_button(0)
+            .modal(true)
+            .build();
+        let weak = Rc::downgrade(self);
+        let action = action.clone();
+        dialog.choose(Some(&self.window), gio::Cancellable::NONE, move |answer| {
+            if answer == Ok(1)
+                && let Some(window) = weak.upgrade()
+            {
+                window.set_advanced(&action, true);
+            }
+        });
     }
 
     fn choose_language(&self, language: Language) {
