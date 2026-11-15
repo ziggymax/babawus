@@ -316,6 +316,14 @@ texts! {
     Megabytes,
     Gigabytes,
     Terabytes,
+
+    MenuHelp,
+    HelpTitle,
+    HelpSearch,
+    HelpSearchTooltip,
+    HelpFound,
+    HelpNotFound,
+    Help,
 }
 
 impl Text {

@@ -48,6 +48,7 @@ use gtk4::{
 use crate::backup_page::BackupPage;
 use crate::choose_page::ChoosePage;
 use crate::format_page::FormatPage;
+use crate::help_window::HelpWindow;
 use crate::icons;
 use crate::info_page::InfoPage;
 use crate::log_window::LogWindow;
@@ -329,6 +330,8 @@ struct Window {
     /// The open log windows, by the udisks2 object path of their medium's file system: at most
     /// one per stick (issue 135).
     log_windows: RefCell<HashMap<String, Rc<LogWindow>>>,
+    /// The Help window, while it is open.
+    help_window: RefCell<Option<Rc<HelpWindow>>>,
 }
 
 /// Opens the start screen.
@@ -458,6 +461,7 @@ pub fn show(app: &Application) {
         ejecting: RefCell::new(None),
         unlisted: Cell::new(None),
         log_windows: RefCell::new(HashMap::new()),
+        help_window: RefCell::new(None),
     });
     *setup_events.borrow_mut() = Rc::downgrade(&this_window);
     this_window.connect_signals();
@@ -823,6 +827,18 @@ impl Window {
         });
         self.window.add_action(&show_in_log);
 
+        let help = gio::SimpleAction::new("help", None);
+        let weak = Rc::downgrade(self);
+        help.connect_activate(move |_, _| {
+            if let Some(window) = weak.upgrade() {
+                window.show_help();
+            }
+        });
+        self.window.add_action(&help);
+        if let Some(app) = self.window.application() {
+            app.set_accels_for_action("win.help", &["F1"]);
+        }
+
         let about = gio::SimpleAction::new("about", None);
         let weak = Rc::downgrade(self);
         about.connect_activate(move |_, _| {
@@ -868,6 +884,10 @@ impl Window {
 
     fn choose_language(&self, language: Language) {
         self.language.set(language);
+        let help_window = self.help_window.borrow().clone();
+        if let Some(help_window) = help_window {
+            help_window.set_language(language);
+        }
         let settings = Settings {
             language: Some(language.code().to_owned()),
         };
@@ -892,8 +912,30 @@ impl Window {
         let menu = gio::Menu::new();
         menu.append_submenu(Some(Text::MenuLanguage.get(language)), &submenu);
         menu.append(Some(Text::MenuAdvanced.get(language)), Some("win.advanced"));
+        menu.append(Some(Text::MenuHelp.get(language)), Some("win.help"));
         menu.append(Some(Text::MenuAbout.get(language)), Some("win.about"));
         menu
+    }
+
+    /// Opens the Help, or brings it to the front if it is open (issue 154).
+    fn show_help(self: &Rc<Self>) {
+        let open = self.help_window.borrow().clone();
+        if let Some(help_window) = open {
+            help_window.window.present();
+            return;
+        }
+        let Some(app) = self.window.application() else {
+            return;
+        };
+        let help_window = HelpWindow::open(&app, self.language.get());
+        let weak = Rc::downgrade(self);
+        help_window.window.connect_close_request(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.help_window.borrow_mut().take();
+            }
+            glib::Propagation::Proceed
+        });
+        *self.help_window.borrow_mut() = Some(help_window);
     }
 
     fn show_about(&self) {
@@ -1257,8 +1299,12 @@ impl Window {
         });
     }
 
-    /// Closes every log window.
+    /// Closes every log window, and the Help, which close with Babawus.
     fn close_log_windows(&self) {
+        let help_window = self.help_window.borrow_mut().take();
+        if let Some(help_window) = help_window {
+            help_window.window.close();
+        }
         let open: Vec<Rc<LogWindow>> = self
             .log_windows
             .borrow_mut()

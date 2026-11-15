@@ -296,3 +296,212 @@ Kilobytes = "{size} kB"
 Megabytes = "{size} MB"
 Gigabytes = "{size} GB"
 Terabytes = "{size} TB"
+
+MenuHelp = "Help"
+HelpTitle = "Help"
+HelpSearch = "Search the Help"
+HelpSearchTooltip = "Type a word or a message's number, such as #14. Enter goes to the next match, Shift+Enter to the one before."
+HelpFound = "{current} of {total}"
+HelpNotFound = "Not found"
+
+# The built-in Help, shown in a window of its own (issues 151 and 154). A line starting with "# "
+# is a heading, a line starting with "- " is a bullet, and blank lines separate paragraphs. A line
+# starting with "#" and a number is the entry for that numbered message: every number needs one.
+Help = """
+# What Babawus does
+
+Babawus copies your important files and folders to a USB stick, so that you still have them if your computer breaks, is lost or is stolen, or if you delete or spoil a file by mistake.
+
+It only copies what has changed since the last backup. When a file has changed, the copy on the stick is replaced, and the earlier copy is kept as an older version. Files you delete on the computer are never deleted from the stick.
+
+# Backing up
+
+- Plug in your backup stick.
+- Choose it in the list, if it isn't chosen already.
+- Press "Start backup", and wait for the verdict.
+- When it says "All good", press "Eject", and pull out the stick.
+
+Keep the stick away from the computer between backups, so that whatever happens to the computer doesn't happen to the stick too. Two sticks, used in turn, are safer than one.
+
+"Show history" shows when backups to the stick ran and how they went. "What's backed up" shows which of your files and folders are copied to it.
+
+# Getting files back
+
+Babawus has no restore button. Open the stick in the file manager: your files are in the folder "backup", under the computer's and your own name, in the same folders as on the computer. Copy what you need back. The older versions of a file are in a folder next to it, named like the file with [] in it, such as report[]pdf for report.pdf, each with the date and time it was replaced in its name.
+
+# Advanced functions
+
+Under Advanced in the menu are the functions that set up a stick: "Prepare…" erases a stick and makes it ready for Babawus, and "Change setup…" chooses what is backed up, and for which computers and accounts. A mistake here can cost backups, so Babawus asks first. Advanced turns off again when Babawus is closed.
+
+# Messages
+
+When something goes wrong, the message ends with a number, such as #14. Search for that number here to see what it means and what to do.
+
+#1 The stick isn't opened.
+The system hasn't opened the stick's files. Pull it out and plug it back in. If that doesn't help, open the stick in the file manager.
+
+#2 The stick that is plugged in can't be used yet.
+The stick has nothing on it that Babawus can read, for example because it is new or was used for something else. Prepare it under Advanced, with "Prepare…". That erases everything on it.
+
+#3 Babawus can't see the USB sticks.
+The system's udisks2 service, which Babawus uses to find sticks, isn't running. Restarting the computer usually starts it again.
+
+#4 Babawus is already open for another account.
+Only one Babawus can run on a computer at a time. Ask the other person to close it, or switch to their account and close it there.
+
+#5 This stick hasn't been set up for you on this computer.
+Each computer and account must be added to a stick before it can back up to it. Do that under Advanced, with "Change setup…" and "Add this computer and your account".
+
+#6 The setup on this stick is damaged, or needs a newer Babawus.
+If the stick was set up with a newer Babawus, install that version here too. Otherwise the setup is damaged: open it under Advanced, with "Change setup…", check it, and save it.
+
+#7 This stick can only be read.
+Some sticks have a small lock switch: slide it to unlocked. A stick that can no longer be written to may be worn out; use another one.
+
+#8 This stick is still open for another account.
+Another account on this computer has the stick open, so this account can't use it. If nobody else is using it, pull it out and plug it back in.
+
+#9 This stick isn't set up for backups with Babawus.
+Prepare it under Advanced, with "Prepare…". That erases everything on it, so first copy anything you want to keep.
+
+#10 The stick was removed.
+The stick was pulled out during the backup. Nothing already on it is damaged. Plug it back in and run the backup again: it carries on where it stopped.
+
+#11 The backup was interrupted.
+The backup was stopped part of the way, for example because the computer was shut down. Run it again: it carries on where it stopped.
+
+#12 Babawus stopped unexpectedly.
+Babawus ended in the middle of the backup. Nothing already on the stick is damaged. Run the backup again.
+
+#13 The last changes could not be saved on the stick.
+The stick didn't confirm that everything was written. Run the backup again. If it happens again, the stick may be failing; use another one.
+
+#14 The stick is full.
+There isn't room for the files that changed. Keep fewer older versions under Advanced, with "Change setup…", back up fewer files, or use a bigger stick.
+
+#15 This stick isn't set up for you on this computer.
+The setup changed after the backup was started. See #5.
+
+#16 The setup on this stick is damaged, or needs a newer Babawus.
+See #6.
+
+#17 The stick can't be written to.
+Check whether the stick has a lock switch, see #7. Otherwise it may be failing; use another one.
+
+#18 Another backup to this stick is just starting.
+Wait until it has finished, then try again.
+
+#19 Couldn't be read.
+The file or folder couldn't be read on the computer, usually because your account isn't allowed to read it. It is skipped.
+
+#20 Disappeared during the backup.
+The file was deleted or moved while the backup ran. It is backed up next time, if it is still there.
+
+#21 Couldn't be written to the stick.
+The stick refused the file. Run the backup again. If it happens again, see #17.
+
+#22 A folder of the same name is on the stick.
+Something that used to be a folder is now a file with the same name, or the other way round. Rename it on the computer, or remove the old one from the stick in the file manager.
+
+#23 Kept changing while being copied.
+A program kept changing the file during the backup. Close that program, and run the backup again.
+
+#24 Name too long to keep older versions.
+An older version's name adds the date to the name, which made it too long. Give the file a shorter name.
+
+#25 Name has characters this stick can't store.
+Sticks formatted as exFAT can't store the characters " * : < > ? \\ | in names. Rename the file, or use a stick formatted as Ext4.
+
+#26 Name ends with a dot, which this stick can't store.
+Rename the file so that its name doesn't end with a dot.
+
+#27 Name isn't valid text.
+The name has characters the computer can't show as text. Rename the file.
+
+#28 Name or folder path too long.
+The name, or the names of the folders it is in, are too long for the stick. Use shorter names, or fewer folders inside each other.
+
+#29 Name looks like a folder of older versions.
+Babawus keeps older versions in folders whose names contain [], and this name contains [] too. Rename it.
+
+#30 Name differs only in upper and lower case from another.
+exFAT sticks can't tell "Photo.jpg" from "photo.jpg". Rename one of them.
+
+#31 Chosen for backup, but doesn't exist any more.
+A file or folder that was chosen has been deleted, moved or renamed. Choose it again under Advanced, with "Change setup…".
+
+#32 Chosen for backup, but outside your home folder.
+Only files in your home folder are backed up. Choose files inside it under Advanced, with "Change setup…".
+
+#33 The stick is still in use by a program.
+Close the program, for example a file manager window or a terminal open on the stick, or wait until a copy has finished, and eject it again.
+
+#34 The stick could not be ejected.
+Close any program that uses it, and try again. If it still fails, shut down the computer before pulling out the stick.
+
+#35 The history on this stick can't be read.
+Go back and try again. If it happens again, pull the stick out and plug it back in.
+
+#36 The log on this stick can't be read.
+Close the log window and try again. If it happens again, pull the stick out and plug it back in.
+
+#37 Nothing has been chosen for backup yet.
+Choose what to back up under Advanced, with "Change setup…" and "Choose what to back up…".
+
+#38 The setup on this stick can't be read.
+Go back and try again. If it happens again, see #6.
+
+#39 No stick that Babawus may format is plugged in.
+Babawus only formats USB sticks, never the computer's own disks. Plug in the stick to prepare.
+
+#40 Only an administrator can choose Ext4.
+Formatting as Ext4 needs an account with sudo rights and the password for that account. Choose exFAT instead, or prepare the stick from an administrator's account.
+
+#41 The stick was removed.
+The stick was pulled out while it was being formatted. Plug it back in and format it again.
+
+#42 Babawus may no longer format this stick.
+The stick changed after it was chosen, for example because a program opened it. Close that program, go back, and choose the stick again.
+
+#43 The stick was formatted, but Babawus couldn't set it up for backups.
+Format it again. If it happens again, use another stick.
+
+#44 Formatting didn't work.
+The message below it says what the system reported. Pull the stick out, plug it back in, and try again. If it happens again, use another stick.
+
+#45 The stick has been erased, but isn't ready for backups.
+Format it again.
+
+#46 The setup on this stick was changed outside Babawus, or is damaged.
+Check what the setup shows, correct anything that is wrong, and save it. Saving makes it valid again.
+
+#47 The setup on this stick can't be read at all.
+Start a new setup. The backups already on the stick are kept, and their folders are used again.
+
+#48 The setup on this stick needs a newer Babawus.
+It was made with a newer version of Babawus. Install that version on this computer.
+
+#49 This stick has no Babawus setup any more.
+The setup was removed from the stick while it was open here. Go back. To use the stick again, prepare it under Advanced, which erases it, so first copy anything you want to keep.
+
+#50 This computer has no ID.
+Babawus tells computers apart by the ID the system gives each installation, in /etc/machine-id, and this computer has none. Creating one needs the system's own tools, for example "sudo systemd-machine-id-setup" in a terminal.
+
+#51 The stick is in use by a backup.
+Wait until the backup has finished, then save again.
+
+#52 That change can't be made.
+It would give two computers or two backup profiles the same folder on the stick. Choose another one.
+
+#53 Both your earlier and your new name have a folder on the stick.
+Babawus can't link them without mixing them up. In the file manager, move what you need from one folder into the other, remove the empty one, and try again.
+
+#54 The setup couldn't be saved.
+The message says why. Check that the stick is still plugged in and not locked, and save again.
+
+#55 This folder can't be read.
+Your account isn't allowed to read it, so it can't be backed up.
+
+#56 That is more than the free space on the stick.
+The files you chose may not fit, unless much of them is backed up there already. Choose less, or use a bigger stick.
+"""

@@ -16,6 +16,7 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 use crate::fs::FileSystem;
+use crate::help;
 use crate::medium::read_file;
 use crate::text::Text;
 
@@ -207,7 +208,7 @@ fn read(
         .and_then(|stem| stem.to_str())
         .unwrap_or_default();
     check(stem, text, english).map(|(file, unknown)| {
-        let warnings = unknown
+        let mut warnings: Vec<String> = unknown
             .into_iter()
             .map(|name| {
                 format!(
@@ -216,6 +217,16 @@ fn read(
                 )
             })
             .collect();
+        // Help without an entry for a number still helps with the rest (issue 151).
+        let missing = help::missing_entries(&file.plain[Text::Help as usize]);
+        if !missing.is_empty() {
+            let numbers: Vec<String> = missing.iter().map(|number| format!("#{number}")).collect();
+            warnings.push(format!(
+                "{}: the Help has no entry for {}",
+                path.display(),
+                numbers.join(", ")
+            ));
+        }
         (file, warnings)
     })
 }

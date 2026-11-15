@@ -1,6 +1,7 @@
 mod backup_page;
 mod choose_page;
 mod format_page;
+mod help_window;
 mod icons;
 mod info_page;
 mod log_window;

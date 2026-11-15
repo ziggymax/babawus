@@ -294,3 +294,210 @@ Kilobytes = "{size} kB"
 Megabytes = "{size} MB"
 Gigabytes = "{size} GB"
 Terabytes = "{size} TB"
+
+MenuHelp = "Hilfe"
+HelpTitle = "Hilfe"
+HelpSearch = "In der Hilfe suchen"
+HelpSearchTooltip = "Gib ein Wort oder die Nummer einer Meldung ein, etwa #14. Eingabe springt zum nächsten Treffer, Umschalt+Eingabe zum vorigen."
+HelpFound = "{current} von {total}"
+HelpNotFound = "Nicht gefunden"
+
+# Die eingebaute Hilfe. Zum Aufbau siehe en.toml.
+Help = """
+# Was Babawus macht
+
+Babawus kopiert deine wichtigen Dateien und Ordner auf einen USB-Stick, damit du sie noch hast, wenn dein Computer kaputtgeht, verloren geht oder gestohlen wird, oder wenn du aus Versehen eine Datei löschst oder verdirbst.
+
+Es kopiert nur, was sich seit der letzten Sicherung geändert hat. Hat sich eine Datei geändert, wird die Kopie auf dem Stick ersetzt, und die frühere Kopie bleibt als ältere Version erhalten. Dateien, die du auf dem Computer löschst, werden nie vom Stick gelöscht.
+
+# Sichern
+
+- Steck deinen Sicherungs-Stick ein.
+- Wähle ihn in der Liste, wenn er nicht schon gewählt ist.
+- Drück „Sicherung starten“ und warte auf das Ergebnis.
+- Wenn es „Alles in Ordnung“ heißt, drück auf „Auswerfen“ und zieh den Stick ab.
+
+Bewahre den Stick zwischen den Sicherungen getrennt vom Computer auf, damit das, was dem Computer passiert, nicht auch dem Stick passiert. Zwei Sticks, abwechselnd benutzt, sind sicherer als einer.
+
+„Verlauf anzeigen“ zeigt, wann auf den Stick gesichert wurde und wie es lief. „Was wird gesichert“ zeigt, welche deiner Dateien und Ordner darauf kopiert werden.
+
+# Dateien zurückholen
+
+Babawus hat keinen Knopf zum Wiederherstellen. Öffne den Stick in der Dateiverwaltung: Deine Dateien liegen im Ordner „backup“, unter dem Namen des Computers und deinem eigenen, in denselben Ordnern wie auf dem Computer. Kopiere zurück, was du brauchst. Die älteren Versionen einer Datei liegen in einem Ordner daneben, der wie die Datei heißt, aber [] im Namen hat, etwa report[]pdf für report.pdf, jede mit Datum und Uhrzeit, zu der sie ersetzt wurde, im Namen.
+
+# Erweiterte Funktionen
+
+Unter „Erweitert“ im Menü stehen die Funktionen, mit denen ein Stick eingerichtet wird: „Vorbereiten …“ löscht einen Stick und macht ihn für Babawus bereit, und mit „Einrichtung ändern …“ wählst du, was gesichert wird und für welche Computer und Konten. Ein Fehler kann hier Sicherungen kosten, deshalb fragt Babawus vorher nach. „Erweitert“ schaltet sich wieder aus, wenn Babawus geschlossen wird.
+
+# Meldungen
+
+Wenn etwas schiefgeht, endet die Meldung mit einer Nummer, etwa #14. Such hier nach dieser Nummer, um zu sehen, was sie bedeutet und was zu tun ist.
+
+#1 Der Stick ist nicht geöffnet.
+Das System hat die Dateien des Sticks nicht geöffnet. Zieh ihn ab und steck ihn wieder ein. Wenn das nicht hilft, öffne den Stick in der Dateiverwaltung.
+
+#2 Der eingesteckte Stick kann noch nicht benutzt werden.
+Auf dem Stick ist nichts, was Babawus lesen kann, etwa weil er neu ist oder für etwas anderes benutzt wurde. Bereite ihn unter „Erweitert“ mit „Vorbereiten …“ vor. Dabei wird alles darauf gelöscht.
+
+#3 Babawus kann die USB-Sticks nicht sehen.
+Der Systemdienst udisks2, mit dem Babawus Sticks findet, läuft nicht. Ein Neustart des Computers startet ihn meistens wieder.
+
+#4 Babawus ist schon für ein anderes Konto geöffnet.
+Auf einem Computer kann immer nur ein Babawus laufen. Bitte die andere Person, es zu schließen, oder wechsle zu ihrem Konto und schließ es dort.
+
+#5 Dieser Stick ist auf diesem Computer nicht für dich eingerichtet.
+Jeder Computer und jedes Konto muss zu einem Stick hinzugefügt werden, bevor darauf gesichert werden kann. Das geht unter „Erweitert“ mit „Einrichtung ändern …“ und „Diesen Computer und dein Konto hinzufügen“.
+
+#6 Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus.
+Wurde der Stick mit einem neueren Babawus eingerichtet, installiere diese Version auch hier. Sonst ist die Einrichtung beschädigt: Öffne sie unter „Erweitert“ mit „Einrichtung ändern …“, prüfe sie und speichere sie.
+
+#7 Dieser Stick kann nur gelesen werden.
+Manche Sticks haben einen kleinen Schiebeschalter: Schieb ihn auf „offen“. Ein Stick, auf den nicht mehr geschrieben werden kann, ist vielleicht abgenutzt; nimm einen anderen.
+
+#8 Dieser Stick ist noch für ein anderes Konto geöffnet.
+Ein anderes Konto auf diesem Computer hat den Stick geöffnet, deshalb kann dieses Konto ihn nicht benutzen. Wenn ihn sonst niemand benutzt, zieh ihn ab und steck ihn wieder ein.
+
+#9 Dieser Stick ist nicht für Sicherungen mit Babawus eingerichtet.
+Bereite ihn unter „Erweitert“ mit „Vorbereiten …“ vor. Dabei wird alles darauf gelöscht, kopiere also vorher, was du behalten willst.
+
+#10 Der Stick wurde abgezogen.
+Der Stick wurde während der Sicherung abgezogen. Was schon darauf ist, ist nicht beschädigt. Steck ihn wieder ein und starte die Sicherung noch einmal: Sie macht dort weiter, wo sie aufgehört hat.
+
+#11 Die Sicherung wurde unterbrochen.
+Die Sicherung wurde mittendrin angehalten, etwa weil der Computer ausgeschaltet wurde. Starte sie noch einmal: Sie macht dort weiter, wo sie aufgehört hat.
+
+#12 Babawus wurde unerwartet beendet.
+Babawus wurde mitten in der Sicherung beendet. Was schon auf dem Stick ist, ist nicht beschädigt. Starte die Sicherung noch einmal.
+
+#13 Die letzten Änderungen konnten nicht auf dem Stick gespeichert werden.
+Der Stick hat nicht bestätigt, dass alles geschrieben wurde. Starte die Sicherung noch einmal. Wenn es wieder passiert, geht der Stick vielleicht kaputt; nimm einen anderen.
+
+#14 Der Stick ist voll.
+Für die geänderten Dateien ist kein Platz. Bewahre unter „Erweitert“ mit „Einrichtung ändern …“ weniger ältere Versionen auf, sichere weniger Dateien oder nimm einen größeren Stick.
+
+#15 Dieser Stick ist auf diesem Computer nicht für dich eingerichtet.
+Die Einrichtung hat sich geändert, nachdem die Sicherung gestartet wurde. Siehe #5.
+
+#16 Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus.
+Siehe #6.
+
+#17 Auf den Stick kann nicht geschrieben werden.
+Prüfe, ob der Stick einen Schiebeschalter hat, siehe #7. Sonst geht er vielleicht kaputt; nimm einen anderen.
+
+#18 Gerade beginnt eine andere Sicherung auf diesen Stick.
+Warte, bis sie fertig ist, und versuch es dann noch einmal.
+
+#19 Konnte nicht gelesen werden.
+Die Datei oder der Ordner konnte auf dem Computer nicht gelesen werden, meistens weil dein Konto sie nicht lesen darf. Sie wird übersprungen.
+
+#20 Ist während der Sicherung verschwunden.
+Die Datei wurde während der Sicherung gelöscht oder verschoben. Sie wird beim nächsten Mal gesichert, wenn sie noch da ist.
+
+#21 Konnte nicht auf den Stick geschrieben werden.
+Der Stick hat die Datei nicht angenommen. Starte die Sicherung noch einmal. Wenn es wieder passiert, siehe #17.
+
+#22 Auf dem Stick gibt es einen Ordner mit demselben Namen.
+Was früher ein Ordner war, ist jetzt eine Datei mit demselben Namen, oder umgekehrt. Benenne sie auf dem Computer um, oder entferne das alte vom Stick in der Dateiverwaltung.
+
+#23 Hat sich beim Kopieren ständig geändert.
+Ein Programm hat die Datei während der Sicherung ständig geändert. Schließ dieses Programm und starte die Sicherung noch einmal.
+
+#24 Name zu lang, um ältere Versionen aufzubewahren.
+Der Name einer älteren Version bekommt das Datum dazu, und dadurch wurde er zu lang. Gib der Datei einen kürzeren Namen.
+
+#25 Der Name enthält Zeichen, die dieser Stick nicht speichern kann.
+Mit exFAT formatierte Sticks können die Zeichen " * : < > ? \\ | nicht in Namen speichern. Benenne die Datei um, oder nimm einen mit Ext4 formatierten Stick.
+
+#26 Der Name endet mit einem Punkt, den dieser Stick nicht speichern kann.
+Benenne die Datei so um, dass ihr Name nicht mit einem Punkt endet.
+
+#27 Der Name ist kein gültiger Text.
+Der Name enthält Zeichen, die der Computer nicht als Text zeigen kann. Benenne die Datei um.
+
+#28 Name oder Ordnerpfad zu lang.
+Der Name, oder die Namen der Ordner, in denen sie liegt, sind für den Stick zu lang. Nimm kürzere Namen oder weniger ineinander liegende Ordner.
+
+#29 Der Name sieht aus wie ein Ordner mit älteren Versionen.
+Babawus bewahrt ältere Versionen in Ordnern auf, deren Namen [] enthalten, und dieser Name enthält auch []. Benenne ihn um.
+
+#30 Der Name unterscheidet sich von einem anderen nur durch Groß- und Kleinschreibung.
+exFAT-Sticks können „Foto.jpg“ und „foto.jpg“ nicht unterscheiden. Benenne eine der beiden um.
+
+#31 Zum Sichern ausgewählt, aber nicht mehr vorhanden.
+Eine ausgewählte Datei oder ein ausgewählter Ordner wurde gelöscht, verschoben oder umbenannt. Wähle sie unter „Erweitert“ mit „Einrichtung ändern …“ neu aus.
+
+#32 Zum Sichern ausgewählt, aber außerhalb deines persönlichen Ordners.
+Gesichert werden nur Dateien in deinem persönlichen Ordner. Wähle unter „Erweitert“ mit „Einrichtung ändern …“ Dateien darin aus.
+
+#33 Der Stick wird noch von einem Programm benutzt.
+Schließ das Programm, etwa ein Fenster der Dateiverwaltung oder ein Terminal, das auf dem Stick geöffnet ist, oder warte, bis ein Kopiervorgang fertig ist, und wirf ihn noch einmal aus.
+
+#34 Der Stick konnte nicht ausgeworfen werden.
+Schließ alle Programme, die ihn benutzen, und versuch es noch einmal. Wenn es immer noch nicht geht, fahr den Computer herunter, bevor du den Stick abziehst.
+
+#35 Der Verlauf auf diesem Stick kann nicht gelesen werden.
+Geh zurück und versuch es noch einmal. Wenn es wieder passiert, zieh den Stick ab und steck ihn wieder ein.
+
+#36 Das Protokoll auf diesem Stick kann nicht gelesen werden.
+Schließ das Protokollfenster und versuch es noch einmal. Wenn es wieder passiert, zieh den Stick ab und steck ihn wieder ein.
+
+#37 Es wurde noch nichts zum Sichern ausgewählt.
+Wähle unter „Erweitert“ mit „Einrichtung ändern …“ und „Auswählen, was gesichert wird …“, was gesichert werden soll.
+
+#38 Die Einrichtung auf diesem Stick kann nicht gelesen werden.
+Geh zurück und versuch es noch einmal. Wenn es wieder passiert, siehe #6.
+
+#39 Es ist kein Stick eingesteckt, den Babawus formatieren darf.
+Babawus formatiert nur USB-Sticks, nie die eigenen Laufwerke des Computers. Steck den Stick ein, der vorbereitet werden soll.
+
+#40 Ext4 kann nur ein Administrator wählen.
+Zum Formatieren mit Ext4 braucht man ein Konto mit sudo-Rechten und das Passwort dieses Kontos. Wähle stattdessen exFAT, oder bereite den Stick von einem Administratorkonto aus vor.
+
+#41 Der Stick wurde abgezogen.
+Der Stick wurde beim Formatieren abgezogen. Steck ihn wieder ein und formatiere ihn noch einmal.
+
+#42 Babawus darf diesen Stick nicht mehr formatieren.
+Der Stick hat sich verändert, nachdem er gewählt wurde, etwa weil ein Programm ihn geöffnet hat. Schließ dieses Programm, geh zurück und wähle den Stick noch einmal.
+
+#43 Der Stick wurde formatiert, aber Babawus konnte ihn nicht für Sicherungen einrichten.
+Formatiere ihn noch einmal. Wenn es wieder passiert, nimm einen anderen Stick.
+
+#44 Das Formatieren hat nicht geklappt.
+Die Meldung darunter sagt, was das System gemeldet hat. Zieh den Stick ab, steck ihn wieder ein und versuch es noch einmal. Wenn es wieder passiert, nimm einen anderen Stick.
+
+#45 Der Stick wurde gelöscht, ist aber nicht für Sicherungen bereit.
+Formatiere ihn noch einmal.
+
+#46 Die Einrichtung auf diesem Stick wurde außerhalb von Babawus geändert oder ist beschädigt.
+Prüfe, was die Einrichtung zeigt, korrigiere, was falsch ist, und speichere sie. Durch das Speichern wird sie wieder gültig.
+
+#47 Die Einrichtung auf diesem Stick kann gar nicht gelesen werden.
+Beginne eine neue Einrichtung. Die Sicherungen auf dem Stick bleiben erhalten, und ihre Ordner werden weiter benutzt.
+
+#48 Die Einrichtung auf diesem Stick braucht ein neueres Babawus.
+Sie wurde mit einer neueren Version von Babawus gemacht. Installiere diese Version auf diesem Computer.
+
+#49 Dieser Stick hat keine Babawus-Einrichtung mehr.
+Die Einrichtung wurde vom Stick entfernt, während sie hier geöffnet war. Geh zurück. Um den Stick wieder zu benutzen, bereite ihn unter „Erweitert“ vor. Dabei wird er gelöscht, kopiere also vorher, was du behalten willst.
+
+#50 Dieser Computer hat keine Kennung.
+Babawus unterscheidet Computer an der Kennung, die das System jeder Installation in /etc/machine-id gibt, und dieser Computer hat keine. Sie lässt sich nur mit Werkzeugen des Systems anlegen, etwa mit „sudo systemd-machine-id-setup“ in einem Terminal.
+
+#51 Der Stick wird gerade von einer Sicherung benutzt.
+Warte, bis die Sicherung fertig ist, und speichere dann noch einmal.
+
+#52 Diese Änderung ist nicht möglich.
+Zwei Computer oder zwei Sicherungsprofile bekämen denselben Ordner auf dem Stick. Wähle einen anderen.
+
+#53 Sowohl dein früherer als auch dein neuer Name haben einen Ordner auf dem Stick.
+Babawus kann sie nicht verknüpfen, ohne sie zu vermischen. Verschiebe in der Dateiverwaltung, was du brauchst, von einem Ordner in den anderen, entferne den leeren und versuch es noch einmal.
+
+#54 Die Einrichtung konnte nicht gespeichert werden.
+Die Meldung sagt, warum. Prüfe, ob der Stick noch eingesteckt und nicht gesperrt ist, und speichere noch einmal.
+
+#55 Dieser Ordner kann nicht gelesen werden.
+Dein Konto darf ihn nicht lesen, deshalb kann er nicht gesichert werden.
+
+#56 Das ist mehr als der freie Platz auf dem Stick.
+Die gewählten Dateien passen vielleicht nicht, es sei denn, ein großer Teil davon ist dort schon gesichert. Wähle weniger aus, oder nimm einen größeren Stick.
+"""
