@@ -14,6 +14,8 @@ When work on a version begins, its items become tasks (T-entries) in the task li
 
 The latest/current release is: 0.2.1
 
+The latest interim version is: 1.0.0-alpha.1 (tag `v1.0.0-alpha.1`)
+
 ## Next release of Babawus
 
 This section always describes the next upcoming version/release of Babawus. Some of the ideas may be very specific, and some more speculative in nature. Task(s) created to deal with speculative ideas will be investigative rather than implementation-oriented.
@@ -57,7 +59,7 @@ A better alternative would be to use a concept simply called "Advanced features"
 
 Three versions will be made for the next release:
 
-1. 1.0.0-alpha.1: Clean up and consolidate the documents (see "Administrative matters").
+1. 1.0.0-alpha.1: Clean up and consolidate the documents (see "Administrative matters"). Done in T-065 to T-071.
 1. 1.0.0-alpha.2: Support for using external language files.
 1. 1.0.0-alpha.3: Replacing the power user concept with "Advanced features", including the built-in Help.
 

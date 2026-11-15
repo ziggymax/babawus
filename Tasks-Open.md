@@ -20,15 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 0.2.1 is released (T-064). Work on 1.0.0-alpha.1, the first of three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)), has started.
-
-## 1.0.0-alpha.1: the document cleanup
-
-How it is done is decided in issue 141. One pull request per task.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-071 | Raise the version to 1.0.0-alpha.1 and update ReleasePlanning.md; after the merge, tag `v1.0.0-alpha.1` on main, with no GitHub release | Todo | ReleasePlanning.md, issue 141 |
+Babawus 0.2.1 is released (T-064). 1.0.0-alpha.1, the first of three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)), is done: the document cleanup (T-065 to T-071). Next is 1.0.0-alpha.2, language files loaded at runtime; its tasks are added when work on it begins.
 
 ## Needs a decision
 
