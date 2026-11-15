@@ -12,7 +12,7 @@ When work on a version begins, its items become tasks (T-entries) in the task li
 
 ## Latest release of Babawus
 
-The latest/current release is: 0.2.0
+The latest/current release is: 0.2.1
 
 ## Next release of Babawus
 
@@ -46,7 +46,7 @@ To the extent possible the new features are listed by priority, from highest to 
 A better alternative would be to use a concept simply called "Advanced features". Every time the user chooses "Advanced" from the menu, a pop-up appears with a suitable warning about the dangers of using advanced features and two options: "Cancel" or "Continue". A non-technical user can then opt out, and the tech-savvy person can just continue. No text/wording in Babawus implies anything about how/where to get help with advanced features or diagnosing problems. This covers:
     - every text that mentions a poweruser, or someone who looks after the computer
     - the description in the .deb package
-    - the German texts, which use "Betreuer" for the poweruser (issues 90–92)
+    - the German texts, which use "Betreuer" for the poweruser (issue 91)
     - an audit of all texts, in every language, for any other such wording.
 
     The Ext4 text that suggests asking an administrator stays, as it refers to the system administrator (sudo), not the poweruser.
