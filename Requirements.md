@@ -92,7 +92,7 @@ Below the selected medium's details:
 
 These buttons come right after the details' texts, below a thin line, which isn't shown when there are no buttons. They keep their own width, the user's first and then the poweruser's, on one row; when there isn't room, they wrap like words, each close to the one before (issues 125 and 134).
 
-**Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
+**Advanced.** The poweruser's actions only appear after choosing Advanced in the menu. Each time Advanced is chosen to turn it on, a warning asks first: "Turn on the advanced functions?", "They can erase a stick, and change what is backed up to it and for whom. A mistake can cost backups. Only continue if you know what you are doing.", with "Cancel" and "Continue". "Cancel" has the focus, so Enter or Esc keeps Advanced off. Turning it off asks nothing (issue 152). Advanced stays on until it is chosen again or Babawus is closed. It is always off when Babawus starts, and is never saved, so the next user never meets the poweruser's actions by chance. While it is on, the title bar shows a clear marker, so that nobody forgets it is on.
 
 ### Update Babawus media status
 

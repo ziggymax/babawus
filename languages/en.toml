@@ -15,6 +15,9 @@ MenuAdvanced = "Advanced"
 MenuAbout = "About Babawus"
 AdvancedMarker = "Advanced"
 AdvancedMarkerTooltip = "The poweruser's actions are shown. Choose Advanced in the menu again to hide them."
+AdvancedQuestion = "Turn on the advanced functions?"
+AdvancedDetail = "They can erase a stick, and change what is backed up to it and for whom. A mistake can cost backups. Only continue if you know what you are doing."
+AdvancedContinue = "Continue"
 # The name's long form, which About shows, with the letters that spell Babawus in bold, in every
 # language.
 AboutComments = "Basic Backup with USB Storage"
