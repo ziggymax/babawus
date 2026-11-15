@@ -1,6 +1,6 @@
 # Babawus development environment setup
 
-This guide explains how to rebuild the Babawus development and test VM from nothing, and records what was learned while setting it up. It describes the VM as it was on 2026-11-05.
+This guide explains how to rebuild the Babawus development and test VM from nothing, and records what was learned while building and testing Babawus on it. It describes the VM as it is on 2026-11-15, with Babawus 0.2.1.
 
 The steps are split between **You** (things that need the VirtualBox host, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session on the VM). Claude can't see the host, so the host settings below are recommendations or were worked out from inside the VM.
 
@@ -13,7 +13,7 @@ The steps are split between **You** (things that need the VirtualBox host, a pas
 | Guest name | `steen-VirtualBox` |
 | Operating system | Linux Mint 22.3 Cinnamon on X11, the supported platform |
 | CPUs and memory | 16 CPUs, about 20 GB |
-| Disk | 25 GB, of which 24 GB is the root partition |
+| Disk | 32 GB, of which 31 GB is the root partition |
 | Firmware and graphics | EFI, VMSVGA |
 | Network | NAT (guest address `10.0.2.15`) |
 | USB | USB 3 (xHCI) |
@@ -39,7 +39,7 @@ The steps are split between **You** (things that need the VirtualBox host, a pas
 ### 1. Create the VM and install Mint (You)
 
 1. Create a VirtualBox VM with EFI enabled, VMSVGA graphics, and NAT networking.
-2. Give it at least the CPUs and memory listed above. Use a disk of 40 GB or more: 25 GB works, but only 7.5 GB was left after the first builds.
+2. Give it at least the CPUs and memory listed above. Use a disk of 40 GB or more: with 32 GB, only about 4 GB is left, because `target/` alone grows to several GB.
 3. Enable USB 3 (xHCI) now, so that step 10 is simpler.
 4. Install Linux Mint 22.x Cinnamon, create your user account and install the updates that are offered.
 5. Add a NAT port forward to guest port 22, so that the host can reach the VM over SSH.
@@ -80,7 +80,7 @@ sudo apt install -y git gh
 gh auth login
 ```
 
-Use a fine-grained token limited to this repository, with read and write access to contents, pull requests and workflows, and read access to Actions and commit statuses. Without workflows access, GitHub rejects pushes that change `.github/workflows/`.
+Choose GitHub.com, HTTPS and "Login with a web browser". Open the address it shows, enter the code, and approve the request: a request that isn't approved ends with `access_denied`. `gh` then signs Git in too, and keeps its token in the keyring. The token's scopes include `repo` and `workflow`: without `workflow`, GitHub rejects pushes that change `.github/workflows/`. `gh auth status` shows who is signed in.
 
 ### 5. Install packages and updates (Claude)
 
@@ -164,11 +164,16 @@ Take a VirtualBox snapshot of the working VM, and take a new one before testing 
 
 ### 10. Set up USB for manual testing (You)
 
-The manual checklist needs a real stick. A 16 GB Kingston DataTraveler 3.0 passed through this way ran at USB 3 speed (5000M in `lsusb -t`).
+The manual checklist needs two real sticks, A and B, that may be wiped. The VM uses two Kingston DataTraveler 3.0 sticks, of 16 and 32 GB, which run at USB 3 speed passed through this way (5000M in `lsusb -t`).
 
 1. If you skipped it in step 1, shut the VM down and enable USB 3 (xHCI). Without it, sticks run at USB 2.0 speed at best, and measurements of `fsync` won't reflect real use.
-2. Add a USB filter for a stick that you are happy to wipe.
-3. Attach the stick and tell Claude, who can check that it appears as removable with `lsblk -o NAME,SIZE,TRAN,RM`.
+2. Add a USB filter for each stick.
+3. Attach the sticks and tell Claude, who can check that they appear as removable with `lsblk -o NAME,SIZE,TRAN,RM`.
+4. In a terminal on the VM, stop the file manager from opening a window for every stick that is plugged in. Sticks are still mounted, which Babawus needs:
+
+```bash
+gsettings set org.cinnamon.desktop.media-handling automount-open false
+```
 
 ## Discoveries
 
@@ -197,14 +202,14 @@ These results come from the Kingston stick, using the `Format` and `CreatePartit
 - **Background initialisation:** no `ext4lazyinit` thread appeared in the controlled check, right after mounting or 20 seconds later. One thread was counted in an earlier, less controlled run, and that wasn't explained.
 - **Ownership:** `take-ownership` leaves the root folder owned by the user with mode `0700`. The user can then set `0777` and the default ACL without root.
 - **Format times:** Ext4 took 50–62 seconds with the options and 29 seconds without, and exFAT took 0.3 seconds.
-- **D-Bus timeout:** GIO's default call timeout is 25 seconds, which is shorter than every Ext4 format here. The test used 900 seconds, so Babawus must set a long timeout on the call. Testing with the default timeout was not tried.
-- **Partition types:** the test used `0x83` for Ext4 and `0x07` for exFAT on the MBR. The integration tests have since written both GPT types on loop devices.
+- **D-Bus timeout:** GIO's default call timeout is 25 seconds, which is shorter than every Ext4 format here, so Babawus sets a long timeout on the call.
+- **Partition types:** `0x83` for Ext4 and `0x07` for exFAT on the MBR were checked on the stick, and both GPT types on loop devices by the integration tests.
 - **No automount after formatting:** Cinnamon didn't mount the stick after a format, so Babawus has to mount it itself.
 - **Finding block groups:** when counting groups in `dumpe2fs` output, match `^Group [0-9]`. A plain `^Group ` also matches the "Group descriptor size" line.
 
 ### Formatting in Babawus
 
-Babawus's own formatting, through udisks2, on the Kingston stick on 2026-11-07:
+Babawus's own formatting, through udisks2, on the 16 GB Kingston stick:
 
 - **Times:** Ext4 took 57.7 seconds and exFAT 3.0 seconds, including unmounting, partitioning, mounting and creating the configuration.
 - **Ext4 result:** the root folder, `.babawus` and `backup` were owned by the user with mode `0777`, the default ACL was set, there were no reserved blocks, and every block group was initialised. No `ext4lazyinit` thread was running afterwards.
@@ -216,7 +221,7 @@ Babawus's own formatting, through udisks2, on the Kingston stick on 2026-11-07:
 
 ### Speed on a real stick
 
-Measured once on the Kingston stick, copying through `.babawus/tmp/` and renaming, as Babawus will. Directories weren't synced, so a real run may be a little slower.
+Measured once on the 16 GB Kingston stick, copying through `.babawus/tmp/` and renaming, as Babawus does. Directories weren't synced, so a real run may be a little slower.
 
 | Test | Ext4 | exFAT |
 | --- | --- | --- |
@@ -255,14 +260,13 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 
 - **GTK:** Mint 22.3 has GTK 4.14.5, so the `gtk4` crate uses the `v4_14` feature. Don't raise it above the supported platform.
 - **Build times:** about 45 seconds for a first debug build and about a minute for a release build.
-- **Disk use:** `target/` reaches 1.1 GB even for the skeleton.
-- **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace. Installing, updating and uninstalling it were first run on 2026-11-10 (T-025).
+- **Disk use:** `target/` grows to several GB (7.2 GB on 2026-11-15). `cargo clean` gives the space back.
+- **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace.
 - **Test images:** these go in the system's temporary folder, as `babawus-medium-*`, so that the desktop ignores them (see "Cinnamon and loop devices").
 
 ### System quirks
 
 - **Restarting Cinnamon over SSH:** `cinnamon --replace`, run from an SSH session, leaves Cinnamon running in that session. Afterwards, popovers didn't show on the first try, new windows opened behind others, and Captain's "Install Package" did nothing. Logging out and in again put it right. Restart Cinnamon at the computer instead, or log out.
-
 - **GUI runs over SSH have no session bus:** a second start then can't find the first, so it shows "Babawus is already open" instead of raising the window. To test that, run both inside `dbus-run-session`.
 - **Package flags:** after the original setup, `build-essential`, `g++` and `g++-x86-64-linux-gnu` were installed but marked for removal (`ri` in `dpkg -l`). The cause wasn't found. If it happens again, run `printf 'build-essential install\ng++ install\ng++-x86-64-linux-gnu install\n' | sudo dpkg --set-selections`.
 - **Held-back updates:** `apt` may hold back a package with `(phased 40%)` in `apt-cache policy`. Ubuntu is rolling it out gradually, and it arrives by itself later.
@@ -279,7 +283,7 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
       }
   });
   ```
-- **A second account:** `testuser`, a Standard account made in Users and Groups on 2026-11-10 for T-024. A mount stays after its account logs out, under `/media/<that account>/`, which no other account can open, so pull the stick out and plug it back in after changing accounts.
+- **A second account:** `testuser`, a Standard account made in Users and Groups, for testing without administrator rights. A mount stays after its account logs out, under `/media/<that account>/`, which no other account can open, so pull the stick out and plug it back in after changing accounts.
 
 ## Security notes
 
@@ -287,7 +291,7 @@ These settings are fine for a disposable test VM, and wrong for a computer that 
 
 - Your account can run anything as root without a password, and so can any process or Claude session running as you.
 - SSH still accepts passwords. Set `PasswordAuthentication no` if the VM ever becomes reachable from outside the host.
-- The GitHub token is stored in the keyring on the VM, so revoke it if you discard the VM.
+- The GitHub token is stored in the keyring on the VM, and reaches every repository of your account, so revoke it (in GitHub's settings, under Applications) if you discard the VM.
 
 ## Not kept in the repository
 
