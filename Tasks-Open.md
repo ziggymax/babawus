@@ -20,11 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 0.2.1 is released (T-064). 1.0.0-alpha.1, the document cleanup (T-065 to T-071), and 1.0.0-alpha.2, language files loaded at runtime (T-072 to T-075), are done. Being worked on is 1.0.0-alpha.3, the last of three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)): "Advanced features" in place of the poweruser, and a built-in Help (issue 151).
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-080 | Raise the version to 1.0.0-alpha.3 and update ReleasePlanning.md. After it is merged, tag `v1.0.0-alpha.3` on main | Todo | Issue 151 |
+Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done: 1.0.0-alpha.1, the document cleanup (T-065 to T-071); 1.0.0-alpha.2, language files loaded at runtime (T-072 to T-075); and 1.0.0-alpha.3, "Advanced features" in place of the poweruser, and a built-in Help (T-076 to T-080). Next is releasing 1.0.0; its tasks are added when work on it begins.
 
 ## Needs a decision
 
