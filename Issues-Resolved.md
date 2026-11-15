@@ -515,3 +515,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 
 143. **How far Concept.md is trimmed.** It repeated much of the exact behaviour that Requirements.md also states, such as the configuration file's name and checksum, how computer folders are named, the formatting warning, the rules for versions and the verdicts' wording.
     - **Decided (2026-11-15):** Keep the why, cut the how. Every section and its reasoning stays: who Babawus is for, what it protects against, why exFAT or Ext4, why there is no restore function. Exact details that Requirements.md owns are cut, and the text points there instead. The revision history and the "First version" section go, and what had changed since is brought up to date: the login reminder, the log in place of a text to copy, the start screen's list, and N per backup profile.
+
+## Decisions on cleaning up Requirements.md (T-068)
+
+144. **Whether Requirements.md's repetition is merged away.** It was mostly up to date, but its Introduction explained the two roles again, as Concept.md and the glossary do, and two user stories, "Provide feedback after a backup operation" and "Recover from an interrupted backup", said less than "Get a clear verdict" and "Interrupted runs in the log".
+    - **Decided (2026-11-15):** Merge them. The Introduction points at Concept.md and the glossary, and the two thin stories are folded into "Get a clear verdict"; no behaviour is lost. Besides that, only what is out of date or history is fixed: `config_format` in the glossary, the Python fallback, "Not in the first version" (now "Not in Babawus yet"), the issues for the German wording, and the claim that a backup tells the user at its start not to pull out the stick, which only "Finishing…" does.
