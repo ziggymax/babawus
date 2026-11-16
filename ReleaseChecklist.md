@@ -71,7 +71,7 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Turn Advanced on, select stick A and press "Change setup…". → "Setup of this stick", with "This computer (…) isn't set up on this stick yet."
 - [ ] Press "Add this computer and your account". → Your backup profile shows as set up, the entry is listed with "(this computer)" and "(you)", with "Older versions to keep: 10" and "Remind after days without a backup: 7", and "Save" can be pressed.
 - [ ] Press "Back". → "Leave without saving?" Choose "Keep editing".
-- [ ] Press "Choose what to back up…". → A tree with "Your home folder" open. Hidden folders don't show, except those holding something chosen.
+- [ ] Press "Choose what to back up…". → A tree with "Your home folder" open. Hidden folders don't show, except those holding something chosen or left out, such as `.local`, which holds `.local/share/Trash`, left out by default.
 - [ ] Tick `BabawusTest` and open it. → Everything in it is ticked. `notes.tmp` is crossed out, with "Left out by the name pattern *.tmp". The totals count, then show the files and size, with the free space on the stick.
 - [ ] Open `Letters` and untick `old`. → It is crossed out, "Left out", and the totals go down. `Letters` and `BabawusTest` now show partly ticked boxes.
 - [ ] Press "Done", then "Save". → "Stick setup saved." The start screen shows stick A as "Ready", "No backup yet".
@@ -106,10 +106,10 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 
 ## The reminder at login
 
-- [ ] In a terminal, run `cat ~/.local/state/babawus/last_backup`. → The time of the last backup above, and `run_check_days = 8`, from stick A's setup.
+- [ ] In a terminal, run `cat ~/.local/state/babawus/last_backup`. → The time of the last backup above, to stick B, and `run_check_days = 7`, from stick B's setup: the note follows the stick backed up last.
 - [ ] Run `babawus --checklastbackup`. → Nothing shows, and the command ends at once.
 - [ ] Make the note 9 days old: `sed -i "s/^last_backup = .*/last_backup = \"$(date -d '9 days ago' '+%Y-%m-%d %H:%M:%S %z')\"/" ~/.local/state/babawus/last_backup`. Run `babawus --checklastbackup`. → A small window with the elephant: "Your last backup was 9 days ago.", "Do you want to back up now?", "Not now" and "Back up now". Press "Not now". → Babawus closes.
-- [ ] Run it again, and press "Back up now". → The normal window opens. Back up to stick A. → The note has today's time again.
+- [ ] Run it again, and press "Back up now". → The normal window opens. Back up to stick A. → The note has today's time again, and `run_check_days = 8`, from stick A's setup.
 - [ ] Add "Babawus reminder" in "Startup Applications" as the README says, make the note 9 days old again, and log out and in. → The reminder shows after login. Remove the entry from "Startup Applications" afterwards, unless you want to keep it.
 
 ## Cancelling and closing
@@ -128,7 +128,7 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 ## Ejecting
 
 - [ ] After a backup that counts ("All good" or "Some files were skipped"), press "Eject BACKUP-A". → "Ejecting BACKUP-A…", then a pop-up: "You can pull out BACKUP-A now.", with OK. The stick's light goes out, and it leaves the file manager. Press OK. → The start screen, without the stick.
-- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again." Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See issue 129.)
+- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again. #33" Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See issue 129.)
 - [ ] In the terminal, leave the stick (`cd ~`), and press "Eject" again. → A pop-up: "You can pull out BACKUP-A now." Press OK. → The start screen, without stick A.
 - [ ] With both sticks plugged in and stick A selected, press stick B's Eject button. → A pop-up: "You can pull out BACKUP-B now." Press OK. → Stick B has left the list, and stick A is still selected, with "Start backup" below it.
 
