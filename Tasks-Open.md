@@ -20,12 +20,11 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done (T-065 to T-080), and Danish was added after them (T-081, T-082). Now 1.0.0 is being released (issue 157). T-087 comes first, because from 1.0.0 the language file format is something others build on.
+Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done (T-065 to T-080), and Danish was added after them (T-081, T-082). Now 1.0.0 is being released (issue 157). T-087 came first, because from 1.0.0 the language file format is something others build on.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
 | T-083 | Bring ReleaseChecklist.md up to date for 1.0.0: the Help, Danish, and adding a language file by hand with `sudo`, kept by an update and left behind by uninstalling | In progress | Issue 157 |
-| T-087 | Let the Help refer to texts instead of copying them, so that a heading such as "#1 USB-stikket er ikke åbnet." can't drift from the message it explains: for example `#1 {StickNotOpened}.`, filled in when the file loads, with unknown references rejected like the other checks. The exact form, and what to do with the headings that have their own wording, is settled at the start of the task (issue 158). Danish #24 has already drifted from `SkipVersionNameTooLong` | Todo | Issue 158 |
 | T-084 | Raise the version to 1.0.0 | Todo | Issue 157 |
 | T-085 | Run the release checklist on the 1.0.0 build, recorded in an issue "Release 1.0.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password. A failed step gets a task before the release goes ahead | Todo | Issue 157 |
 | T-086 | Release 1.0.0: the tag `v1.0.0` on main, and a GitHub release with the `.deb` and notes drafted by Claude and reviewed by the user. ReleasePlanning.md then names 1.0.0 as the latest release, and says the next isn't planned yet | Todo | Issue 157 |

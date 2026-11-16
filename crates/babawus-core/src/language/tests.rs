@@ -222,8 +222,8 @@ fn the_first_available_system_language_wins() {
 #[test]
 fn a_help_without_an_entry_for_a_number_is_warned_about_but_offered() {
     let without = other("fr", "Français")
-        .replace("\n#3 Babawus can't see", "\nBabawus can't see")
-        .replace("\n#40 Only an administrator", "\nOnly an administrator");
+        .replace("\n#3\n", "\n")
+        .replace("\n#40\n", "\n");
 
     let loaded = load(&[("en.toml", ENGLISH_FILE), ("fr.toml", &without)]).unwrap();
 
@@ -234,4 +234,67 @@ fn a_help_without_an_entry_for_a_number_is_warned_about_but_offered() {
             "{FOLDER}/fr.toml: the Help has no entry for #3, #40"
         )]
     );
+}
+
+#[test]
+fn a_numbered_text_is_named_with_its_number_and_the_help_writes_its_message() {
+    let help = Text::Help.get(english());
+
+    assert!(help.contains("\n#14 The stick is full.\n"), "{help}");
+    assert!(help.contains("\n#1 The stick isn't opened. Pull it out and plug it back in.\n"));
+    assert!(help.contains("\n#34 … could not be ejected."));
+}
+
+#[test]
+fn a_numbered_text_without_its_number_counts_as_missing_and_unknown() {
+    let renamed =
+        other("fr", "Français").replace("\nReasonMediumFull_14 = ", "\nReasonMediumFull = ");
+
+    let loaded = load(&[("en.toml", ENGLISH_FILE), ("fr.toml", &renamed)]).unwrap();
+
+    assert_eq!(codes(&loaded), ["en"]);
+    assert_eq!(
+        loaded.problems,
+        [format!(
+            "{FOLDER}/fr.toml: not offered, because these texts are missing: ReasonMediumFull_14"
+        )]
+    );
+}
+
+#[test]
+fn a_help_that_refers_to_an_unknown_text_is_not_offered() {
+    let wrong = other("fr", "Français").replace("\"{ChangeSetup}\"", "\"{ChangeSetUp}\"");
+
+    let loaded = load(&[("en.toml", ENGLISH_FILE), ("fr.toml", &wrong)]).unwrap();
+
+    assert_eq!(codes(&loaded), ["en"]);
+    assert_eq!(
+        loaded.problems,
+        [format!(
+            "{FOLDER}/fr.toml: not offered, because the Help refers to what isn't a text without placeholders: {{ChangeSetUp}}"
+        )]
+    );
+}
+
+#[test]
+fn a_file_without_two_quotation_marks_is_not_offered() {
+    let without = other("fr", "Français").replace("quotes = [\"“\", \"”\"]\n", "");
+
+    let loaded = load(&[("en.toml", ENGLISH_FILE), ("fr.toml", &without)]).unwrap();
+
+    assert_eq!(codes(&loaded), ["en"]);
+    assert_eq!(loaded.problems.len(), 1);
+    assert!(
+        loaded.problems[0].contains("quotes"),
+        "{:?}",
+        loaded.problems
+    );
+}
+
+#[test]
+fn the_helps_quotes_are_shown_as_the_languages_own() {
+    let help = Text::Help.get(german());
+
+    assert!(help.contains("„Sicherung starten“"), "{help}");
+    assert!(!help.contains("{"));
 }
