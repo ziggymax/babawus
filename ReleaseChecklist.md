@@ -26,13 +26,27 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see issue 101).
 - [ ] Start it from the menu. → A window titled "Backup" opens. With no stick plugged in, it says "Plug in your backup stick".
 - [ ] Start it again from the menu while it is open. → No second window: the open one comes to the front.
+- [ ] In a terminal, run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml`.
 
 ## Language
 
+- [ ] Open Menu → Language. → Dansk, Deutsch and English, in that order, with English chosen.
 - [ ] Choose Menu → Language → Deutsch. → Every text changes at once, for example "Steck deinen Sicherungs-Stick ein". Nothing needs a restart.
 - [ ] Close Babawus and start it again. → It starts in German.
 - [ ] Look through the screens below once in German too, as far as you like. → No English left, and no text cut off.
+- [ ] Choose Menu → Language → Dansk. → Every text changes at once, for example "Sæt dit backup-stik i". Look through the screens below once in Danish too, as far as you like. → No English or German left, and no text cut off.
 - [ ] Choose Menu → Language → English. → Back to English, and it stays English on the next start.
+
+## Adding a language by hand
+
+These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up French file that has only one text translated.
+
+- [ ] Close Babawus. Copy the English file and make it French: `cp /usr/share/babawus/languages/en.toml ~/fr.toml`, and in `~/fr.toml` change `code = "en"` to `code = "fr"`, `name = "English"` to `name = "Français"`, and `PlugIn = "Plug in your backup stick"` to `PlugIn = "Branchez votre clé de sauvegarde"`.
+- [ ] Install it: `sudo cp ~/fr.toml /usr/share/babawus/languages/`. → It asks for your password, and copies it.
+- [ ] Start Babawus from the terminal with `babawus`. → The terminal shows nothing about the language files. Menu → Language lists Dansk, Deutsch, English and Français.
+- [ ] With no stick plugged in, choose Français. → The window says "Branchez votre clé de sauvegarde"; the menu and every other text are still English, as in the file. Choose English again, and close Babawus.
+- [ ] Break the file: `sudo sed -i '/^PlugIn/d' /usr/share/babawus/languages/fr.toml`. Start `babawus` from the terminal again. → The terminal says "Babawus: /usr/share/babawus/languages/fr.toml: not offered, because these texts are missing: PlugIn", and Français is not in the Language menu. Babawus otherwise works as before.
+- [ ] Leave the broken `fr.toml` where it is: "Updating" and "Uninstalling" check what happens to it.
 
 ## Formatting (Advanced)
 
@@ -78,6 +92,18 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders and the name patterns.
 - [ ] Set up stick B as for stick A, with `BabawusTest` ticked, and back up to it once. → `meeting: notes.txt` is backed up there, because Ext4 can store the name. Only `secret.txt` is skipped.
 
+## Help
+
+- [ ] Choose Menu → Help. → A window "Help" opens, with a search field, "Search the Help", that has the focus, and sections from "What Babawus does" to "Messages". It isn't modal: the main window can still be used while it is open.
+- [ ] Click the main window, and press F1. → No second Help window: the open one comes to the front.
+- [ ] Type `#25` in the search field. → The entry "#25 Name has characters this stick can't store." shows, with "#25" in orange, and next to the field "1 of 1". `#2` alone doesn't find "#25".
+- [ ] Clear the field, and type `stick`. → Every "stick" is yellow, ignoring upper and lower case, the first is orange, and it says "1 of" the number found.
+- [ ] Press Enter, then Shift+Enter. → "2 of …", then "1 of …" again, the orange match moving with it.
+- [ ] Hover over the ↓ button next to the counter. → "Next match (Enter)". Over ↑: "Previous match (Shift+Enter)". Press ↑. → It goes round to the last match. Press ↓. → Back to "1 of …".
+- [ ] Type `zzqx`. → "Not found", and ↑ and ↓ are greyed out.
+- [ ] Type `#14`, and with the Help open, choose Menu → Language → Dansk in the main window. → The Help window's title becomes "Hjælp", its text is Danish, and the search is kept: "#14 USB-stikket er fuldt." shows, with "2 af 2", as the entry is the second match. Choose English again. → The Help is English again, on "#14 The stick is full.".
+- [ ] Close Babawus. → The Help window closes with it.
+
 ## The reminder at login
 
 - [ ] In a terminal, run `cat ~/.local/state/babawus/last_backup`. → The time of the last backup above, and `run_check_days = 8`, from stick A's setup.
@@ -110,10 +136,12 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 - [ ] Build the package again with the version raised (for example from `1.0.0` to `1.0.1` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
 - [ ] Start Babawus. → It runs, keeps the chosen language, and stick A and its history are as before.
+- [ ] Run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml  fr.toml`: the update kept the file added by hand.
 
 ## Uninstalling
 
 - [ ] Uninstall with `sudo apt remove babawus`. → The "Backup" entry leaves the menu.
+- [ ] Run `ls /usr/share/babawus/languages`. → Only `fr.toml`, the file added by hand, is left. Remove it and its folder with `sudo rm -r /usr/share/babawus`, as the README says.
 - [ ] Look at stick A. → Nothing changed on it: `.babawus` and `backup` are as before.
 - [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes in [README.md](README.md) say.
 

@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-081.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-088.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -20,7 +20,15 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done: 1.0.0-alpha.1, the document cleanup (T-065 to T-071); 1.0.0-alpha.2, language files loaded at runtime (T-072 to T-075); and 1.0.0-alpha.3, "Advanced features" in place of the poweruser, and a built-in Help (T-076 to T-080). A Danish language file comes with Babawus from 1.0.0 (T-081). Next is releasing 1.0.0; its tasks are added when work on it begins.
+Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done (T-065 to T-080), and Danish was added after them (T-081, T-082). Now 1.0.0 is being released (issue 157). T-087 comes first, because from 1.0.0 the language file format is something others build on.
+
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-083 | Bring ReleaseChecklist.md up to date for 1.0.0: the Help, Danish, and adding a language file by hand with `sudo`, kept by an update and left behind by uninstalling | In progress | Issue 157 |
+| T-087 | Let the Help refer to texts instead of copying them, so that a heading such as "#1 USB-stikket er ikke åbnet." can't drift from the message it explains: for example `#1 {StickNotOpened}.`, filled in when the file loads, with unknown references rejected like the other checks. The exact form, and what to do with the headings that have their own wording, is settled at the start of the task (issue 158). Danish #24 has already drifted from `SkipVersionNameTooLong` | Todo | Issue 158 |
+| T-084 | Raise the version to 1.0.0 | Todo | Issue 157 |
+| T-085 | Run the release checklist on the 1.0.0 build, recorded in an issue "Release 1.0.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password. A failed step gets a task before the release goes ahead | Todo | Issue 157 |
+| T-086 | Release 1.0.0: the tag `v1.0.0` on main, and a GitHub release with the `.deb` and notes drafted by Claude and reviewed by the user. ReleasePlanning.md then names 1.0.0 as the latest release, and says the next isn't planned yet | Todo | Issue 157 |
 
 ## Needs a decision
 
