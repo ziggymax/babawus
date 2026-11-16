@@ -301,6 +301,8 @@ HelpSearch = "In der Hilfe suchen"
 HelpSearchTooltip = "Gib ein Wort oder die Nummer einer Meldung ein, etwa #14. Eingabe springt zum nächsten Treffer, Umschalt+Eingabe zum vorigen."
 HelpFound = "{current} von {total}"
 HelpNotFound = "Nicht gefunden"
+HelpNext = "Nächster Treffer (Eingabe)"
+HelpPrevious = "Voriger Treffer (Umschalt+Eingabe)"
 
 # Die eingebaute Hilfe. Zum Aufbau siehe en.toml.
 Help = """

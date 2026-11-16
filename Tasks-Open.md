@@ -20,7 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done: 1.0.0-alpha.1, the document cleanup (T-065 to T-071); 1.0.0-alpha.2, language files loaded at runtime (T-072 to T-075); and 1.0.0-alpha.3, "Advanced features" in place of the poweruser, and a built-in Help (T-076 to T-080). Next is releasing 1.0.0; its tasks are added when work on it begins.
+Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done: 1.0.0-alpha.1, the document cleanup (T-065 to T-071); 1.0.0-alpha.2, language files loaded at runtime (T-072 to T-075); and 1.0.0-alpha.3, "Advanced features" in place of the poweruser, and a built-in Help (T-076 to T-080). A Danish language file comes with Babawus from 1.0.0 (T-081). Next is releasing 1.0.0; its tasks are added when work on it begins.
 
 ## Needs a decision
 

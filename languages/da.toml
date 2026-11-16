@@ -1,0 +1,507 @@
+# Babawus's texts in Danish. Danish says "du" to the user, the stick is "USB-stik" and a backup is
+# "backup" (issue 155).
+
+[language]
+code = "da"
+name = "Dansk"
+decimal = ","
+thousands = "."
+
+[texts]
+WindowTitle = "Backup"
+Menu = "Menu"
+MenuLanguage = "Sprog"
+MenuAdvanced = "Avanceret"
+MenuAbout = "Om Babawus"
+AdvancedMarker = "Avanceret"
+AdvancedMarkerTooltip = "De avancerede funktioner vises. Vælg »Avanceret« i menuen igen for at skjule dem."
+AdvancedQuestion = "Slå de avancerede funktioner til?"
+AdvancedDetail = "Med dem kan et USB-stik slettes, og man kan ændre hvilke filer tages backup af og for hvem. En fejl kan koste filer. Fortsæt kun, hvis du ved, hvad du gør."
+AdvancedContinue = "Fortsæt"
+# The language's own comment, shown in About below the name's long form.
+AboutComments = "Simpel backup på USB-stik"
+Logo = "Babawus"
+PlugIn = "Sæt dit backup-stik i"
+ChooseMedium = "Vælg et USB-stik på listen"
+StickNotOpened = "USB-stikket er ikke åbnet"
+StickNotOpenedAdvice = "Tag det ud, og sæt det i igen."
+StickCantBeUsed = "Det USB-stik, der er sat i, kan ikke bruges endnu"
+StickCantBeUsedAdvice = "Det kan forberedes under »Avanceret« med »Forbered…«."
+AlreadyOpenDetail = "Bed personen om at lukke det, eller skift til vedkommendes konto."
+Ok = "OK"
+AlreadyOpen = "Babawus er allerede klar for {user} på denne computer."
+NoUdisks = "Babawus kan ikke se USB-stikkene, fordi tjenesten udisks2 ikke kører. En genstart af computeren hjælper som regel."
+
+Checking = "Kontrollerer…"
+Ready = "Klar"
+NotSetUp = "Ikke sat op til dig"
+InProgress = "Backup i gang (af {user})"
+NeedsAttention = "Kræver opmærksomhed"
+WriteProtected = "Skrivebeskyttet"
+NotBackupMedium = "Ikke et backup-stik"
+OtherAccount = "Åbent for en anden konto"
+
+ExplainNotSetUp = "Dette USB-stik er ikke sat op til dig på denne computer. Det kan sættes op under »Avanceret« med »Ændr opsætning…«."
+ExplainInProgress = "En backup til dette USB-stik kører for {user}. Vent, til den er færdig."
+ExplainNeedsAttention = "Opsætningen på dette USB-stik er beskadiget eller kræver en nyere Babawus. En beskadiget opsætning kan repareres under »Avanceret« med »Ændr opsætning…«."
+ExplainWriteProtected = "Dette USB-stik kan kun læses, så der kan ikke skrives en backup til det. Hvis det har en låseknap, så skub den til ulåst."
+ExplainOtherAccount = "Dette USB-stik er stadig åbent for en anden konto på denne computer, så Babawus kan ikke se indholdet. Hvis ingen andre bruger stikket, så tag det ud, og sæt det i igen."
+ExplainNotBackupMedium = "Dette USB-stik er ikke sat op til backup med Babawus. Det kan forberedes under »Avanceret« med »Forbered…«."
+
+LastBackupToday = "Seneste backup: i dag kl. {time}"
+LastBackupYesterday = "Seneste backup: i går kl. {time}"
+LastBackupDaysAgo = "Seneste backup: for {days} dage siden ({date} kl. {time})"
+NoBackupYet = "Ingen backup(s) endnu"
+SkippedMark = "Nogle filer blev sprunget over ved seneste backup"
+
+Free = "{size} ledig"
+
+StartBackup = "Start backup"
+StartBackupTooltip = "Tag backup af dine filer til dette USB-stik"
+ShowHistory = "Vis historik"
+ShowHistoryTooltip = "Se, hvornår der blev taget backup til dette USB-stik, og hvordan det gik"
+WhatsBackedUp = "Hvad der tages backup af"
+WhatsBackedUpTooltip = "Se, hvilke af dine filer og mapper der der bliver taget backup af til dette USB-stik"
+EjectTooltip = "Gør dette USB-stik klar til at blive taget ud"
+Prepare = "Forbered…"
+PrepareTooltip = "Slet alt på dette USB-stik, og sæt det op til backup med Babawus"
+ChangeSetup = "Ændr opsætning…"
+ChangeSetupTooltip = "Ændr, hvad der tages backup af til dette USB-stik, og for hvem"
+CantStart = "Ingen backup kan starte: {reason}"
+
+GettingReady = "Finder de filer, der skal tages backup af…"
+BackingUp = "Tager backup…"
+Stopping = "Stopper et sikkert sted…"
+Finishing = "Afslutter… Tag ikke USB-stikket ud endnu."
+Overview = "Til backup: {files} filer ({size})"
+OverviewOneFile = "Til backup: 1 fil ({size})"
+FilesLeft = "Filer tilbage: {files}"
+BytesLeft = "Tilbage at kopiere: {size}"
+Cancel = "Annuller"
+CancelTooltip = "Stop backuppen"
+StopQuestion = "Stop backuppen?"
+StopDetail = "De filer, der er kopieret indtil nu, bliver på USB-stikket, men backuppen bliver ikke færdig."
+KeepGoing = "Fortsæt"
+StopBackup = "Stop backup"
+Back = "Tilbage"
+BackTooltip = "Gå tilbage til listen over USB-stik"
+VerdictBusy = "En anden backup til dette USB-stik er ved at starte"
+NextWait = "Vent, til den er færdig, og prøv så igen."
+NextRunAgain = "Kør backuppen igen. Hvis det sker igen, så slå fejl-nummeret op i Hjælp."
+NextRunAgainLater = "Kør backuppen igen, når det passer dig."
+NextLookUp = "Slå nummeret op i Hjælp for at se, hvad du skal gøre."
+NothingToCopy = "Alt var allerede opdateret."
+Copied = "Kopieret: {files} ({size})"
+OneFile = "1 fil"
+Files = "{files} filer"
+SkippedGroup = "{reason}: {files}"
+
+ReasonFilesSkipped = "Der var nogle filer der ikke kunne tages backup af."
+ReasonCancelled = "Du stoppede backuppen."
+ReasonMediumRemoved = "USB-stikket blev taget ud."
+ReasonInterrupted = "Backuppen blev afbrudt."
+ReasonCrashed = "Babawus stoppede uventet."
+ReasonFlushFailed = "De sidste ændringer kunne ikke gemmes på USB-stikket."
+ReasonMediumFull = "USB-stikket er fuldt."
+ReasonNotAdded = "Dette USB-stik er ikke sat op til dig på denne computer."
+ReasonConfigDamaged = "Opsætningen på dette USB-stik er beskadiget eller kræver en nyere Babawus."
+ReasonCannotWrite = "Der kan ikke skrives til USB-stikket."
+
+SkipUnreadable = "Kunne ikke læses"
+SkipDisappeared = "Forsvandt under backuppen"
+SkipNotWritable = "Kunne ikke skrives til USB-stikket"
+SkipTypeConflict = "Der er en mappe med samme navn på USB-stikket"
+SkipChangedDuringCopy = "Blev ved med at ændre sig under kopieringen"
+SkipVersionNameTooLong = "Navnet er for langt til at kunne gemme ældre fil-versioner"
+SkipNameInvalidChars = "Navnet har tegn, som dette USB-stik ikke kan gemme"
+SkipNameTrailingDot = "Navnet ender med et punktum, som dette USB-stik ikke kan gemme"
+SkipNameNotUtf8 = "Navnet er ikke gyldig tekst"
+SkipPathTooLong = "Navnet eller mappestien er for lang"
+SkipVersionFolderForm = "Navnet ligner en mappe med ældre versioner"
+SkipCaseClash = "Navnet adskiller sig kun ved store og små bogstaver fra et andet, og det kan dette USB-stik ikke skelne"
+SkipSelectionMissing = "Valgt til backup, men findes ikke længere"
+SkipOutsideHome = "Valgt til backup, men uden for din hjemmemappe"
+
+EjectNow = "Skub {label} ud"
+EjectNowTooltip = "Gør USB-stikket klar til at blive taget ud nu"
+VerdictAllGood = "Alt er i orden"
+VerdictSkipped = "Nogle filer blev sprunget over"
+VerdictNotFinished = "Backuppen blev ikke færdig"
+VerdictFailed = "Backuppen mislykkedes"
+
+Ejecting = "Skubber {label} ud…"
+Ejected = "Du kan tage {label} ud nu."
+EjectedUnmountedOnly = "Du kan roligt tage {label} ud nu, også selvom lampen bliver ved med at lyse."
+EjectBusy = "{label} bruges stadig af et andet program, for eksempel en terminal eller en fil, der bliver kopieret. Luk det, eller vent, til det er færdigt, og prøv igen."
+EjectGone = "{label} er allerede taget ud."
+EjectFailed = "{label} kunne ikke skubbes ud. Luk de programmer, der bruger det, og prøv igen."
+
+HistoryHeading = "backups til dette USB-stik"
+HistoryEmpty = "Der er ikke taget backup til dette USB-stik endnu."
+HistoryUnreadable = "Historikken på dette USB-stik kan ikke læses. Gå tilbage, og prøv igen."
+ShowInLog = "Vis i loggen"
+LogWindowTitle = "Log for {label}"
+LogUnreadable = "Loggen på dette USB-stik kan ikke læses."
+ReminderDays = "Din seneste backup var for {days} dage siden."
+ReminderQuestion = "Vil du tage backup nu?"
+ReminderBackUp = "Tag backup nu"
+ReminderNotNow = "Ikke nu"
+HistoryRunning = "Backup i gang"
+HistoryToday = "I dag, {time}"
+HistoryYesterday = "I går, {time}"
+HistoryDate = "{date}, {time}"
+HistoryWho = "Af {user} på {computer}"
+HistorySkipped = "Sprunget over: {files}"
+
+CoverageHeading = "Hvad der tages backup af til dette USB-stik"
+CoverageIntro = "Der tages backup af dette fra denne computer for {user}:"
+CoverageNothing = "Der er ikke valgt noget til backup endnu. Det kan vælges under »Avanceret« med »Ændr opsætning…«."
+CoverageUnreadable = "Opsætningen på dette USB-stik kan ikke læses. Gå tilbage, og prøv igen."
+CoverageHome = "Din hjemmemappe"
+CoverageMissing = "Findes ikke længere, så der tages ikke backup af noget derfra"
+CoverageExcluded = "Der tages ikke backup af den, fordi den er udeladt nedenfor"
+CoverageOutsideHome = "Der tages ikke backup af den, fordi den er uden for din hjemmemappe"
+CoverageLink = "Der tages ikke backup af det, fordi det er et link, som Babawus ikke følger"
+CoverageUnreadableItem = "Kan ikke læses, så der kan ikke tages backup af den"
+CoverageLeftOut = "Udeladt:"
+CoveragePatterns = "Alt, der hedder {names}, i alle mapper"
+Either = "{first} eller {last}"
+Loading = "Læser USB-stikket…"
+
+FormatHeading = "Forbered et USB-stik"
+FormatIntro = "Formatering sletter alt på et USB-stik og sætter det op til backup med Babawus. Vælg USB-stikket:"
+FormatNoDrives = "Der er ikke sat noget USB-stik i, som Babawus kan formatere."
+FormatNoFileSystem = "Intet filsystem"
+FormatNoLabel = "Intet navn"
+FormatWithBackups = "{volume}, med backups fra Babawus"
+FormatNotMounted = "{volume}, ikke monteret"
+FormatLabel = "Navn til USB-stikket:"
+FormatLabelRule = "Brug 1 til 11 bogstaver, cifre og bindestreger, uden mellemrum."
+FormatFileSystem = "Filsystem:"
+FormatExFat = "exFAT"
+FormatExFatDetail = "Virker også på Windows og Mac"
+FormatExt4 = "Ext4"
+FormatExt4Detail = "Virker kun på Linux, men tillader længere navne og er mere robust over for afbrydelser."
+FormatExt4AsksPassword = "Ext4 beder om din adgangskode under formateringen."
+FormatExt4NeedsAdministrator = "Kun en administrator kan vælge Ext4, fordi formateringen kræver en administrators adgangskode. Vælg exFAT, eller bed en administrator om at forberede USB-stikket."
+FormatWarning = "Alt på {drive} bliver slettet: {contents}. Det gælder alle partitioner på det. Formateringen kan ikke stoppes, når den først er gået i gang."
+FormatUnderstood = "Jeg forstår, at alt på dette USB-stik bliver slettet"
+FormatErase = "Slet og formatér"
+FormatEraseTooltip = "Slet alt på USB-stikket, og sæt det op til backup med Babawus"
+FormatWorking = "Formaterer {label}…"
+FormatWorkingDetail = "Det kan tage et par minutter. Tag ikke USB-stikket ud."
+FormatDone = "{label} er klar"
+FormatDoneDetail = "USB-stikket er tomt og sat op til Babawus. Før nogen kan tage backup til det, skal det sættes op til hver computer og konto, der skal bruge det."
+FormatFailed = "Formateringen mislykkedes"
+FormatGone = "USB-stikket blev taget ud."
+FormatNotAllowed = "Babawus kan ikke længere formatere dette USB-stik, for eksempel fordi det nu er i brug."
+FormatNotPrepared = "USB-stikket blev formateret, men Babawus kunne ikke sætte det op til backup."
+FormatFailedReason = "Formateringen virkede ikke."
+FormatNothingErased = "Intet på USB-stikket blev ændret."
+FormatPartlyErased = "USB-stikket er slettet, men er ikke klar til backup. Formatér det igen."
+FormatMessage = "Systemet sagde: {message}"
+AddComputer = "Tilføj denne computer og din konto…"
+AddComputerTooltip = "Sæt dette USB-stik op til dig på denne computer"
+TryAgain = "Prøv igen"
+TryAgainTooltip = "Gå tilbage til valget af USB-stik og formatering"
+
+SetupHeading = "Opsætning af dette USB-stik"
+SetupLoading = "Læser opsætningen…"
+SetupDamaged = "Opsætningen på dette USB-stik er ændret uden for Babawus eller er beskadiget. Kontrollér den, og gem den så."
+SetupUnreadable = "Opsætningen på dette USB-stik kan slet ikke læses. Du kan starte en ny opsætning. Backups på USB-stikket bevares, og deres mapper bruges fortsat."
+SetupStartNew = "Start en ny opsætning…"
+SetupStartNewQuestion = "Start en ny opsætning?"
+SetupStartNewDetail = "Den gamle opsætning bliver erstattet, når du gemmer. Backups på USB-stikket bevares."
+SetupNewerFormat = "Opsætningen på dette USB-stik kræver en nyere Babawus. Den kan ikke ændres her."
+SetupNotBabawus = "Dette USB-stik har ikke længere nogen Babawus-opsætning."
+SetupOlderVersions = "Ældre versioner, der gemmes:"
+SetupRunCheckDays = "Påmindelse efter dage uden backup:"
+SetupRunCheckDaysDetail = "Når denne konto logger ind, kan Babawus minde om at tage backup, hvis den seneste backup er ældre end så mange dage. 0 betyder aldrig."
+SetupOlderVersionsDetail = "Når en fil ændres, gemmes dens tidligere kopier, op til så mange. Færre giver mere plads på USB-stikket."
+SetupHere = "Dig på denne computer"
+SetupNoComputerId = "Denne computer har intet id, så den kan ikke sættes op."
+SetupComputerMissing = "Denne computer ({hostname}) er ikke sat op på dette USB-stik endnu. Den bliver tilføjet som »{folder}«."
+SetupComputerMissingLink = "Denne computer ({hostname}) er ikke sat op på dette USB-stik endnu. Tilføj den som »{folder}«, eller, hvis den før var sat op under et andet navn, for eksempel før en geninstallation, så knyt den til den computer."
+SetupAccountMissing = "Du har ingen backupprofil på denne computer (»{folder}«) endnu."
+SetupAccountMissingLink = "Du har ingen backupprofil på denne computer (»{folder}«) endnu. Tilføj den, eller, hvis dit brugernavn er ændret, så knyt den til backupprofilen for dit tidligere navn."
+SetupHereReady = "Din backupprofil, »{user}«, er sat op på denne computer (»{folder}«)."
+SetupAddComputer = "Tilføj denne computer og din konto"
+SetupLinkComputer = "Knyt til »{folder}«…"
+SetupAddAccount = "Tilføj »{user}«"
+SetupLinkAccount = "Knyt til »{old}«…"
+SetupChoose = "Vælg, hvad der skal tages backup af…"
+SetupChooseTooltip = "Vælg, hvilke af dine filer og mapper der tages backup af til dette USB-stik"
+SetupEntries = "Backupprofiler på dette USB-stik"
+SetupEmpty = "Der er ikke sat nogen backup-profiler op på dette USB-stik endnu."
+SetupThisComputer = "{folder} (denne computer)"
+SetupOtherComputer = "{folder} · sidst set som {hostname}"
+SetupYou = "{user} (dig)"
+SetupNothingChosen = "intet valgt endnu"
+SetupOneChosen = "1 fil eller mappe valgt"
+SetupChosen = "{count} filer eller mapper valgt"
+SetupRemove = "Fjern…"
+SetupRemoveComputerTooltip = "Tag denne computer og dens backupprofiler ud af opsætningen"
+SetupRemoveAccountTooltip = "Tag denne backupprofil ud af opsætningen"
+SetupRemoveComputerQuestion = "Fjern computeren »{folder}« og dens backupprofiler fra opsætningen?"
+SetupRemoveAccountQuestion = "Fjern backupprofilen for »{user}« på »{folder}« fra opsætningen?"
+SetupRemoveDetail = "Backups bliver på USB-stikket, og du kan slette dem i hånden, hvis du vil have pladsen tilbage. Intet ændres, før du gemmer."
+SetupRemoveConfirm = "Fjern"
+SetupLinkComputerQuestion = "Knyt denne computer til computeren »{folder}«?"
+SetupLinkComputerDetail = "Gør det kun, hvis »{folder}« tildigere var navnet på denne computerr, for eksempel før en geninstallation. Dens backupprofiler fortsætter så i de samme mapper. Intet ændres, før du gemmer."
+SetupLinkAccountQuestion = "Knyt din konto til backupprofilen for »{old}«?"
+SetupLinkAccountDetail = "Gør det kun, hvis »{old}« var dit brugernavn før. Dens backups og historik bliver omdøbt til »{user}«, og opsætningen gemmes nu."
+SetupLinkConfirm = "Knyt"
+SetupSave = "Gem"
+SetupSaveTooltip = "Skriv ændringerne til USB-stikket"
+SetupSaved = "Opsætningen er gemt på USB-stikket."
+SetupSaving = "Gemmer…"
+SetupDiscardQuestion = "Afbryd uden at gemme?"
+SetupDiscardDetail = "Dine ændringer i opsætningen af dette USB-stik går tabt."
+SetupDiscard = "Afbryd uden at gemme"
+SetupKeepEditing = "Fortsæt redigeringen"
+SetupBusy = "USB-stikket bruges af en backup for {user}. Vent, til den er færdig, og gem så igen."
+SetupInvalid = "Den ændring kan ikke laves, fordi den støder sammen med en anden computer eller backupprofil."
+SetupBothFolders = "Både dit tidligere og dit nye navn har en mappe på USB-stikket, så Babawus kan ikke knytte dem sammen. Det skal ordnes i hånden i filhåndteringen."
+SetupSaveFailed = "Opsætningen kunne ikke gemmes: {error}"
+
+ChooseHeading = "Vælg, hvad der skal tages backup af for {user}"
+ChooseIntro = "Sæt flueben ved de filer og mapper, der skal tages backup af. En mappe med flueben tages med alt, hvad den indeholder. Fjern fluebenet ved en mappe inde i den for at udelade den."
+ChooseShowHidden = "Vis skjulte filer"
+ChooseNoteLeftOut = "Udeladt"
+ChooseNoteLeftOutAbove = "Udeladt sammen med en mappe ovenover"
+ChooseNotePattern = "Udeladt af navnemønsteret {pattern}"
+ChooseNoteOtherDrive = "På et andet drev, så der tages kun backup af det, hvis det selv har flueben"
+ChooseNoteLink = "Et link, som Babawus ikke følger"
+ChooseNoteNotText = "Navnet er ikke gyldig tekst, så det kan ikke vælges for sig selv"
+ChooseUnreadable = "Denne mappe kan ikke læses."
+ChoosePatternsSection = "Filer, der udelades efter navn"
+ChoosePatternsDetail = "I alle mapper. * står for vilkårlige tegn og ? for ét tegn."
+ChoosePatternAdd = "Tilføj"
+ChoosePatternRemove = "Fjern"
+ChoosePatternEmpty = "Skriv først et navn eller et mønster."
+ChoosePatternSlash = "Et mønster kan ikke indeholde /. Fjern fluebenet ved mappen i træet for at udelade én mappe."
+ChoosePatternDuplicate = "Det mønster er allerede på listen."
+ChooseCounting = "Tæller…"
+ChooseNothing = "Intet er valgt endnu."
+ChooseTotals = "Valgt: {files} ({size}) · {free} ledig på USB-stikket"
+ChooseTotalsNoFree = "Valgt: {files} ({size})"
+ChooseTooBig = "Det er mere end den ledige plads på USB-stikket, medmindre der allerede er taget backup af meget af det der."
+ChooseDone = "Færdig"
+ChooseDoneTooltip = "Gå tilbage til opsætningen. Ændringerne bliver skrevet, når du gemmer der."
+ChooseCancelTooltip = "Gå tilbage til opsætningen uden disse ændringer"
+
+Bytes = "{size} byte"
+Kilobytes = "{size} kB"
+Megabytes = "{size} MB"
+Gigabytes = "{size} GB"
+Terabytes = "{size} TB"
+
+MenuHelp = "Hjælp"
+HelpTitle = "Hjælp"
+HelpSearch = "Søg i Hjælp"
+HelpSearchTooltip = "Skriv et ord eller nummeret på en meddelelse, for eksempel #14. Enter går til det næste fund, Skift+Enter til det forrige."
+HelpFound = "{current} af {total}"
+HelpNotFound = "Ikke fundet"
+HelpNext = "Næste fund (Enter)"
+HelpPrevious = "Forrige fund (Skift+Enter)"
+
+# The built-in Help (issues 151 and 154). A line starting with "# " is a heading, a line starting
+# with "- " is a bullet, and a line starting with "#" and a number is the entry for that message.
+Help = """
+# Hvad Babawus gør
+
+Babawus kopierer dine vigtige filer og mapper til et USB-stik, så du stadig har dem hvis computeren går i stykker, bliver væk, bliver stjålet eller hvis du ved en fejl sletter eller ødelægger en fil.
+
+Babawus kopierer kun det, der er ændret siden sidste backup. Når en fil er ændret, bliver kopien på USB-stikket erstattet, og den tidligere kopi gemmes som en ældre version. Filer, du sletter på computeren, bliver aldrig slettet fra USB-stikket.
+
+# Tag backup
+
+- Sæt dit backup-stik i.
+- Vælg stikket på listen, hvis det ikke allerede er valgt.
+- Tryk på »Start backup«, og vent på resultatet.
+- Når der står »Alt er i orden«, så tryk på »Skub ud«, og tag USB-stikket ud.
+
+Opbevar USB-stikket væk fra computeren mellem backups, så hvad måtte der ske med computeren, ikke også sker med USB-stikket. To USB-stik, der bruges på skift, er mere sikkert end ét.
+
+»Vis historik« viser, hvornår der blev taget backup til USB-stikket, og hvordan det gik. »Hvad der tages backup af« viser, hvilke af dine filer og mapper der kopieres til det.
+
+# Få filer tilbage
+
+Babawus har ingen gendannelsesknap. Åbn USB-stikket i filhåndteringen: dine filer ligger i mappen »backup«, under computerens og dit eget navn, i de samme mapper som på computeren. Kopiér det, du har brug for, tilbage. De ældre versioner af en fil ligger i en mappe ved siden af med samme navn filen, men med [] i, for eksempel rapport[]pdf for rapport.pdf, hver med dato og klokkeslæt for, hvornår den blev erstattet, i navnet.
+
+# Avancerede funktioner
+
+Under »Avanceret« i menuen ligger de funktioner, der sætter et USB-stik op: »Forbered…« sletter alt på et USB-stik og gør det klar til Babawus, og »Ændr opsætning…« vælger, hvad der tages backup af, og for hvilke computere og konti. En fejl her kan koste backups, så Babawus spørger først. »Avanceret« slås fra igen, når Babawus lukkes.
+
+# Meddelelser
+
+Når noget går galt, slutter meddelelsen med et nummer, for eksempel #14. Søg efter nummeret her for at se, hvad det betyder, og hvad du skal gøre.
+
+#1 USB-stikket er ikke åbnet.
+Systemet har ikke åbnet USB-stikket. Tag det ud, og sæt det i igen. Hvis det ikke hjælper, så åbn USB-stikket i filhåndteringen.
+
+#2 Det USB-stik, der er sat i, kan ikke bruges endnu.
+Der er intet på USB-stikket, som Babawus kan læse, for eksempel fordi det er nyt eller har været brugt til noget andet. Forbered det under »Avanceret« med »Forbered…«. Det sletter alt på det.
+
+#3 Babawus kan ikke se USB-stikkene.
+Systemets tjeneste udisks2, som Babawus bruger til at finde USB-stik, kører ikke. En genstart af computeren starter den som regel igen.
+
+#4 Babawus er allerede åbent for en anden konto.
+Der kan kun køre én Babawus ad gangen på en computer. Bed den anden person om at lukke det, eller skift til vedkommendes konto, og luk det der.
+
+#5 Dette USB-stik er ikke sat op til dig på denne computer.
+Hver computer og konto skal tilføjes til et USB-stik, før den kan tage backup til det. Gør det under »Avanceret« med »Ændr opsætning…« og »Tilføj denne computer og din konto«.
+
+#6 Opsætningen på dette USB-stik er beskadiget eller kræver en nyere Babawus.
+Hvis USB-stikket blev sat op med en nyere Babawus, så installér også den version her. Ellers er opsætningen beskadiget: åbn den under »Avanceret« med »Ændr opsætning…«, kontrollér den, og gem den.
+
+#7 Dette USB-stik kan kun læses.
+Nogle USB-stik har en lille låseknap: skub den til ulåst. Et USB-stik, der ikke længere kan skrives til, kan være slidt op; brug et andet.
+
+#8 Dette USB-stik er stadig åbent for en anden konto.
+En anden konto på denne computer har USB-stikket åbent, så denne konto kan ikke bruge det. Hvis ingen andre bruger det, så tag det ud, og sæt det i igen.
+
+#9 Dette USB-stik er ikke sat op til backup med Babawus.
+Forbered det under »Avanceret« med »Forbered…«. Det sletter alt på det, så kopiér først det, du vil beholde.
+
+#10 USB-stikket blev taget ud.
+USB-stikket blev taget ud under backuppen. Intet af det, der allerede er på det, er beskadiget. Sæt det i igen, og kør backuppen igen: den fortsætter, hvor den stoppede.
+
+#11 Backuppen blev afbrudt.
+Backuppen blev stoppet undervejs, for eksempel fordi computeren blev slukket. Kør den igen: den fortsætter, hvor den stoppede.
+
+#12 Babawus stoppede uventet.
+Babawus sluttede midt i backuppen. Intet af det, der allerede er på USB-stikket, er beskadiget. Kør backuppen igen.
+
+#13 De sidste ændringer kunne ikke gemmes på USB-stikket.
+USB-stikket bekræftede ikke, at alt var skrevet. Kør backuppen igen. Hvis det sker igen, er USB-stikket måske ved at gå i stykker; brug et andet.
+
+#14 USB-stikket er fuldt.
+Der er ikke plads til de filer, der er ændret. Gem færre ældre versioner under »Avanceret« med »Ændr opsætning…«, tag backup af færre filer, eller brug et større USB-stik.
+
+#15 Dette USB-stik er ikke sat op til dig på denne computer.
+Opsætningen blev ændret, efter backuppen var startet. Se #5.
+
+#16 Opsætningen på dette USB-stik er beskadiget eller kræver en nyere Babawus.
+Se #6.
+
+#17 Der kan ikke skrives til USB-stikket.
+Se efter, om USB-stikket har en låseknap, se #7. Ellers er det måske ved at gå i stykker; brug et andet.
+
+#18 En anden backup til dette USB-stik er ved at starte.
+Vent, til den er færdig, og prøv så igen.
+
+#19 Kunne ikke læses.
+Filen eller mappen kunne ikke læses på computeren, som regel fordi din konto ikke har lov til at læse den. Den bliver sprunget over.
+
+#20 Forsvandt under backuppen.
+Filen blev slettet eller flyttet, mens backuppen kørte. Der tages backup af den næste gang, hvis den stadig er der.
+
+#21 Kunne ikke skrives til USB-stikket.
+USB-stikket afviste filen. Kør backuppen igen. Hvis det sker igen, så se #17.
+
+#22 Der er en mappe med samme navn på USB-stikket.
+Noget, der før var en mappe, er nu en fil med samme navn, eller omvendt. Omdøb den på computeren, eller fjern den gamle fra USB-stikket i filhåndteringen.
+
+#23 Blev ved med at ændre sig under kopieringen.
+Et program blev ved med at ændre filen mens backuppen kørte. Luk programmet, og kør backuppen igen.
+
+#24 Navnet er for langt til at gemme ældre versioner.
+En ældre versions navn får datoen tilføjet, og det gjorde navnet for langt. Giv filen et kortere navn.
+
+#25 Navnet har tegn, som dette USB-stik ikke kan gemme.
+USB-stik, der er formateret som exFAT, kan ikke gemme tegnene " * : < > ? \\ | i navne. Omdøb filen, eller brug et USB-stik, der er formateret som Ext4.
+
+#26 Navnet ender med et punktum, som dette USB-stik ikke kan gemme.
+Omdøb filen, så navnet ikke ender med et punktum.
+
+#27 Navnet er ikke gyldig tekst.
+Navnet har tegn, som computeren ikke kan vise som tekst. Omdøb filen.
+
+#28 Navnet eller mappestien er for lang.
+Navnet, eller navnene på de mapper, den ligger i, er for lange til USB-stikket. Brug kortere navne eller færre mapper inden i hinanden.
+
+#29 Navnet ligner en mappe med ældre versioner.
+Babawus gemmer ældre versioner i mapper, hvis navne indeholder [], og dette navn indeholder også []. Omdøb den.
+
+#30 Navnet adskiller sig kun ved store og små bogstaver fra et andet.
+exFAT-USB-stik kan ikke skelne »Foto.jpg« fra »foto.jpg«. Omdøb en af dem.
+
+#31 Valgt til backup, men findes ikke længere.
+En fil eller mappe, der blev valgt, er slettet, flyttet eller omdøbt. Vælg den igen under »Avanceret« med »Ændr opsætning…«.
+
+#32 Valgt til backup, men uden for din hjemmemappe.
+Der tages kun backup af filer i din hjemmemappe. Vælg filer i hjemmemappen under »Avanceret« med »Ændr opsætning…«.
+
+#33 USB-stikket bruges stadig af et program.
+Luk programmet, for eksempel et vindue i filhåndteringen eller en terminal, der er åben på USB-stikket, eller vent, til en kopiering er færdig, og skub det ud igen.
+
+#34 USB-stikket kunne ikke skubbes ud.
+Luk de programmer, der bruger det, og prøv igen. Hvis det stadig ikke virker, så sluk computeren, før du tager USB-stikket ud.
+
+#35 Historikken på dette USB-stik kan ikke læses.
+Gå tilbage, og prøv igen. Hvis det sker igen, så tag USB-stikket ud, og sæt det i igen.
+
+#36 Loggen på dette USB-stik kan ikke læses.
+Luk vinduet med loggen, og prøv igen. Hvis det sker igen, så tag USB-stikket ud, og sæt det i igen.
+
+#37 Der er ikke valgt noget til backup endnu.
+Vælg, hvad der skal tages backup af, under »Avanceret« med »Ændr opsætning…« og »Vælg, hvad der skal tages backup af…«.
+
+#38 Opsætningen på dette USB-stik kan ikke læses.
+Gå tilbage, og prøv igen. Hvis det sker igen, så se #6.
+
+#39 Der er ikke sat noget USB-stik i, som Babawus kan formatere.
+Babawus formaterer kun USB-stik, aldrig computerens egne diske. Sæt det USB-stik i, der skal forberedes.
+
+#40 Kun en administrator kan vælge Ext4.
+Formatering som Ext4 kræver en konto med sudo-rettigheder og adgangskoden til den konto. Vælg exFAT i stedet, eller forbered USB-stikket fra en administrators konto.
+
+#41 USB-stikket blev taget ud.
+USB-stikket blev taget ud, mens det blev formateret. Sæt det i igen, og formatér det igen.
+
+#42 Babawus kan ikke længere formatere dette USB-stik.
+USB-stikket blev ændret, efter det blev valgt, for eksempel fordi et program åbnede det. Luk programmet, gå tilbage, og vælg USB-stikket igen.
+
+#43 USB-stikket blev formateret, men Babawus kunne ikke sætte det op til backup.
+Formatér det igen. Hvis det sker igen, så brug et andet USB-stik.
+
+#44 Formateringen virkede ikke.
+Meddelelsen under den siger, hvad systemet meldte. Tag USB-stikket ud, sæt det i igen, og prøv igen. Hvis det sker igen, så brug et andet USB-stik.
+
+#45 USB-stikket er slettet, men er ikke klar til backup.
+Formatér det igen.
+
+#46 Opsætningen på dette USB-stik er ændret uden for Babawus eller er beskadiget.
+Kontrollér, hvad opsætningen viser, ret det, der er forkert, og gem den. Når den gemmes, bliver den gyldig igen.
+
+#47 Opsætningen på dette USB-stik kan slet ikke læses.
+Start en ny opsætning. Backups, der allerede er på USB-stikket, bevares, og deres mapper bliver brugt igen.
+
+#48 Opsætningen på dette USB-stik kræver en nyere Babawus.
+Den blev lavet med en nyere version af Babawus. Installér den version på denne computer.
+
+#49 Dette USB-stik har ikke længere nogen Babawus-opsætning.
+Opsætningen blev fjernet fra USB-stikket, mens det var åbent her. Gå tilbage. For at bruge USB-stikket igen skal det forberedes under »Avanceret«, hvilket sletter alt på det, så kopiér først det, du vil beholde.
+
+#50 Denne computer har intet id.
+Babawus skelner computere fra hinanden ved det id, systemet giver hver installation, i /etc/machine-id, og denne computer har intet. Et id oprettes med systemets egne værktøjer, for eksempel »sudo systemd-machine-id-setup« i en terminal.
+
+#51 USB-stikket bruges af en backup.
+Vent, til backuppen er færdig, og gem så igen.
+
+#52 Den ændring kan ikke laves.
+Den ville give to computere eller to backupprofiler den samme mappe på USB-stikket. Vælg en anden.
+
+#53 Både dit tidligere og dit nye navn har en mappe på USB-stikket.
+Babawus kan ikke knytte dem sammen uden at blande dem. Flyt i filhåndteringen det, du har brug for, fra den ene mappe over i den anden, fjern den tomme, og prøv igen.
+
+#54 Opsætningen kunne ikke gemmes.
+Meddelelsen siger hvorfor. Se efter, at USB-stikket stadig er sat i og ikke er låst, og gem igen.
+
+#55 Denne mappe kan ikke læses.
+Din konto har ikke lov til at læse den, så der kan ikke tages backup af den.
+
+#56 Det er mere end den ledige plads på USB-stikket.
+Der er måske ikke plads til de filer, du har valgt, medmindre der allerede er taget backup af meget af dem der. Vælg mindre, eller brug et større USB-stik.
+"""

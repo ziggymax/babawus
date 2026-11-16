@@ -10,8 +10,8 @@ use babawus_core::language::Language;
 use babawus_core::text::Text;
 use gtk4::prelude::*;
 use gtk4::{
-    Application, Box as GtkBox, EventControllerKey, Label, Orientation, PolicyType, ScrolledWindow,
-    SearchEntry, TextBuffer, TextTag, TextView, WrapMode, gdk, glib,
+    Application, Box as GtkBox, Button, EventControllerKey, Label, Orientation, PolicyType,
+    ScrolledWindow, SearchEntry, TextBuffer, TextTag, TextView, WrapMode, gdk, glib,
 };
 
 const WIDTH: i32 = 640;
@@ -34,6 +34,8 @@ pub struct HelpWindow {
     pub window: gtk4::Window,
     search: SearchEntry,
     count: Label,
+    previous: Button,
+    next: Button,
     view: TextView,
     language: Cell<Language>,
     /// Where the current search's matches are, as character offsets and lengths.
@@ -66,6 +68,13 @@ impl HelpWindow {
         let search = SearchEntry::builder().hexpand(true).build();
         let count = Label::builder().width_chars(12).xalign(1.0).build();
         count.add_css_class("dim-label");
+        // Arrows that go to the match before and the next, as in GNOME's own search bars.
+        let previous = Button::from_icon_name("go-up-symbolic");
+        let next = Button::from_icon_name("go-down-symbolic");
+        let arrows = GtkBox::new(Orientation::Horizontal, 0);
+        arrows.add_css_class("linked");
+        arrows.append(&previous);
+        arrows.append(&next);
         let row = GtkBox::new(Orientation::Horizontal, MARGIN);
         row.set_margin_top(MARGIN);
         row.set_margin_bottom(MARGIN);
@@ -73,6 +82,7 @@ impl HelpWindow {
         row.set_margin_end(MARGIN);
         row.append(&search);
         row.append(&count);
+        row.append(&arrows);
         let content = GtkBox::new(Orientation::Vertical, 0);
         content.append(&row);
         content.append(&gtk4::Separator::new(Orientation::Horizontal));
@@ -87,6 +97,8 @@ impl HelpWindow {
             window,
             search,
             count,
+            previous,
+            next,
             view,
             language: Cell::new(language),
             matches: RefCell::new(Vec::new()),
@@ -145,6 +157,14 @@ impl HelpWindow {
             glib::Propagation::Proceed
         });
         self.search.add_controller(keys);
+        for (button, forward) in [(&self.previous, false), (&self.next, true)] {
+            let weak = Rc::downgrade(self);
+            button.connect_clicked(move |_| {
+                if let Some(help_window) = weak.upgrade() {
+                    help_window.step(forward);
+                }
+            });
+        }
     }
 
     /// Sets the window's texts and the Help itself, and searches again.
@@ -155,6 +175,10 @@ impl HelpWindow {
             .set_placeholder_text(Some(Text::HelpSearch.get(language)));
         self.search
             .set_tooltip_text(Some(Text::HelpSearchTooltip.get(language)));
+        self.previous
+            .set_tooltip_text(Some(Text::HelpPrevious.get(language)));
+        self.next
+            .set_tooltip_text(Some(Text::HelpNext.get(language)));
         let buffer = self.view.buffer();
         buffer.set_text("");
         let mut end = buffer.end_iter();
@@ -217,6 +241,8 @@ impl HelpWindow {
         let (start, end) = buffer.bounds();
         buffer.remove_tag_by_name(CURRENT, &start, &end);
         let matches = self.matches.borrow();
+        self.previous.set_sensitive(!matches.is_empty());
+        self.next.set_sensitive(!matches.is_empty());
         if matches.is_empty() {
             let searching = !self.search.text().trim().is_empty();
             self.count.set_label(if searching {
