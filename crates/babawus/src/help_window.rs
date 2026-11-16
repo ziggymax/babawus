@@ -256,8 +256,6 @@ impl HelpWindow {
         let (offset, length) = matches[current];
         let (from, to) = range(&buffer, offset, length);
         buffer.apply_tag_by_name(CURRENT, &from, &to);
-        // A mark, unlike an iterator, is scrolled to once the text has been laid out, which a
-        // new text, after a change of language, hasn't been yet.
         let mark = match buffer.mark(CURRENT) {
             Some(mark) => {
                 buffer.move_mark(&mark, &from);
@@ -265,8 +263,7 @@ impl HelpWindow {
             }
             None => buffer.create_mark(Some(CURRENT), &from, true),
         };
-        self.view
-            .scroll_to_mark(&mark, 0.0, true, 0.0, MATCH_POSITION);
+        scroll_into_view(&self.view, &mark);
         self.count.set_label(&Text::HelpFound.fill(
             language,
             &[
@@ -275,6 +272,40 @@ impl HelpWindow {
             ],
         ));
     }
+}
+
+/// How often, and how far apart, [`scroll_into_view`] tries again.
+const SCROLL_TRIES: u32 = 20;
+const SCROLL_RETRY: std::time::Duration = std::time::Duration::from_millis(50);
+
+/// Scrolls `view` so that `mark` is in sight. Right after a new text is set, such as after a change
+/// of language, the text isn't laid out yet, and a scroll lands short of the mark, even for a mark
+/// rather than an iterator; so it tries again until the mark is in sight, for up to a second
+/// (T-088).
+fn scroll_into_view(view: &TextView, mark: &gtk4::TextMark) {
+    view.scroll_to_mark(mark, 0.0, true, 0.0, MATCH_POSITION);
+    let weak_view = view.downgrade();
+    let mark = mark.clone();
+    let tries = Cell::new(0);
+    glib::timeout_add_local(SCROLL_RETRY, move || {
+        let Some(view) = weak_view.upgrade() else {
+            return glib::ControlFlow::Break;
+        };
+        if mark.is_deleted() {
+            return glib::ControlFlow::Break;
+        }
+        let shown = view.visible_rect();
+        let place = view.iter_location(&view.buffer().iter_at_mark(&mark));
+        let in_sight = shown.height() > 0
+            && place.y() >= shown.y()
+            && place.y() + place.height() <= shown.y() + shown.height();
+        tries.set(tries.get() + 1);
+        if in_sight || tries.get() >= SCROLL_TRIES {
+            return glib::ControlFlow::Break;
+        }
+        view.scroll_to_mark(&mark, 0.0, true, 0.0, MATCH_POSITION);
+        glib::ControlFlow::Continue
+    });
 }
 
 /// The iterators around `length` characters from `offset`.

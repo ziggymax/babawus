@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-088.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-089.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -24,7 +24,7 @@ Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([Release
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-085 | Run the release checklist on the 1.0.0 build, recorded in an issue "Release 1.0.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password. A failed step gets a task before the release goes ahead | Todo | Issue 157 |
+| T-085 | Run the release checklist on the 1.0.0 build, recorded in an issue "Release 1.0.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password. A failed step gets a task before the release goes ahead. Run in [#102](https://github.com/ziggymax/babawus/issues/102); its one failure is T-088 | In progress | Issue 157 |
 | T-086 | Release 1.0.0: the tag `v1.0.0` on main, and a GitHub release with the `.deb` and notes drafted by Claude and reviewed by the user. ReleasePlanning.md then names 1.0.0 as the latest release, and says the next isn't planned yet | Todo | Issue 157 |
 
 ## Needs a decision
