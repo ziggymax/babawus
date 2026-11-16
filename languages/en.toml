@@ -1,11 +1,13 @@
 # Babawus's texts in English. Every other language file has the same texts, with the same
-# placeholders, such as {user}.
+# placeholders, such as {user}. A text whose name ends with a number, such as ReasonMediumFull_14,
+# is a message that Babawus shows with that number, and that the Help explains under "#14".
 
 [language]
 code = "en"
 name = "English"
 decimal = "."
 thousands = ","
+quotes = ["“", "”"]
 
 [texts]
 WindowTitle = "Backup"
@@ -25,13 +27,13 @@ Logo = "Babawus"
 PlugIn = "Plug in your backup stick"
 ChooseMedium = "Choose a stick in the list"
 StickNotOpened = "The stick isn't opened"
-StickNotOpenedAdvice = "Pull it out and plug it back in."
+StickNotOpenedAdvice_1 = "Pull it out and plug it back in."
 StickCantBeUsed = "The stick that is plugged in can't be used yet"
-StickCantBeUsedAdvice = "It can be prepared under Advanced, with “Prepare…”."
-AlreadyOpenDetail = "Ask them to close it, or switch to their account."
+StickCantBeUsedAdvice_2 = "It can be prepared under Advanced, with “Prepare…”."
+AlreadyOpenDetail_4 = "Ask them to close it, or switch to their account."
 Ok = "OK"
 AlreadyOpen = "Babawus is already open for {user} on this computer."
-NoUdisks = "Babawus can't see the USB sticks, because the udisks2 service isn't running. Restarting the computer usually starts it again."
+NoUdisks_3 = "Babawus can't see the USB sticks, because the udisks2 service isn't running. Restarting the computer usually starts it again."
 
 Checking = "Checking…"
 Ready = "Ready"
@@ -42,12 +44,12 @@ WriteProtected = "Write-protected"
 NotBackupMedium = "Not a backup medium"
 OtherAccount = "Open for another account"
 
-ExplainNotSetUp = "This stick hasn't been set up for you on this computer. It can be set up under Advanced, with “Change setup…”."
+ExplainNotSetUp_5 = "This stick hasn't been set up for you on this computer. It can be set up under Advanced, with “Change setup…”."
 ExplainInProgress = "A backup to this stick is running for {user}. Wait until it has finished."
-ExplainNeedsAttention = "The setup on this stick is damaged, or needs a newer Babawus. A damaged setup can be repaired under Advanced, with “Change setup…”."
-ExplainWriteProtected = "This stick can only be read, so no backup can be written to it. If it has a lock switch, slide it to unlocked."
-ExplainOtherAccount = "This stick is still open for another account on this computer, so Babawus can't look at it. If nobody else is using it, pull it out and plug it back in."
-ExplainNotBackupMedium = "This stick isn't set up for backups with Babawus. It can be prepared under Advanced, with “Prepare…”."
+ExplainNeedsAttention_6 = "The setup on this stick is damaged, or needs a newer Babawus. A damaged setup can be repaired under Advanced, with “Change setup…”."
+ExplainWriteProtected_7 = "This stick can only be read, so no backup can be written to it. If it has a lock switch, slide it to unlocked."
+ExplainOtherAccount_8 = "This stick is still open for another account on this computer, so Babawus can't look at it. If nobody else is using it, pull it out and plug it back in."
+ExplainNotBackupMedium_9 = "This stick isn't set up for backups with Babawus. It can be prepared under Advanced, with “Prepare…”."
 
 LastBackupToday = "Last backup: today at {time}"
 LastBackupYesterday = "Last backup: yesterday at {time}"
@@ -86,7 +88,7 @@ KeepGoing = "Keep going"
 StopBackup = "Stop backup"
 Back = "Back"
 BackTooltip = "Go back to the list of sticks"
-VerdictBusy = "Another backup to this stick is just starting"
+VerdictBusy_18 = "Another backup to this stick is just starting"
 NextWait = "Wait until it has finished, then try again."
 NextRunAgain = "Run the backup again. If it happens again, look up its number in Help."
 NextRunAgainLater = "Run the backup again when it suits you."
@@ -99,29 +101,29 @@ SkippedGroup = "{reason}: {files}"
 
 ReasonFilesSkipped = "Some files could not be backed up."
 ReasonCancelled = "You stopped the backup."
-ReasonMediumRemoved = "The stick was removed."
-ReasonInterrupted = "The backup was interrupted."
-ReasonCrashed = "Babawus stopped unexpectedly."
-ReasonFlushFailed = "The last changes could not be saved on the stick."
-ReasonMediumFull = "The stick is full."
-ReasonNotAdded = "This stick isn't set up for you on this computer."
-ReasonConfigDamaged = "The setup on this stick is damaged, or needs a newer Babawus."
-ReasonCannotWrite = "The stick can't be written to."
+ReasonMediumRemoved_10 = "The stick was removed."
+ReasonInterrupted_11 = "The backup was interrupted."
+ReasonCrashed_12 = "Babawus stopped unexpectedly."
+ReasonFlushFailed_13 = "The last changes could not be saved on the stick."
+ReasonMediumFull_14 = "The stick is full."
+ReasonNotAdded_15 = "This stick isn't set up for you on this computer."
+ReasonConfigDamaged_16 = "The setup on this stick is damaged, or needs a newer Babawus."
+ReasonCannotWrite_17 = "The stick can't be written to."
 
-SkipUnreadable = "Couldn't be read"
-SkipDisappeared = "Disappeared during the backup"
-SkipNotWritable = "Couldn't be written to the stick"
-SkipTypeConflict = "A folder of the same name is on the stick"
-SkipChangedDuringCopy = "Kept changing while being copied"
-SkipVersionNameTooLong = "Name too long to keep older versions"
-SkipNameInvalidChars = "Name has characters this stick can't store"
-SkipNameTrailingDot = "Name ends with a dot, which this stick can't store"
-SkipNameNotUtf8 = "Name isn't valid text"
-SkipPathTooLong = "Name or folder path too long"
-SkipVersionFolderForm = "Name looks like a folder of older versions"
-SkipCaseClash = "Name differs only in upper and lower case from another, which this stick can't tell apart"
-SkipSelectionMissing = "Chosen for backup, but doesn't exist any more"
-SkipOutsideHome = "Chosen for backup, but outside your home folder"
+SkipUnreadable_19 = "Couldn't be read"
+SkipDisappeared_20 = "Disappeared during the backup"
+SkipNotWritable_21 = "Couldn't be written to the stick"
+SkipTypeConflict_22 = "A folder of the same name is on the stick"
+SkipChangedDuringCopy_23 = "Kept changing while being copied"
+SkipVersionNameTooLong_24 = "Name too long to keep older versions"
+SkipNameInvalidChars_25 = "Name has characters this stick can't store"
+SkipNameTrailingDot_26 = "Name ends with a dot, which this stick can't store"
+SkipNameNotUtf8_27 = "Name isn't valid text"
+SkipPathTooLong_28 = "Name or folder path too long"
+SkipVersionFolderForm_29 = "Name looks like a folder of older versions"
+SkipCaseClash_30 = "Name differs only in upper and lower case from another, which this stick can't tell apart"
+SkipSelectionMissing_31 = "Chosen for backup, but doesn't exist any more"
+SkipOutsideHome_32 = "Chosen for backup, but outside your home folder"
 
 EjectNow = "Eject {label}"
 EjectNowTooltip = "Make the stick safe to pull out now"
@@ -133,16 +135,16 @@ VerdictFailed = "Backup failed"
 Ejecting = "Ejecting {label}…"
 Ejected = "You can pull out {label} now."
 EjectedUnmountedOnly = "You can pull out {label} safely now, even if its light stays on."
-EjectBusy = "{label} is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again."
+EjectBusy_33 = "{label} is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again."
 EjectGone = "{label} has already been removed."
-EjectFailed = "{label} could not be ejected. Close any program that uses it, and try again."
+EjectFailed_34 = "{label} could not be ejected. Close any program that uses it, and try again."
 
 HistoryHeading = "Backups to this stick"
 HistoryEmpty = "No backups to this stick yet."
-HistoryUnreadable = "The history on this stick can't be read. Go back and try again."
+HistoryUnreadable_35 = "The history on this stick can't be read. Go back and try again."
 ShowInLog = "Show in the log"
 LogWindowTitle = "Log of {label}"
-LogUnreadable = "The log on this stick can't be read."
+LogUnreadable_36 = "The log on this stick can't be read."
 ReminderDays = "Your last backup was {days} days ago."
 ReminderQuestion = "Do you want to back up now?"
 ReminderBackUp = "Back up now"
@@ -156,8 +158,8 @@ HistorySkipped = "Skipped: {files}"
 
 CoverageHeading = "What's backed up to this stick"
 CoverageIntro = "These are backed up from this computer for {user}:"
-CoverageNothing = "Nothing has been chosen for backup yet. It can be chosen under Advanced, with “Change setup…”."
-CoverageUnreadable = "The setup on this stick can't be read. Go back and try again."
+CoverageNothing_37 = "Nothing has been chosen for backup yet. It can be chosen under Advanced, with “Change setup…”."
+CoverageUnreadable_38 = "The setup on this stick can't be read. Go back and try again."
 CoverageHome = "Your home folder"
 CoverageMissing = "Doesn't exist any more, so nothing is backed up from it"
 CoverageExcluded = "Not backed up, because it is left out below"
@@ -171,7 +173,7 @@ Loading = "Reading the stick…"
 
 FormatHeading = "Prepare a stick"
 FormatIntro = "Formatting erases a stick and sets it up for backups with Babawus. Choose the stick:"
-FormatNoDrives = "No stick that Babawus may format is plugged in."
+FormatNoDrives_39 = "No stick that Babawus may format is plugged in."
 FormatNoFileSystem = "No file system"
 FormatNoLabel = "No name"
 FormatWithBackups = "{volume}, with Babawus backups"
@@ -184,7 +186,7 @@ FormatExFatDetail = "Also works on Windows and Mac"
 FormatExt4 = "Ext4"
 FormatExt4Detail = "Works on Linux only, but allows longer names and copes better with being pulled out"
 FormatExt4AsksPassword = "Ext4 asks for your password while formatting."
-FormatExt4NeedsAdministrator = "Only an administrator can choose Ext4, because formatting it needs an administrator's password. Choose exFAT, or ask an administrator to prepare the stick."
+FormatExt4NeedsAdministrator_40 = "Only an administrator can choose Ext4, because formatting it needs an administrator's password. Choose exFAT, or ask an administrator to prepare the stick."
 FormatWarning = "Everything on {drive} will be erased: {contents}. This includes every partition on it. Formatting can't be stopped once it has started."
 FormatUnderstood = "I understand that everything on this stick will be erased"
 FormatErase = "Erase and format"
@@ -194,12 +196,12 @@ FormatWorkingDetail = "This can take a few minutes. Don't pull out the stick."
 FormatDone = "{label} is ready"
 FormatDoneDetail = "The stick is empty and set up for Babawus. Before anyone can back up to it, it must be set up for each computer and account that will use it."
 FormatFailed = "Formatting failed"
-FormatGone = "The stick was removed."
-FormatNotAllowed = "Babawus may no longer format this stick, for example because it is now in use."
-FormatNotPrepared = "The stick was formatted, but Babawus couldn't set it up for backups."
-FormatFailedReason = "Formatting didn't work."
+FormatGone_41 = "The stick was removed."
+FormatNotAllowed_42 = "Babawus may no longer format this stick, for example because it is now in use."
+FormatNotPrepared_43 = "The stick was formatted, but Babawus couldn't set it up for backups."
+FormatFailedReason_44 = "Formatting didn't work."
 FormatNothingErased = "Nothing on the stick was changed."
-FormatPartlyErased = "The stick has been erased, but isn't ready for backups. Format it again."
+FormatPartlyErased_45 = "The stick has been erased, but isn't ready for backups. Format it again."
 FormatMessage = "The system said: {message}"
 AddComputer = "Add this computer and your account…"
 AddComputerTooltip = "Set up this stick for you on this computer"
@@ -208,19 +210,19 @@ TryAgainTooltip = "Go back to choosing the stick and how to format it"
 
 SetupHeading = "Setup of this stick"
 SetupLoading = "Reading the setup…"
-SetupDamaged = "The setup on this stick was changed outside Babawus, or is damaged. Check it, then save it."
-SetupUnreadable = "The setup on this stick can't be read at all. You can start a new setup. The backups on the stick are kept, and their folders stay in use."
+SetupDamaged_46 = "The setup on this stick was changed outside Babawus, or is damaged. Check it, then save it."
+SetupUnreadable_47 = "The setup on this stick can't be read at all. You can start a new setup. The backups on the stick are kept, and their folders stay in use."
 SetupStartNew = "Start a new setup…"
 SetupStartNewQuestion = "Start a new setup?"
 SetupStartNewDetail = "The old setup is replaced when you save. The backups on the stick are kept."
-SetupNewerFormat = "The setup on this stick needs a newer Babawus. It can't be changed here."
-SetupNotBabawus = "This stick has no Babawus setup any more."
+SetupNewerFormat_48 = "The setup on this stick needs a newer Babawus. It can't be changed here."
+SetupNotBabawus_49 = "This stick has no Babawus setup any more."
 SetupOlderVersions = "Older versions to keep:"
 SetupRunCheckDays = "Remind after days without a backup:"
 SetupRunCheckDaysDetail = "When this account logs in, Babawus can remind it to back up if its last backup is older than this many days. 0 means never."
 SetupOlderVersionsDetail = "When a file changes, its earlier copies are kept, up to this many. Fewer leaves more space on the stick."
 SetupHere = "You on this computer"
-SetupNoComputerId = "This computer has no ID, so it can't be set up."
+SetupNoComputerId_50 = "This computer has no ID, so it can't be set up."
 SetupComputerMissing = "This computer ({hostname}) isn't set up on this stick yet. It will be added as “{folder}”."
 SetupComputerMissingLink = "This computer ({hostname}) isn't set up on this stick yet. Add it as “{folder}”, or, if it was set up before under another name, for example before a reinstall, link it to that computer."
 SetupAccountMissing = "You have no backup profile on this computer (“{folder}”) yet."
@@ -260,10 +262,10 @@ SetupDiscardQuestion = "Leave without saving?"
 SetupDiscardDetail = "Your changes to the setup of this stick will be lost."
 SetupDiscard = "Leave without saving"
 SetupKeepEditing = "Keep editing"
-SetupBusy = "The stick is in use by a backup for {user}. Wait until it has finished, then save again."
-SetupInvalid = "That change can't be made, because it clashes with another computer or backup profile."
-SetupBothFolders = "Both your earlier and your new name have a folder on the stick, so Babawus can't link them. They have to be sorted out by hand in a file manager."
-SetupSaveFailed = "The setup couldn't be saved: {error}"
+SetupBusy_51 = "The stick is in use by a backup for {user}. Wait until it has finished, then save again."
+SetupInvalid_52 = "That change can't be made, because it clashes with another computer or backup profile."
+SetupBothFolders_53 = "Both your earlier and your new name have a folder on the stick, so Babawus can't link them. They have to be sorted out by hand in a file manager."
+SetupSaveFailed_54 = "The setup couldn't be saved: {error}"
 
 ChooseHeading = "Choose what to back up for {user}"
 ChooseIntro = "Tick the files and folders to back up. A ticked folder is backed up with everything in it. To leave out a folder inside it, untick that folder."
@@ -274,7 +276,7 @@ ChooseNotePattern = "Left out by the name pattern {pattern}"
 ChooseNoteOtherDrive = "On another drive, so it is only backed up if ticked on its own"
 ChooseNoteLink = "A link, which Babawus doesn't follow"
 ChooseNoteNotText = "Its name isn't valid text, so it can't be chosen on its own"
-ChooseUnreadable = "This folder can't be read."
+ChooseUnreadable_55 = "This folder can't be read."
 ChoosePatternsSection = "Files to leave out by name"
 ChoosePatternsDetail = "In any folder. * stands for any characters, and ? for one character."
 ChoosePatternAdd = "Add"
@@ -286,7 +288,7 @@ ChooseCounting = "Counting…"
 ChooseNothing = "Nothing is chosen yet."
 ChooseTotals = "Chosen: {files} ({size}) · {free} free on the stick"
 ChooseTotalsNoFree = "Chosen: {files} ({size})"
-ChooseTooBig = "That is more than the free space on the stick, unless much of it is backed up there already."
+ChooseTooBig_56 = "That is more than the free space on the stick, unless much of it is backed up there already."
 ChooseDone = "Done"
 ChooseDoneTooltip = "Go back to the setup. The changes are written when you save there."
 ChooseCancelTooltip = "Go back to the setup without these changes"
@@ -306,9 +308,12 @@ HelpNotFound = "Not found"
 HelpNext = "Next match (Enter)"
 HelpPrevious = "Previous match (Shift+Enter)"
 
-# The built-in Help, shown in a window of its own (issues 151 and 154). A line starting with "# "
-# is a heading, a line starting with "- " is a bullet, and blank lines separate paragraphs. A line
-# starting with "#" and a number is the entry for that numbered message: every number needs one.
+# The built-in Help, shown in a window of its own (issues 151, 154 and 158). A line starting with
+# "# " is a heading, a line starting with "- " is a bullet, and blank lines separate paragraphs. A
+# line with only "#" and a number, such as "#14", begins the entry for that numbered message, and
+# Babawus writes the message after the number itself: every number needs an entry. Another text
+# is put in with its name in braces, such as {ChangeSetup}. Quotation marks are written as plain
+# "", and shown as the marks in quotes above.
 Help = """
 # What Babawus does
 
@@ -320,12 +325,12 @@ It only copies what has changed since the last backup. When a file has changed, 
 
 - Plug in your backup stick.
 - Choose it in the list, if it isn't chosen already.
-- Press "Start backup", and wait for the verdict.
-- When it says "All good", press "Eject", and pull out the stick.
+- Press "{StartBackup}", and wait for the verdict.
+- When it says "{VerdictAllGood}", press "Eject", and pull out the stick.
 
 Keep the stick away from the computer between backups, so that whatever happens to the computer doesn't happen to the stick too. Two sticks, used in turn, are safer than one.
 
-"Show history" shows when backups to the stick ran and how they went. "What's backed up" shows which of your files and folders are copied to it.
+"{ShowHistory}" shows when backups to the stick ran and how they went. "{WhatsBackedUp}" shows which of your files and folders are copied to it.
 
 # Getting files back
 
@@ -333,177 +338,177 @@ Babawus has no restore button. Open the stick in the file manager: your files ar
 
 # Advanced functions
 
-Under Advanced in the menu are the functions that set up a stick: "Prepare…" erases a stick and makes it ready for Babawus, and "Change setup…" chooses what is backed up, and for which computers and accounts. A mistake here can cost backups, so Babawus asks first. Advanced turns off again when Babawus is closed.
+Under {MenuAdvanced} in the menu are the functions that set up a stick: "{Prepare}" erases a stick and makes it ready for Babawus, and "{ChangeSetup}" chooses what is backed up, and for which computers and accounts. A mistake here can cost backups, so Babawus asks first. {MenuAdvanced} turns off again when Babawus is closed.
 
 # Messages
 
 When something goes wrong, the message ends with a number, such as #14. Search for that number here to see what it means and what to do.
 
-#1 The stick isn't opened.
-The system hasn't opened the stick's files. Pull it out and plug it back in. If that doesn't help, open the stick in the file manager.
+#1
+The system hasn't opened the stick's files. If plugging it in again doesn't help, open the stick in the file manager.
 
-#2 The stick that is plugged in can't be used yet.
-The stick has nothing on it that Babawus can read, for example because it is new or was used for something else. Prepare it under Advanced, with "Prepare…". That erases everything on it.
+#2
+The stick has nothing on it that Babawus can read, for example because it is new or was used for something else. Prepare it under {MenuAdvanced}, with "{Prepare}". That erases everything on it.
 
-#3 Babawus can't see the USB sticks.
-The system's udisks2 service, which Babawus uses to find sticks, isn't running. Restarting the computer usually starts it again.
+#3
+Babawus uses the system's udisks2 service to find USB sticks.
 
-#4 Babawus is already open for another account.
-Only one Babawus can run on a computer at a time. Ask the other person to close it, or switch to their account and close it there.
+#4
+Only one Babawus can run on a computer at a time, so it has to be closed in the other account first.
 
-#5 This stick hasn't been set up for you on this computer.
-Each computer and account must be added to a stick before it can back up to it. Do that under Advanced, with "Change setup…" and "Add this computer and your account".
+#5
+Each computer and account must be added to a stick before it can back up to it. Do that under {MenuAdvanced}, with "{ChangeSetup}" and "{SetupAddComputer}".
 
-#6 The setup on this stick is damaged, or needs a newer Babawus.
-If the stick was set up with a newer Babawus, install that version here too. Otherwise the setup is damaged: open it under Advanced, with "Change setup…", check it, and save it.
+#6
+If the stick was set up with a newer Babawus, install that version here too. Otherwise the setup is damaged: open it under {MenuAdvanced}, with "{ChangeSetup}", check it, and save it.
 
-#7 This stick can only be read.
-Some sticks have a small lock switch: slide it to unlocked. A stick that can no longer be written to may be worn out; use another one.
+#7
+Some sticks have a small lock switch. A stick that can no longer be written to may be worn out; use another one.
 
-#8 This stick is still open for another account.
-Another account on this computer has the stick open, so this account can't use it. If nobody else is using it, pull it out and plug it back in.
+#8
+Another account on this computer has the stick open, so this account can't use it.
 
-#9 This stick isn't set up for backups with Babawus.
-Prepare it under Advanced, with "Prepare…". That erases everything on it, so first copy anything you want to keep.
+#9
+Prepare it under {MenuAdvanced}, with "{Prepare}". That erases everything on it, so first copy anything you want to keep.
 
-#10 The stick was removed.
+#10
 The stick was pulled out during the backup. Nothing already on it is damaged. Plug it back in and run the backup again: it carries on where it stopped.
 
-#11 The backup was interrupted.
+#11
 The backup was stopped part of the way, for example because the computer was shut down. Run it again: it carries on where it stopped.
 
-#12 Babawus stopped unexpectedly.
+#12
 Babawus ended in the middle of the backup. Nothing already on the stick is damaged. Run the backup again.
 
-#13 The last changes could not be saved on the stick.
+#13
 The stick didn't confirm that everything was written. Run the backup again. If it happens again, the stick may be failing; use another one.
 
-#14 The stick is full.
-There isn't room for the files that changed. Keep fewer older versions under Advanced, with "Change setup…", back up fewer files, or use a bigger stick.
+#14
+There isn't room for the files that changed. Keep fewer older versions under {MenuAdvanced}, with "{ChangeSetup}", back up fewer files, or use a bigger stick.
 
-#15 This stick isn't set up for you on this computer.
+#15
 The setup changed after the backup was started. See #5.
 
-#16 The setup on this stick is damaged, or needs a newer Babawus.
+#16
 See #6.
 
-#17 The stick can't be written to.
+#17
 Check whether the stick has a lock switch, see #7. Otherwise it may be failing; use another one.
 
-#18 Another backup to this stick is just starting.
+#18
 Wait until it has finished, then try again.
 
-#19 Couldn't be read.
+#19
 The file or folder couldn't be read on the computer, usually because your account isn't allowed to read it. It is skipped.
 
-#20 Disappeared during the backup.
+#20
 The file was deleted or moved while the backup ran. It is backed up next time, if it is still there.
 
-#21 Couldn't be written to the stick.
+#21
 The stick refused the file. Run the backup again. If it happens again, see #17.
 
-#22 A folder of the same name is on the stick.
+#22
 Something that used to be a folder is now a file with the same name, or the other way round. Rename it on the computer, or remove the old one from the stick in the file manager.
 
-#23 Kept changing while being copied.
+#23
 A program kept changing the file during the backup. Close that program, and run the backup again.
 
-#24 Name too long to keep older versions.
+#24
 An older version's name adds the date to the name, which made it too long. Give the file a shorter name.
 
-#25 Name has characters this stick can't store.
+#25
 Sticks formatted as exFAT can't store the characters " * : < > ? \\ | in names. Rename the file, or use a stick formatted as Ext4.
 
-#26 Name ends with a dot, which this stick can't store.
+#26
 Rename the file so that its name doesn't end with a dot.
 
-#27 Name isn't valid text.
+#27
 The name has characters the computer can't show as text. Rename the file.
 
-#28 Name or folder path too long.
+#28
 The name, or the names of the folders it is in, are too long for the stick. Use shorter names, or fewer folders inside each other.
 
-#29 Name looks like a folder of older versions.
+#29
 Babawus keeps older versions in folders whose names contain [], and this name contains [] too. Rename it.
 
-#30 Name differs only in upper and lower case from another.
+#30
 exFAT sticks can't tell "Photo.jpg" from "photo.jpg". Rename one of them.
 
-#31 Chosen for backup, but doesn't exist any more.
-A file or folder that was chosen has been deleted, moved or renamed. Choose it again under Advanced, with "Change setup…".
+#31
+A file or folder that was chosen has been deleted, moved or renamed. Choose it again under {MenuAdvanced}, with "{ChangeSetup}".
 
-#32 Chosen for backup, but outside your home folder.
-Only files in your home folder are backed up. Choose files inside it under Advanced, with "Change setup…".
+#32
+Only files in your home folder are backed up. Choose files inside it under {MenuAdvanced}, with "{ChangeSetup}".
 
-#33 The stick is still in use by a program.
+#33
 Close the program, for example a file manager window or a terminal open on the stick, or wait until a copy has finished, and eject it again.
 
-#34 The stick could not be ejected.
-Close any program that uses it, and try again. If it still fails, shut down the computer before pulling out the stick.
+#34
+If it still fails, shut down the computer before pulling out the stick.
 
-#35 The history on this stick can't be read.
-Go back and try again. If it happens again, pull the stick out and plug it back in.
+#35
+If it happens again, pull the stick out and plug it back in.
 
-#36 The log on this stick can't be read.
+#36
 Close the log window and try again. If it happens again, pull the stick out and plug it back in.
 
-#37 Nothing has been chosen for backup yet.
-Choose what to back up under Advanced, with "Change setup…" and "Choose what to back up…".
+#37
+Choose what to back up under {MenuAdvanced}, with "{ChangeSetup}" and "{SetupChoose}".
 
-#38 The setup on this stick can't be read.
-Go back and try again. If it happens again, see #6.
+#38
+If it happens again, see #6.
 
-#39 No stick that Babawus may format is plugged in.
+#39
 Babawus only formats USB sticks, never the computer's own disks. Plug in the stick to prepare.
 
-#40 Only an administrator can choose Ext4.
+#40
 Formatting as Ext4 needs an account with sudo rights and the password for that account. Choose exFAT instead, or prepare the stick from an administrator's account.
 
-#41 The stick was removed.
+#41
 The stick was pulled out while it was being formatted. Plug it back in and format it again.
 
-#42 Babawus may no longer format this stick.
+#42
 The stick changed after it was chosen, for example because a program opened it. Close that program, go back, and choose the stick again.
 
-#43 The stick was formatted, but Babawus couldn't set it up for backups.
+#43
 Format it again. If it happens again, use another stick.
 
-#44 Formatting didn't work.
+#44
 The message below it says what the system reported. Pull the stick out, plug it back in, and try again. If it happens again, use another stick.
 
-#45 The stick has been erased, but isn't ready for backups.
-Format it again.
+#45
+If it happens again, use another stick.
 
-#46 The setup on this stick was changed outside Babawus, or is damaged.
+#46
 Check what the setup shows, correct anything that is wrong, and save it. Saving makes it valid again.
 
-#47 The setup on this stick can't be read at all.
-Start a new setup. The backups already on the stick are kept, and their folders are used again.
+#47
+Start one under {MenuAdvanced}, with "{ChangeSetup}" and "{SetupStartNew}".
 
-#48 The setup on this stick needs a newer Babawus.
+#48
 It was made with a newer version of Babawus. Install that version on this computer.
 
-#49 This stick has no Babawus setup any more.
-The setup was removed from the stick while it was open here. Go back. To use the stick again, prepare it under Advanced, which erases it, so first copy anything you want to keep.
+#49
+The setup was removed from the stick while it was open here. Go back. To use the stick again, prepare it under {MenuAdvanced}, which erases it, so first copy anything you want to keep.
 
-#50 This computer has no ID.
+#50
 Babawus tells computers apart by the ID the system gives each installation, in /etc/machine-id, and this computer has none. Creating one needs the system's own tools, for example "sudo systemd-machine-id-setup" in a terminal.
 
-#51 The stick is in use by a backup.
-Wait until the backup has finished, then save again.
+#51
+The setup can't be saved while a backup is writing to the stick.
 
-#52 That change can't be made.
+#52
 It would give two computers or two backup profiles the same folder on the stick. Choose another one.
 
-#53 Both your earlier and your new name have a folder on the stick.
+#53
 Babawus can't link them without mixing them up. In the file manager, move what you need from one folder into the other, remove the empty one, and try again.
 
-#54 The setup couldn't be saved.
+#54
 The message says why. Check that the stick is still plugged in and not locked, and save again.
 
-#55 This folder can't be read.
+#55
 Your account isn't allowed to read it, so it can't be backed up.
 
-#56 That is more than the free space on the stick.
-The files you chose may not fit, unless much of them is backed up there already. Choose less, or use a bigger stick.
+#56
+Choose less, or use a bigger stick.
 """

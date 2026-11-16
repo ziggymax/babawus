@@ -192,6 +192,9 @@ struct Header {
     name: String,
     decimal: String,
     thousands: String,
+    /// The language's opening and closing quotation marks, which the Help's plain ones are shown
+    /// as (issue 158).
+    quotes: Vec<String>,
 }
 
 /// Reads and checks the language file at `path` against `english`, or, for English itself,
@@ -207,7 +210,7 @@ fn read(
         .file_stem()
         .and_then(|stem| stem.to_str())
         .unwrap_or_default();
-    check(stem, text, english).map(|(file, unknown)| {
+    check(stem, text, english).map(|(file, unknown, help_warnings)| {
         let mut warnings: Vec<String> = unknown
             .into_iter()
             .map(|name| {
@@ -217,6 +220,11 @@ fn read(
                 )
             })
             .collect();
+        warnings.extend(
+            help_warnings
+                .into_iter()
+                .map(|warning| format!("{}: {warning}", path.display())),
+        );
         // Help without an entry for a number still helps with the rest (issue 151).
         let missing = help::missing_entries(&file.plain[Text::Help as usize]);
         if !missing.is_empty() {
@@ -231,13 +239,14 @@ fn read(
     })
 }
 
-/// Checks the contents of the language file named `stem`. Gives the file and the names of the
-/// texts it has that Babawus doesn't know, or why it is rejected.
+/// Checks the contents of the language file named `stem`, and puts its Help together. Gives the
+/// file, the keys of the texts it has that Babawus doesn't know, and what is wrong in its Help
+/// that doesn't stop it from being shown; or why it is rejected.
 fn check(
     stem: &str,
     contents: &str,
     english: Option<Language>,
-) -> Result<(LanguageFile, Vec<String>), String> {
+) -> Result<(LanguageFile, Vec<String>, Vec<String>), String> {
     let mut parsed: Contents =
         toml::from_str(contents).map_err(|error| format!("it isn't valid: {error}"))?;
     let header = parsed.language;
@@ -252,21 +261,29 @@ fn check(
             return Err(format!("its {field} is empty"));
         }
     }
+    let [open, close] = header.quotes.as_slice() else {
+        return Err("its quotes aren't two marks, such as [\"“\", \"”\"]".to_owned());
+    };
+    if open.trim().is_empty() || close.trim().is_empty() {
+        return Err("its quotes aren't two marks, such as [\"“\", \"”\"]".to_owned());
+    }
 
     let mut texts = Vec::with_capacity(Text::ALL.len());
     let mut missing = Vec::new();
     let mut wrong = Vec::new();
     for &text in Text::ALL {
-        match parsed.texts.remove(text.name()) {
+        match parsed.texts.remove(&text.key()) {
             Some(value) if !value.trim().is_empty() => {
+                // The Help's braces are references to other texts, not placeholders.
                 if let Some(english) = english
+                    && text != Text::Help
                     && placeholders(&value) != placeholders(english.plain_text(text))
                 {
-                    wrong.push(text.name());
+                    wrong.push(text.key());
                 }
                 texts.push(value);
             }
-            _ => missing.push(text.name()),
+            _ => missing.push(text.key()),
         }
     }
     if !missing.is_empty() {
@@ -278,6 +295,14 @@ fn check(
             wrong.join(", ")
         ));
     }
+
+    let by_key: BTreeMap<String, String> = Text::ALL
+        .iter()
+        .zip(&texts)
+        .map(|(text, value)| (text.key(), value.clone()))
+        .collect();
+    let help = help::build(&texts[Text::Help as usize], &by_key, (open, close))?;
+    texts[Text::Help as usize] = help.text;
 
     let numbered = Text::ALL
         .iter()
@@ -295,7 +320,7 @@ fn check(
         texts: numbered,
         plain: texts,
     };
-    Ok((file, parsed.texts.into_keys().collect()))
+    Ok((file, parsed.texts.into_keys().collect(), help.warnings))
 }
 
 /// The placeholders in `text`, such as `user` for `{user}`, sorted.
@@ -317,8 +342,9 @@ pub(crate) mod testing {
     use super::*;
 
     fn parse(stem: &str, contents: &str, english: Option<Language>) -> Language {
-        let (file, unknown) = check(stem, contents, english).unwrap();
+        let (file, unknown, help) = check(stem, contents, english).unwrap();
         assert!(unknown.is_empty(), "{unknown:?}");
+        assert!(help.is_empty(), "{help:?}");
         Language(Box::leak(Box::new(file)))
     }
 

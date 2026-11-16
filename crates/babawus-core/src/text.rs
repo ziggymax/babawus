@@ -19,7 +19,7 @@ macro_rules! texts {
             /// Every text, in the order of their values.
             pub const ALL: &[Self] = &[$(Self::$name,)*];
 
-            /// The text's key in the language files.
+            /// The text's name in the code. Its key in the language files is [`Text::key`].
             pub fn name(self) -> &'static str {
                 match self {
                     $(Self::$name => stringify!($name),)*
@@ -392,6 +392,31 @@ impl Text {
             Self::ChooseTooBig => 56,
             _ => return None,
         })
+    }
+
+    /// The text's key in the language files: its name, followed by its number if it has one, as
+    /// in `ReasonMediumFull_14`, so that whoever edits a file sees which message each Help entry
+    /// explains (issue 158).
+    pub fn key(self) -> String {
+        match self.number() {
+            Some(number) => format!("{}_{number}", self.name()),
+            None => self.name().to_owned(),
+        }
+    }
+
+    /// The texts that make up the message numbered `number`, as the user sees it: for most, the
+    /// numbered text alone; for a few, a headline shown above it (issue 158).
+    pub fn message(number: u16) -> Vec<Self> {
+        match number {
+            1 => vec![Self::StickNotOpened, Self::StickNotOpenedAdvice],
+            2 => vec![Self::StickCantBeUsed, Self::StickCantBeUsedAdvice],
+            4 => vec![Self::AlreadyOpen, Self::AlreadyOpenDetail],
+            _ => Self::ALL
+                .iter()
+                .copied()
+                .filter(|text| text.number() == Some(number))
+                .collect(),
+        }
     }
 
     /// The text in `language`, without its number.

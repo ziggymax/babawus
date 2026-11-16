@@ -5,6 +5,7 @@ code = "de"
 name = "Deutsch"
 decimal = ","
 thousands = "."
+quotes = ["„", "“"]
 
 [texts]
 WindowTitle = "Sicherung"
@@ -23,13 +24,13 @@ Logo = "Babawus"
 PlugIn = "Steck deinen Sicherungs-Stick ein"
 ChooseMedium = "Wähle einen Stick in der Liste"
 StickNotOpened = "Der Stick ist nicht geöffnet"
-StickNotOpenedAdvice = "Zieh ihn ab und steck ihn wieder ein."
+StickNotOpenedAdvice_1 = "Zieh ihn ab und steck ihn wieder ein."
 StickCantBeUsed = "Der eingesteckte Stick kann noch nicht benutzt werden"
-StickCantBeUsedAdvice = "Er kann unter „Erweitert“ mit „Vorbereiten …“ vorbereitet werden."
-AlreadyOpenDetail = "Bitte die Person, Babawus zu schließen, oder wechsle zu ihrem Konto."
+StickCantBeUsedAdvice_2 = "Er kann unter „Erweitert“ mit „Vorbereiten …“ vorbereitet werden."
+AlreadyOpenDetail_4 = "Bitte die Person, Babawus zu schließen, oder wechsle zu ihrem Konto."
 Ok = "OK"
 AlreadyOpen = "Babawus ist auf diesem Computer schon für {user} geöffnet."
-NoUdisks = "Babawus kann die USB-Sticks nicht sehen, weil der Dienst udisks2 nicht läuft. Ein Neustart des Computers startet ihn meistens wieder."
+NoUdisks_3 = "Babawus kann die USB-Sticks nicht sehen, weil der Dienst udisks2 nicht läuft. Ein Neustart des Computers startet ihn meistens wieder."
 
 Checking = "Wird geprüft …"
 Ready = "Bereit"
@@ -40,12 +41,12 @@ WriteProtected = "Schreibgeschützt"
 NotBackupMedium = "Kein Sicherungs-Stick"
 OtherAccount = "Für ein anderes Konto geöffnet"
 
-ExplainNotSetUp = "Dieser Stick ist auf diesem Computer nicht für dich eingerichtet. Das geht unter „Erweitert“ mit „Einrichtung ändern …“."
+ExplainNotSetUp_5 = "Dieser Stick ist auf diesem Computer nicht für dich eingerichtet. Das geht unter „Erweitert“ mit „Einrichtung ändern …“."
 ExplainInProgress = "Auf diesen Stick läuft gerade eine Sicherung für {user}. Warte, bis sie fertig ist."
-ExplainNeedsAttention = "Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus. Eine beschädigte Einrichtung kann unter „Erweitert“ mit „Einrichtung ändern …“ repariert werden."
-ExplainWriteProtected = "Dieser Stick kann nur gelesen werden, deshalb kann keine Sicherung darauf geschrieben werden. Wenn er einen Schiebeschalter hat, schieb ihn auf „offen“."
-ExplainOtherAccount = "Dieser Stick ist noch für ein anderes Konto auf diesem Computer geöffnet, deshalb kann Babawus ihn nicht ansehen. Wenn ihn sonst niemand benutzt, zieh ihn ab und steck ihn wieder ein."
-ExplainNotBackupMedium = "Dieser Stick ist nicht für Sicherungen mit Babawus eingerichtet. Er kann unter „Erweitert“ mit „Vorbereiten …“ vorbereitet werden."
+ExplainNeedsAttention_6 = "Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus. Eine beschädigte Einrichtung kann unter „Erweitert“ mit „Einrichtung ändern …“ repariert werden."
+ExplainWriteProtected_7 = "Dieser Stick kann nur gelesen werden, deshalb kann keine Sicherung darauf geschrieben werden. Wenn er einen Schiebeschalter hat, schieb ihn auf „offen“."
+ExplainOtherAccount_8 = "Dieser Stick ist noch für ein anderes Konto auf diesem Computer geöffnet, deshalb kann Babawus ihn nicht ansehen. Wenn ihn sonst niemand benutzt, zieh ihn ab und steck ihn wieder ein."
+ExplainNotBackupMedium_9 = "Dieser Stick ist nicht für Sicherungen mit Babawus eingerichtet. Er kann unter „Erweitert“ mit „Vorbereiten …“ vorbereitet werden."
 
 LastBackupToday = "Letzte Sicherung: heute um {time}"
 LastBackupYesterday = "Letzte Sicherung: gestern um {time}"
@@ -84,7 +85,7 @@ KeepGoing = "Weitermachen"
 StopBackup = "Sicherung anhalten"
 Back = "Zurück"
 BackTooltip = "Zurück zur Liste der Sticks"
-VerdictBusy = "Gerade beginnt eine andere Sicherung auf diesen Stick"
+VerdictBusy_18 = "Gerade beginnt eine andere Sicherung auf diesen Stick"
 NextWait = "Warte, bis sie fertig ist, und versuch es dann noch einmal."
 NextRunAgain = "Starte die Sicherung noch einmal. Wenn es wieder passiert, schau die Nummer der Meldung in der Hilfe nach."
 NextRunAgainLater = "Starte die Sicherung noch einmal, wenn es dir passt."
@@ -97,29 +98,29 @@ SkippedGroup = "{reason}: {files}"
 
 ReasonFilesSkipped = "Einige Dateien konnten nicht gesichert werden."
 ReasonCancelled = "Du hast die Sicherung angehalten."
-ReasonMediumRemoved = "Der Stick wurde abgezogen."
-ReasonInterrupted = "Die Sicherung wurde unterbrochen."
-ReasonCrashed = "Babawus wurde unerwartet beendet."
-ReasonFlushFailed = "Die letzten Änderungen konnten nicht auf dem Stick gespeichert werden."
-ReasonMediumFull = "Der Stick ist voll."
-ReasonNotAdded = "Dieser Stick ist auf diesem Computer nicht für dich eingerichtet."
-ReasonConfigDamaged = "Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus."
-ReasonCannotWrite = "Auf den Stick kann nicht geschrieben werden."
+ReasonMediumRemoved_10 = "Der Stick wurde abgezogen."
+ReasonInterrupted_11 = "Die Sicherung wurde unterbrochen."
+ReasonCrashed_12 = "Babawus wurde unerwartet beendet."
+ReasonFlushFailed_13 = "Die letzten Änderungen konnten nicht auf dem Stick gespeichert werden."
+ReasonMediumFull_14 = "Der Stick ist voll."
+ReasonNotAdded_15 = "Dieser Stick ist auf diesem Computer nicht für dich eingerichtet."
+ReasonConfigDamaged_16 = "Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus."
+ReasonCannotWrite_17 = "Auf den Stick kann nicht geschrieben werden."
 
-SkipUnreadable = "Konnte nicht gelesen werden"
-SkipDisappeared = "Ist während der Sicherung verschwunden"
-SkipNotWritable = "Konnte nicht auf den Stick geschrieben werden"
-SkipTypeConflict = "Auf dem Stick gibt es einen Ordner mit demselben Namen"
-SkipChangedDuringCopy = "Hat sich beim Kopieren ständig geändert"
-SkipVersionNameTooLong = "Name zu lang, um ältere Versionen aufzubewahren"
-SkipNameInvalidChars = "Der Name enthält Zeichen, die dieser Stick nicht speichern kann"
-SkipNameTrailingDot = "Der Name endet mit einem Punkt, den dieser Stick nicht speichern kann"
-SkipNameNotUtf8 = "Der Name ist kein gültiger Text"
-SkipPathTooLong = "Name oder Ordnerpfad zu lang"
-SkipVersionFolderForm = "Der Name sieht aus wie ein Ordner mit älteren Versionen"
-SkipCaseClash = "Der Name unterscheidet sich von einem anderen nur durch Groß- und Kleinschreibung, die dieser Stick nicht unterscheiden kann"
-SkipSelectionMissing = "Zum Sichern ausgewählt, aber nicht mehr vorhanden"
-SkipOutsideHome = "Zum Sichern ausgewählt, aber außerhalb deines persönlichen Ordners"
+SkipUnreadable_19 = "Konnte nicht gelesen werden"
+SkipDisappeared_20 = "Ist während der Sicherung verschwunden"
+SkipNotWritable_21 = "Konnte nicht auf den Stick geschrieben werden"
+SkipTypeConflict_22 = "Auf dem Stick gibt es einen Ordner mit demselben Namen"
+SkipChangedDuringCopy_23 = "Hat sich beim Kopieren ständig geändert"
+SkipVersionNameTooLong_24 = "Name zu lang, um ältere Versionen aufzubewahren"
+SkipNameInvalidChars_25 = "Der Name enthält Zeichen, die dieser Stick nicht speichern kann"
+SkipNameTrailingDot_26 = "Der Name endet mit einem Punkt, den dieser Stick nicht speichern kann"
+SkipNameNotUtf8_27 = "Der Name ist kein gültiger Text"
+SkipPathTooLong_28 = "Name oder Ordnerpfad zu lang"
+SkipVersionFolderForm_29 = "Der Name sieht aus wie ein Ordner mit älteren Versionen"
+SkipCaseClash_30 = "Der Name unterscheidet sich von einem anderen nur durch Groß- und Kleinschreibung, die dieser Stick nicht unterscheiden kann"
+SkipSelectionMissing_31 = "Zum Sichern ausgewählt, aber nicht mehr vorhanden"
+SkipOutsideHome_32 = "Zum Sichern ausgewählt, aber außerhalb deines persönlichen Ordners"
 
 EjectNow = "{label} auswerfen"
 EjectNowTooltip = "Den Stick jetzt so vorbereiten, dass du ihn gefahrlos abziehen kannst"
@@ -131,16 +132,16 @@ VerdictFailed = "Sicherung fehlgeschlagen"
 Ejecting = "{label} wird ausgeworfen …"
 Ejected = "Du kannst {label} jetzt abziehen."
 EjectedUnmountedOnly = "Du kannst {label} jetzt gefahrlos abziehen, auch wenn sein Lämpchen noch leuchtet."
-EjectBusy = "{label} wird noch von einem Programm benutzt, zum Beispiel von einem Terminal oder einer Datei, die gerade kopiert wird. Schließ es oder warte, bis es fertig ist, und versuch es dann noch einmal."
+EjectBusy_33 = "{label} wird noch von einem Programm benutzt, zum Beispiel von einem Terminal oder einer Datei, die gerade kopiert wird. Schließ es oder warte, bis es fertig ist, und versuch es dann noch einmal."
 EjectGone = "{label} wurde schon abgezogen."
-EjectFailed = "{label} konnte nicht ausgeworfen werden. Schließ alle Programme, die ihn benutzen, und versuch es noch einmal."
+EjectFailed_34 = "{label} konnte nicht ausgeworfen werden. Schließ alle Programme, die ihn benutzen, und versuch es noch einmal."
 
 HistoryHeading = "Sicherungen auf diesen Stick"
 HistoryEmpty = "Noch keine Sicherungen auf diesen Stick."
-HistoryUnreadable = "Der Verlauf auf diesem Stick kann nicht gelesen werden. Geh zurück und versuch es noch einmal."
+HistoryUnreadable_35 = "Der Verlauf auf diesem Stick kann nicht gelesen werden. Geh zurück und versuch es noch einmal."
 ShowInLog = "Im Protokoll zeigen"
 LogWindowTitle = "Protokoll von {label}"
-LogUnreadable = "Das Protokoll auf diesem Stick kann nicht gelesen werden."
+LogUnreadable_36 = "Das Protokoll auf diesem Stick kann nicht gelesen werden."
 ReminderDays = "Deine letzte Sicherung ist {days} Tage her."
 ReminderQuestion = "Möchtest du jetzt eine Sicherung machen?"
 ReminderBackUp = "Jetzt sichern"
@@ -154,8 +155,8 @@ HistorySkipped = "Übersprungen: {files}"
 
 CoverageHeading = "Was auf diesen Stick gesichert wird"
 CoverageIntro = "Folgendes wird von diesem Computer für {user} gesichert:"
-CoverageNothing = "Es wurde noch nichts zum Sichern ausgewählt. Das geht unter „Erweitert“ mit „Einrichtung ändern …“."
-CoverageUnreadable = "Die Einrichtung auf diesem Stick kann nicht gelesen werden. Geh zurück und versuch es noch einmal."
+CoverageNothing_37 = "Es wurde noch nichts zum Sichern ausgewählt. Das geht unter „Erweitert“ mit „Einrichtung ändern …“."
+CoverageUnreadable_38 = "Die Einrichtung auf diesem Stick kann nicht gelesen werden. Geh zurück und versuch es noch einmal."
 CoverageHome = "Dein persönlicher Ordner"
 CoverageMissing = "Existiert nicht mehr, deshalb wird daraus nichts gesichert"
 CoverageExcluded = "Wird nicht gesichert, weil es unten ausgelassen wird"
@@ -169,7 +170,7 @@ Loading = "Der Stick wird gelesen …"
 
 FormatHeading = "Einen Stick vorbereiten"
 FormatIntro = "Beim Formatieren wird ein Stick gelöscht und für Sicherungen mit Babawus eingerichtet. Wähle den Stick:"
-FormatNoDrives = "Es ist kein Stick eingesteckt, den Babawus formatieren darf."
+FormatNoDrives_39 = "Es ist kein Stick eingesteckt, den Babawus formatieren darf."
 FormatNoFileSystem = "Kein Dateisystem"
 FormatNoLabel = "Kein Name"
 FormatWithBackups = "{volume}, mit Babawus-Sicherungen"
@@ -182,7 +183,7 @@ FormatExFatDetail = "Funktioniert auch unter Windows und auf dem Mac"
 FormatExt4 = "Ext4"
 FormatExt4Detail = "Funktioniert nur unter Linux, erlaubt aber längere Namen und verträgt das Abziehen besser"
 FormatExt4AsksPassword = "Bei Ext4 wird beim Formatieren nach deinem Passwort gefragt."
-FormatExt4NeedsAdministrator = "Ext4 kann nur ein Administrator wählen, weil das Formatieren damit das Passwort eines Administrators braucht. Wähle exFAT, oder bitte einen Administrator, den Stick vorzubereiten."
+FormatExt4NeedsAdministrator_40 = "Ext4 kann nur ein Administrator wählen, weil das Formatieren damit das Passwort eines Administrators braucht. Wähle exFAT, oder bitte einen Administrator, den Stick vorzubereiten."
 FormatWarning = "Alles auf {drive} wird gelöscht: {contents}. Das gilt für jede Partition darauf. Das Formatieren kann nicht angehalten werden, wenn es einmal begonnen hat."
 FormatUnderstood = "Mir ist klar, dass alles auf diesem Stick gelöscht wird"
 FormatErase = "Löschen und formatieren"
@@ -192,12 +193,12 @@ FormatWorkingDetail = "Das kann ein paar Minuten dauern. Zieh den Stick nicht ab
 FormatDone = "{label} ist bereit"
 FormatDoneDetail = "Der Stick ist leer und für Babawus eingerichtet. Bevor jemand darauf sichern kann, muss er für jeden Computer und jedes Konto eingerichtet werden, die ihn benutzen."
 FormatFailed = "Formatieren fehlgeschlagen"
-FormatGone = "Der Stick wurde abgezogen."
-FormatNotAllowed = "Babawus darf diesen Stick nicht mehr formatieren, zum Beispiel weil er jetzt benutzt wird."
-FormatNotPrepared = "Der Stick wurde formatiert, aber Babawus konnte ihn nicht für Sicherungen einrichten."
-FormatFailedReason = "Das Formatieren hat nicht geklappt."
+FormatGone_41 = "Der Stick wurde abgezogen."
+FormatNotAllowed_42 = "Babawus darf diesen Stick nicht mehr formatieren, zum Beispiel weil er jetzt benutzt wird."
+FormatNotPrepared_43 = "Der Stick wurde formatiert, aber Babawus konnte ihn nicht für Sicherungen einrichten."
+FormatFailedReason_44 = "Das Formatieren hat nicht geklappt."
 FormatNothingErased = "Auf dem Stick wurde nichts verändert."
-FormatPartlyErased = "Der Stick wurde gelöscht, ist aber nicht für Sicherungen bereit. Formatiere ihn noch einmal."
+FormatPartlyErased_45 = "Der Stick wurde gelöscht, ist aber nicht für Sicherungen bereit. Formatiere ihn noch einmal."
 FormatMessage = "Meldung des Systems: {message}"
 AddComputer = "Diesen Computer und dein Konto hinzufügen …"
 AddComputerTooltip = "Diesen Stick auf diesem Computer für dich einrichten"
@@ -206,19 +207,19 @@ TryAgainTooltip = "Zurück zur Auswahl des Sticks und der Art der Formatierung"
 
 SetupHeading = "Einrichtung dieses Sticks"
 SetupLoading = "Die Einrichtung wird gelesen …"
-SetupDamaged = "Die Einrichtung auf diesem Stick wurde außerhalb von Babawus geändert oder ist beschädigt. Prüfe sie und speichere sie dann."
-SetupUnreadable = "Die Einrichtung auf diesem Stick kann gar nicht gelesen werden. Du kannst eine neue Einrichtung beginnen. Die Sicherungen auf dem Stick bleiben erhalten, und ihre Ordner bleiben belegt."
+SetupDamaged_46 = "Die Einrichtung auf diesem Stick wurde außerhalb von Babawus geändert oder ist beschädigt. Prüfe sie und speichere sie dann."
+SetupUnreadable_47 = "Die Einrichtung auf diesem Stick kann gar nicht gelesen werden. Du kannst eine neue Einrichtung beginnen. Die Sicherungen auf dem Stick bleiben erhalten, und ihre Ordner bleiben belegt."
 SetupStartNew = "Neue Einrichtung beginnen …"
 SetupStartNewQuestion = "Neue Einrichtung beginnen?"
 SetupStartNewDetail = "Die alte Einrichtung wird beim Speichern ersetzt. Die Sicherungen auf dem Stick bleiben erhalten."
-SetupNewerFormat = "Die Einrichtung auf diesem Stick braucht ein neueres Babawus. Sie kann hier nicht geändert werden."
-SetupNotBabawus = "Dieser Stick hat keine Babawus-Einrichtung mehr."
+SetupNewerFormat_48 = "Die Einrichtung auf diesem Stick braucht ein neueres Babawus. Sie kann hier nicht geändert werden."
+SetupNotBabawus_49 = "Dieser Stick hat keine Babawus-Einrichtung mehr."
 SetupOlderVersions = "Ältere Versionen aufbewahren:"
 SetupRunCheckDays = "Erinnern nach Tagen ohne Sicherung:"
 SetupRunCheckDaysDetail = "Wenn sich dieses Konto anmeldet, kann Babawus daran erinnern, eine Sicherung zu machen, wenn die letzte älter ist als so viele Tage. 0 heißt nie."
 SetupOlderVersionsDetail = "Wenn sich eine Datei ändert, werden ihre früheren Fassungen aufbewahrt, bis zu dieser Anzahl. Weniger lässt mehr Platz auf dem Stick."
 SetupHere = "Du auf diesem Computer"
-SetupNoComputerId = "Dieser Computer hat keine Kennung und kann deshalb nicht eingerichtet werden."
+SetupNoComputerId_50 = "Dieser Computer hat keine Kennung und kann deshalb nicht eingerichtet werden."
 SetupComputerMissing = "Dieser Computer ({hostname}) ist auf diesem Stick noch nicht eingerichtet. Er wird als „{folder}“ hinzugefügt."
 SetupComputerMissingLink = "Dieser Computer ({hostname}) ist auf diesem Stick noch nicht eingerichtet. Füge ihn als „{folder}“ hinzu, oder verknüpfe ihn mit seinem früheren Namen, wenn er schon einmal unter einem anderen eingerichtet war, zum Beispiel vor einer Neuinstallation."
 SetupAccountMissing = "Du hast auf diesem Computer („{folder}“) noch kein Sicherungsprofil."
@@ -258,10 +259,10 @@ SetupDiscardQuestion = "Ohne Speichern verlassen?"
 SetupDiscardDetail = "Deine Änderungen an der Einrichtung dieses Sticks gehen verloren."
 SetupDiscard = "Ohne Speichern verlassen"
 SetupKeepEditing = "Weiter bearbeiten"
-SetupBusy = "Der Stick wird gerade von einer Sicherung für {user} benutzt. Warte, bis sie fertig ist, und speichere dann noch einmal."
-SetupInvalid = "Diese Änderung ist nicht möglich, weil sie mit einem anderen Computer oder Sicherungsprofil kollidiert."
-SetupBothFolders = "Sowohl dein früherer als auch dein neuer Name haben einen Ordner auf dem Stick, deshalb kann Babawus sie nicht verknüpfen. Das muss von Hand in einem Dateimanager geklärt werden."
-SetupSaveFailed = "Die Einrichtung konnte nicht gespeichert werden: {error}"
+SetupBusy_51 = "Der Stick wird gerade von einer Sicherung für {user} benutzt. Warte, bis sie fertig ist, und speichere dann noch einmal."
+SetupInvalid_52 = "Diese Änderung ist nicht möglich, weil sie mit einem anderen Computer oder Sicherungsprofil kollidiert."
+SetupBothFolders_53 = "Sowohl dein früherer als auch dein neuer Name haben einen Ordner auf dem Stick, deshalb kann Babawus sie nicht verknüpfen. Das muss von Hand in einem Dateimanager geklärt werden."
+SetupSaveFailed_54 = "Die Einrichtung konnte nicht gespeichert werden: {error}"
 
 ChooseHeading = "Auswählen, was für {user} gesichert wird"
 ChooseIntro = "Setz einen Haken bei den Dateien und Ordnern, die gesichert werden sollen. Ein Ordner mit Haken wird mit allem darin gesichert. Um einen Ordner darin auszulassen, entferne seinen Haken."
@@ -272,7 +273,7 @@ ChooseNotePattern = "Durch das Namensmuster {pattern} ausgelassen"
 ChooseNoteOtherDrive = "Auf einem anderen Laufwerk, wird deshalb nur gesichert, wenn es selbst einen Haken hat"
 ChooseNoteLink = "Eine Verknüpfung, der Babawus nicht folgt"
 ChooseNoteNotText = "Sein Name ist kein gültiger Text, deshalb kann es nicht einzeln ausgewählt werden"
-ChooseUnreadable = "Dieser Ordner kann nicht gelesen werden."
+ChooseUnreadable_55 = "Dieser Ordner kann nicht gelesen werden."
 ChoosePatternsSection = "Dateien nach Namen auslassen"
 ChoosePatternsDetail = "In jedem Ordner. * steht für beliebige Zeichen und ? für ein einzelnes Zeichen."
 ChoosePatternAdd = "Hinzufügen"
@@ -284,7 +285,7 @@ ChooseCounting = "Wird gezählt …"
 ChooseNothing = "Noch nichts ausgewählt."
 ChooseTotals = "Ausgewählt: {files} ({size}) · {free} frei auf dem Stick"
 ChooseTotalsNoFree = "Ausgewählt: {files} ({size})"
-ChooseTooBig = "Das ist mehr als der freie Platz auf dem Stick, es sei denn, ein großer Teil davon ist dort schon gesichert."
+ChooseTooBig_56 = "Das ist mehr als der freie Platz auf dem Stick, es sei denn, ein großer Teil davon ist dort schon gesichert."
 ChooseDone = "Fertig"
 ChooseDoneTooltip = "Zurück zur Einrichtung. Die Änderungen werden geschrieben, wenn du dort speicherst."
 ChooseCancelTooltip = "Ohne diese Änderungen zurück zur Einrichtung"
@@ -304,7 +305,12 @@ HelpNotFound = "Nicht gefunden"
 HelpNext = "Nächster Treffer (Eingabe)"
 HelpPrevious = "Voriger Treffer (Umschalt+Eingabe)"
 
-# Die eingebaute Hilfe. Zum Aufbau siehe en.toml.
+# The built-in Help, shown in a window of its own (issues 151, 154 and 158). A line starting with
+# "# " is a heading, a line starting with "- " is a bullet, and blank lines separate paragraphs. A
+# line with only "#" and a number, such as "#14", begins the entry for that numbered message, and
+# Babawus writes the message after the number itself: every number needs an entry. Another text
+# is put in with its name in braces, such as {ChangeSetup}. Quotation marks are written as plain
+# "", and shown as the marks in quotes above.
 Help = """
 # Was Babawus macht
 
@@ -316,190 +322,190 @@ Es kopiert nur, was sich seit der letzten Sicherung geändert hat. Hat sich eine
 
 - Steck deinen Sicherungs-Stick ein.
 - Wähle ihn in der Liste, wenn er nicht schon gewählt ist.
-- Drück „Sicherung starten“ und warte auf das Ergebnis.
-- Wenn es „Alles in Ordnung“ heißt, drück auf „Auswerfen“ und zieh den Stick ab.
+- Drück "{StartBackup}" und warte auf das Ergebnis.
+- Wenn es "{VerdictAllGood}" heißt, drück auf "Auswerfen" und zieh den Stick ab.
 
 Bewahre den Stick zwischen den Sicherungen getrennt vom Computer auf, damit das, was dem Computer passiert, nicht auch dem Stick passiert. Zwei Sticks, abwechselnd benutzt, sind sicherer als einer.
 
-„Verlauf anzeigen“ zeigt, wann auf den Stick gesichert wurde und wie es lief. „Was wird gesichert“ zeigt, welche deiner Dateien und Ordner darauf kopiert werden.
+"{ShowHistory}" zeigt, wann auf den Stick gesichert wurde und wie es lief. "{WhatsBackedUp}" zeigt, welche deiner Dateien und Ordner darauf kopiert werden.
 
 # Dateien zurückholen
 
-Babawus hat keinen Knopf zum Wiederherstellen. Öffne den Stick in der Dateiverwaltung: Deine Dateien liegen im Ordner „backup“, unter dem Namen des Computers und deinem eigenen, in denselben Ordnern wie auf dem Computer. Kopiere zurück, was du brauchst. Die älteren Versionen einer Datei liegen in einem Ordner daneben, der wie die Datei heißt, aber [] im Namen hat, etwa report[]pdf für report.pdf, jede mit Datum und Uhrzeit, zu der sie ersetzt wurde, im Namen.
+Babawus hat keinen Knopf zum Wiederherstellen. Öffne den Stick in der Dateiverwaltung: Deine Dateien liegen im Ordner "backup", unter dem Namen des Computers und deinem eigenen, in denselben Ordnern wie auf dem Computer. Kopiere zurück, was du brauchst. Die älteren Versionen einer Datei liegen in einem Ordner daneben, der wie die Datei heißt, aber [] im Namen hat, etwa report[]pdf für report.pdf, jede mit Datum und Uhrzeit, zu der sie ersetzt wurde, im Namen.
 
 # Erweiterte Funktionen
 
-Unter „Erweitert“ im Menü stehen die Funktionen, mit denen ein Stick eingerichtet wird: „Vorbereiten …“ löscht einen Stick und macht ihn für Babawus bereit, und mit „Einrichtung ändern …“ wählst du, was gesichert wird und für welche Computer und Konten. Ein Fehler kann hier Sicherungen kosten, deshalb fragt Babawus vorher nach. „Erweitert“ schaltet sich wieder aus, wenn Babawus geschlossen wird.
+Unter "{MenuAdvanced}" im Menü stehen die Funktionen, mit denen ein Stick eingerichtet wird: "{Prepare}" löscht einen Stick und macht ihn für Babawus bereit, und mit "{ChangeSetup}" wählst du, was gesichert wird und für welche Computer und Konten. Ein Fehler kann hier Sicherungen kosten, deshalb fragt Babawus vorher nach. "{MenuAdvanced}" schaltet sich wieder aus, wenn Babawus geschlossen wird.
 
 # Meldungen
 
 Wenn etwas schiefgeht, endet die Meldung mit einer Nummer, etwa #14. Such hier nach dieser Nummer, um zu sehen, was sie bedeutet und was zu tun ist.
 
-#1 Der Stick ist nicht geöffnet.
-Das System hat die Dateien des Sticks nicht geöffnet. Zieh ihn ab und steck ihn wieder ein. Wenn das nicht hilft, öffne den Stick in der Dateiverwaltung.
+#1
+Das System hat die Dateien des Sticks nicht geöffnet. Wenn erneutes Einstecken nicht hilft, öffne den Stick in der Dateiverwaltung.
 
-#2 Der eingesteckte Stick kann noch nicht benutzt werden.
-Auf dem Stick ist nichts, was Babawus lesen kann, etwa weil er neu ist oder für etwas anderes benutzt wurde. Bereite ihn unter „Erweitert“ mit „Vorbereiten …“ vor. Dabei wird alles darauf gelöscht.
+#2
+Auf dem Stick ist nichts, was Babawus lesen kann, etwa weil er neu ist oder für etwas anderes benutzt wurde. Bereite ihn unter "{MenuAdvanced}" mit "{Prepare}" vor. Dabei wird alles darauf gelöscht.
 
-#3 Babawus kann die USB-Sticks nicht sehen.
-Der Systemdienst udisks2, mit dem Babawus Sticks findet, läuft nicht. Ein Neustart des Computers startet ihn meistens wieder.
+#3
+Babawus findet Sticks mit dem Systemdienst udisks2.
 
-#4 Babawus ist schon für ein anderes Konto geöffnet.
-Auf einem Computer kann immer nur ein Babawus laufen. Bitte die andere Person, es zu schließen, oder wechsle zu ihrem Konto und schließ es dort.
+#4
+Auf einem Computer kann immer nur ein Babawus laufen, deshalb muss es zuerst im anderen Konto geschlossen werden.
 
-#5 Dieser Stick ist auf diesem Computer nicht für dich eingerichtet.
-Jeder Computer und jedes Konto muss zu einem Stick hinzugefügt werden, bevor darauf gesichert werden kann. Das geht unter „Erweitert“ mit „Einrichtung ändern …“ und „Diesen Computer und dein Konto hinzufügen“.
+#5
+Jeder Computer und jedes Konto muss zu einem Stick hinzugefügt werden, bevor darauf gesichert werden kann. Das geht unter "{MenuAdvanced}" mit "{ChangeSetup}" und "{SetupAddComputer}".
 
-#6 Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus.
-Wurde der Stick mit einem neueren Babawus eingerichtet, installiere diese Version auch hier. Sonst ist die Einrichtung beschädigt: Öffne sie unter „Erweitert“ mit „Einrichtung ändern …“, prüfe sie und speichere sie.
+#6
+Wurde der Stick mit einem neueren Babawus eingerichtet, installiere diese Version auch hier. Sonst ist die Einrichtung beschädigt: Öffne sie unter "{MenuAdvanced}" mit "{ChangeSetup}", prüfe sie und speichere sie.
 
-#7 Dieser Stick kann nur gelesen werden.
-Manche Sticks haben einen kleinen Schiebeschalter: Schieb ihn auf „offen“. Ein Stick, auf den nicht mehr geschrieben werden kann, ist vielleicht abgenutzt; nimm einen anderen.
+#7
+Manche Sticks haben einen kleinen Schiebeschalter. Ein Stick, auf den nicht mehr geschrieben werden kann, ist vielleicht abgenutzt; nimm einen anderen.
 
-#8 Dieser Stick ist noch für ein anderes Konto geöffnet.
-Ein anderes Konto auf diesem Computer hat den Stick geöffnet, deshalb kann dieses Konto ihn nicht benutzen. Wenn ihn sonst niemand benutzt, zieh ihn ab und steck ihn wieder ein.
+#8
+Ein anderes Konto auf diesem Computer hat den Stick geöffnet, deshalb kann dieses Konto ihn nicht benutzen.
 
-#9 Dieser Stick ist nicht für Sicherungen mit Babawus eingerichtet.
-Bereite ihn unter „Erweitert“ mit „Vorbereiten …“ vor. Dabei wird alles darauf gelöscht, kopiere also vorher, was du behalten willst.
+#9
+Bereite ihn unter "{MenuAdvanced}" mit "{Prepare}" vor. Dabei wird alles darauf gelöscht, kopiere also vorher, was du behalten willst.
 
-#10 Der Stick wurde abgezogen.
+#10
 Der Stick wurde während der Sicherung abgezogen. Was schon darauf ist, ist nicht beschädigt. Steck ihn wieder ein und starte die Sicherung noch einmal: Sie macht dort weiter, wo sie aufgehört hat.
 
-#11 Die Sicherung wurde unterbrochen.
+#11
 Die Sicherung wurde mittendrin angehalten, etwa weil der Computer ausgeschaltet wurde. Starte sie noch einmal: Sie macht dort weiter, wo sie aufgehört hat.
 
-#12 Babawus wurde unerwartet beendet.
+#12
 Babawus wurde mitten in der Sicherung beendet. Was schon auf dem Stick ist, ist nicht beschädigt. Starte die Sicherung noch einmal.
 
-#13 Die letzten Änderungen konnten nicht auf dem Stick gespeichert werden.
+#13
 Der Stick hat nicht bestätigt, dass alles geschrieben wurde. Starte die Sicherung noch einmal. Wenn es wieder passiert, geht der Stick vielleicht kaputt; nimm einen anderen.
 
-#14 Der Stick ist voll.
-Für die geänderten Dateien ist kein Platz. Bewahre unter „Erweitert“ mit „Einrichtung ändern …“ weniger ältere Versionen auf, sichere weniger Dateien oder nimm einen größeren Stick.
+#14
+Für die geänderten Dateien ist kein Platz. Bewahre unter "{MenuAdvanced}" mit "{ChangeSetup}" weniger ältere Versionen auf, sichere weniger Dateien oder nimm einen größeren Stick.
 
-#15 Dieser Stick ist auf diesem Computer nicht für dich eingerichtet.
+#15
 Die Einrichtung hat sich geändert, nachdem die Sicherung gestartet wurde. Siehe #5.
 
-#16 Die Einrichtung auf diesem Stick ist beschädigt oder braucht ein neueres Babawus.
+#16
 Siehe #6.
 
-#17 Auf den Stick kann nicht geschrieben werden.
+#17
 Prüfe, ob der Stick einen Schiebeschalter hat, siehe #7. Sonst geht er vielleicht kaputt; nimm einen anderen.
 
-#18 Gerade beginnt eine andere Sicherung auf diesen Stick.
+#18
 Warte, bis sie fertig ist, und versuch es dann noch einmal.
 
-#19 Konnte nicht gelesen werden.
+#19
 Die Datei oder der Ordner konnte auf dem Computer nicht gelesen werden, meistens weil dein Konto sie nicht lesen darf. Sie wird übersprungen.
 
-#20 Ist während der Sicherung verschwunden.
+#20
 Die Datei wurde während der Sicherung gelöscht oder verschoben. Sie wird beim nächsten Mal gesichert, wenn sie noch da ist.
 
-#21 Konnte nicht auf den Stick geschrieben werden.
+#21
 Der Stick hat die Datei nicht angenommen. Starte die Sicherung noch einmal. Wenn es wieder passiert, siehe #17.
 
-#22 Auf dem Stick gibt es einen Ordner mit demselben Namen.
+#22
 Was früher ein Ordner war, ist jetzt eine Datei mit demselben Namen, oder umgekehrt. Benenne sie auf dem Computer um, oder entferne das alte vom Stick in der Dateiverwaltung.
 
-#23 Hat sich beim Kopieren ständig geändert.
+#23
 Ein Programm hat die Datei während der Sicherung ständig geändert. Schließ dieses Programm und starte die Sicherung noch einmal.
 
-#24 Name zu lang, um ältere Versionen aufzubewahren.
+#24
 Der Name einer älteren Version bekommt das Datum dazu, und dadurch wurde er zu lang. Gib der Datei einen kürzeren Namen.
 
-#25 Der Name enthält Zeichen, die dieser Stick nicht speichern kann.
+#25
 Mit exFAT formatierte Sticks können die Zeichen " * : < > ? \\ | nicht in Namen speichern. Benenne die Datei um, oder nimm einen mit Ext4 formatierten Stick.
 
-#26 Der Name endet mit einem Punkt, den dieser Stick nicht speichern kann.
+#26
 Benenne die Datei so um, dass ihr Name nicht mit einem Punkt endet.
 
-#27 Der Name ist kein gültiger Text.
+#27
 Der Name enthält Zeichen, die der Computer nicht als Text zeigen kann. Benenne die Datei um.
 
-#28 Name oder Ordnerpfad zu lang.
+#28
 Der Name, oder die Namen der Ordner, in denen sie liegt, sind für den Stick zu lang. Nimm kürzere Namen oder weniger ineinander liegende Ordner.
 
-#29 Der Name sieht aus wie ein Ordner mit älteren Versionen.
+#29
 Babawus bewahrt ältere Versionen in Ordnern auf, deren Namen [] enthalten, und dieser Name enthält auch []. Benenne ihn um.
 
-#30 Der Name unterscheidet sich von einem anderen nur durch Groß- und Kleinschreibung.
-exFAT-Sticks können „Foto.jpg“ und „foto.jpg“ nicht unterscheiden. Benenne eine der beiden um.
+#30
+exFAT-Sticks können "Foto.jpg" und "foto.jpg" nicht unterscheiden. Benenne eine der beiden um.
 
-#31 Zum Sichern ausgewählt, aber nicht mehr vorhanden.
-Eine ausgewählte Datei oder ein ausgewählter Ordner wurde gelöscht, verschoben oder umbenannt. Wähle sie unter „Erweitert“ mit „Einrichtung ändern …“ neu aus.
+#31
+Eine ausgewählte Datei oder ein ausgewählter Ordner wurde gelöscht, verschoben oder umbenannt. Wähle sie unter "{MenuAdvanced}" mit "{ChangeSetup}" neu aus.
 
-#32 Zum Sichern ausgewählt, aber außerhalb deines persönlichen Ordners.
-Gesichert werden nur Dateien in deinem persönlichen Ordner. Wähle unter „Erweitert“ mit „Einrichtung ändern …“ Dateien darin aus.
+#32
+Gesichert werden nur Dateien in deinem persönlichen Ordner. Wähle unter "{MenuAdvanced}" mit "{ChangeSetup}" Dateien darin aus.
 
-#33 Der Stick wird noch von einem Programm benutzt.
+#33
 Schließ das Programm, etwa ein Fenster der Dateiverwaltung oder ein Terminal, das auf dem Stick geöffnet ist, oder warte, bis ein Kopiervorgang fertig ist, und wirf ihn noch einmal aus.
 
-#34 Der Stick konnte nicht ausgeworfen werden.
-Schließ alle Programme, die ihn benutzen, und versuch es noch einmal. Wenn es immer noch nicht geht, fahr den Computer herunter, bevor du den Stick abziehst.
+#34
+Wenn es immer noch nicht geht, fahr den Computer herunter, bevor du den Stick abziehst.
 
-#35 Der Verlauf auf diesem Stick kann nicht gelesen werden.
-Geh zurück und versuch es noch einmal. Wenn es wieder passiert, zieh den Stick ab und steck ihn wieder ein.
+#35
+Wenn es wieder passiert, zieh den Stick ab und steck ihn wieder ein.
 
-#36 Das Protokoll auf diesem Stick kann nicht gelesen werden.
+#36
 Schließ das Protokollfenster und versuch es noch einmal. Wenn es wieder passiert, zieh den Stick ab und steck ihn wieder ein.
 
-#37 Es wurde noch nichts zum Sichern ausgewählt.
-Wähle unter „Erweitert“ mit „Einrichtung ändern …“ und „Auswählen, was gesichert wird …“, was gesichert werden soll.
+#37
+Wähle unter "{MenuAdvanced}" mit "{ChangeSetup}" und "{SetupChoose}", was gesichert werden soll.
 
-#38 Die Einrichtung auf diesem Stick kann nicht gelesen werden.
-Geh zurück und versuch es noch einmal. Wenn es wieder passiert, siehe #6.
+#38
+Wenn es wieder passiert, siehe #6.
 
-#39 Es ist kein Stick eingesteckt, den Babawus formatieren darf.
+#39
 Babawus formatiert nur USB-Sticks, nie die eigenen Laufwerke des Computers. Steck den Stick ein, der vorbereitet werden soll.
 
-#40 Ext4 kann nur ein Administrator wählen.
+#40
 Zum Formatieren mit Ext4 braucht man ein Konto mit sudo-Rechten und das Passwort dieses Kontos. Wähle stattdessen exFAT, oder bereite den Stick von einem Administratorkonto aus vor.
 
-#41 Der Stick wurde abgezogen.
+#41
 Der Stick wurde beim Formatieren abgezogen. Steck ihn wieder ein und formatiere ihn noch einmal.
 
-#42 Babawus darf diesen Stick nicht mehr formatieren.
+#42
 Der Stick hat sich verändert, nachdem er gewählt wurde, etwa weil ein Programm ihn geöffnet hat. Schließ dieses Programm, geh zurück und wähle den Stick noch einmal.
 
-#43 Der Stick wurde formatiert, aber Babawus konnte ihn nicht für Sicherungen einrichten.
+#43
 Formatiere ihn noch einmal. Wenn es wieder passiert, nimm einen anderen Stick.
 
-#44 Das Formatieren hat nicht geklappt.
+#44
 Die Meldung darunter sagt, was das System gemeldet hat. Zieh den Stick ab, steck ihn wieder ein und versuch es noch einmal. Wenn es wieder passiert, nimm einen anderen Stick.
 
-#45 Der Stick wurde gelöscht, ist aber nicht für Sicherungen bereit.
-Formatiere ihn noch einmal.
+#45
+Wenn es wieder passiert, nimm einen anderen Stick.
 
-#46 Die Einrichtung auf diesem Stick wurde außerhalb von Babawus geändert oder ist beschädigt.
+#46
 Prüfe, was die Einrichtung zeigt, korrigiere, was falsch ist, und speichere sie. Durch das Speichern wird sie wieder gültig.
 
-#47 Die Einrichtung auf diesem Stick kann gar nicht gelesen werden.
-Beginne eine neue Einrichtung. Die Sicherungen auf dem Stick bleiben erhalten, und ihre Ordner werden weiter benutzt.
+#47
+Beginne sie unter "{MenuAdvanced}" mit "{ChangeSetup}" und "{SetupStartNew}".
 
-#48 Die Einrichtung auf diesem Stick braucht ein neueres Babawus.
+#48
 Sie wurde mit einer neueren Version von Babawus gemacht. Installiere diese Version auf diesem Computer.
 
-#49 Dieser Stick hat keine Babawus-Einrichtung mehr.
-Die Einrichtung wurde vom Stick entfernt, während sie hier geöffnet war. Geh zurück. Um den Stick wieder zu benutzen, bereite ihn unter „Erweitert“ vor. Dabei wird er gelöscht, kopiere also vorher, was du behalten willst.
+#49
+Die Einrichtung wurde vom Stick entfernt, während sie hier geöffnet war. Geh zurück. Um den Stick wieder zu benutzen, bereite ihn unter "{MenuAdvanced}" vor. Dabei wird er gelöscht, kopiere also vorher, was du behalten willst.
 
-#50 Dieser Computer hat keine Kennung.
-Babawus unterscheidet Computer an der Kennung, die das System jeder Installation in /etc/machine-id gibt, und dieser Computer hat keine. Sie lässt sich nur mit Werkzeugen des Systems anlegen, etwa mit „sudo systemd-machine-id-setup“ in einem Terminal.
+#50
+Babawus unterscheidet Computer an der Kennung, die das System jeder Installation in /etc/machine-id gibt, und dieser Computer hat keine. Sie lässt sich nur mit Werkzeugen des Systems anlegen, etwa mit "sudo systemd-machine-id-setup" in einem Terminal.
 
-#51 Der Stick wird gerade von einer Sicherung benutzt.
-Warte, bis die Sicherung fertig ist, und speichere dann noch einmal.
+#51
+Die Einrichtung kann nicht gespeichert werden, während eine Sicherung auf den Stick schreibt.
 
-#52 Diese Änderung ist nicht möglich.
+#52
 Zwei Computer oder zwei Sicherungsprofile bekämen denselben Ordner auf dem Stick. Wähle einen anderen.
 
-#53 Sowohl dein früherer als auch dein neuer Name haben einen Ordner auf dem Stick.
+#53
 Babawus kann sie nicht verknüpfen, ohne sie zu vermischen. Verschiebe in der Dateiverwaltung, was du brauchst, von einem Ordner in den anderen, entferne den leeren und versuch es noch einmal.
 
-#54 Die Einrichtung konnte nicht gespeichert werden.
+#54
 Die Meldung sagt, warum. Prüfe, ob der Stick noch eingesteckt und nicht gesperrt ist, und speichere noch einmal.
 
-#55 Dieser Ordner kann nicht gelesen werden.
+#55
 Dein Konto darf ihn nicht lesen, deshalb kann er nicht gesichert werden.
 
-#56 Das ist mehr als der freie Platz auf dem Stick.
-Die gewählten Dateien passen vielleicht nicht, es sei denn, ein großer Teil davon ist dort schon gesichert. Wähle weniger aus, oder nimm einen größeren Stick.
+#56
+Wähle weniger aus, oder nimm einen größeren Stick.
 """
