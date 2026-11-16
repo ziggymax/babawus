@@ -594,3 +594,15 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - Searching is find as you type: a search field at the top of the window highlights every match, ignoring upper and lower case, and scrolls to the first; Enter goes to the next, Shift+Enter to the one before. Next to the field, "2 of 5" or "Not found". Searching "#14" lands on that message's entry.
         - After the sections on what Babawus does, why and how, comes "# Messages", with one entry per number, in order: a line such as "#14 The stick is full.", shown in bold, then a short paragraph on what it means and what to do. A line starting with "#" and a number is such an entry, and Babawus checks that each number has one (issue 151).
         - The user reviewed Claude's English draft of the Help and approved it, with one change: #40 says "Formatting as Ext4 needs an account with sudo rights and the password for that account. Choose exFAT instead, or prepare the stick from an administrator's account."
+
+## Decisions on the Danish language file (T-081)
+
+155. **Danish before 1.0.0.** The user asked for a Danish language file, `da.toml`, to come with Babawus from 1.0.0, next to English and German.
+    - **Decided (2026-11-16):**
+        - The stick is "USB-stik" ("USB-stikket", plural "USB-stik"), the word the user chose over "USB-nøgle".
+        - A backup is "backup" ("backuppen", plural "backupper"), as most Danes say, rather than the formal "sikkerhedskopi".
+        - Danish says "du" to the user, as German does (issue 90). Quotations use »…«, the Danish form, and numbers use "," for decimals and "." for thousands.
+        - Claude translates from the English file, including the Help with all its numbered entries. The user reviews the Danish wording in the pull request.
+
+156. **Moving between matches in the Help.** While trying the Danish Help, the user found nothing in the window that says how to go to the next or the previous match: only the search field's tooltip names Enter and Shift+Enter. The counter, "2 of 5", was already there.
+    - **Decided (2026-11-16):** The user suggested a fixed text listing the keys, or arrows, and preferred arrows. Next to the counter are two linked buttons, ↑ and ↓, as in GNOME's own search bars, which go to the previous and the next match, round from the end to the start. Their tooltips name the keys: "Previous match (Shift+Enter)" and "Next match (Enter)", in each language (`HelpPrevious`, `HelpNext`). They are greyed out while nothing is found. This goes into the same pull request as the Danish file (T-082).

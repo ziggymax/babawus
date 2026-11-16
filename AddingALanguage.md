@@ -37,7 +37,7 @@ InProgress = "Sauvegarde en cours (par {user})"
 
 An AI or a machine translation can do step 3. Give it the whole file, and ask it to translate only the quoted texts, to keep the names, placeholders and comments unchanged, and to address the user in the familiar form, as the German file does with "du". Then have someone who speaks the language read the result. The texts are short and are seen by people who don't know much about computers, so plain words matter more than literal ones.
 
-Babawus also has `de.toml`, in German, to compare with.
+Babawus also has `de.toml`, in German, and `da.toml`, in Danish, to compare with.
 
 ## Installing and checking it
 

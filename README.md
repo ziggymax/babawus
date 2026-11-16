@@ -33,7 +33,7 @@ Babawus can remind a user at login when their last backup is too long ago, and o
 
 ## Adding a language
 
-Babawus comes in English and German. Other languages can be added as language files, without a new build: [AddingALanguage.md](AddingALanguage.md) explains how.
+Babawus comes in English, German and Danish. Other languages can be added as language files, without a new build: [AddingALanguage.md](AddingALanguage.md) explains how.
 
 ## Installing and uninstalling
 

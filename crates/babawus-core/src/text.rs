@@ -323,6 +323,8 @@ texts! {
     HelpSearchTooltip,
     HelpFound,
     HelpNotFound,
+    HelpNext,
+    HelpPrevious,
     Help,
 }
 

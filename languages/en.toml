@@ -303,6 +303,8 @@ HelpSearch = "Search the Help"
 HelpSearchTooltip = "Type a word or a message's number, such as #14. Enter goes to the next match, Shift+Enter to the one before."
 HelpFound = "{current} of {total}"
 HelpNotFound = "Not found"
+HelpNext = "Next match (Enter)"
+HelpPrevious = "Previous match (Shift+Enter)"
 
 # The built-in Help, shown in a window of its own (issues 151 and 154). A line starting with "# "
 # is a heading, a line starting with "- " is a bullet, and blank lines separate paragraphs. A line
