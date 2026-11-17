@@ -1462,10 +1462,14 @@ impl Window {
         );
         let weak = Rc::downgrade(self);
         let closed_path = object_path.clone();
-        restore_window.window.connect_destroy(move |_| {
+        // Not on "destroy": this list holds the window, so it would never be destroyed, and opening
+        // it again would show the closed window (T-097). The Restore window's own handler runs
+        // first, and while it keeps the window open to ask "Stop restoring?", this one doesn't run.
+        restore_window.window.connect_close_request(move |_| {
             if let Some(window) = weak.upgrade() {
                 window.restore_windows.borrow_mut().remove(&closed_path);
             }
+            glib::Propagation::Proceed
         });
         self.restore_windows
             .borrow_mut()
