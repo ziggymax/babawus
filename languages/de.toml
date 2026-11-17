@@ -265,7 +265,7 @@ SetupBothFolders_53 = "Sowohl dein früherer als auch dein neuer Name haben eine
 SetupSaveFailed_54 = "Die Einrichtung konnte nicht gespeichert werden: {error}"
 
 ChooseHeading = "Auswählen, was für {user} gesichert wird"
-ChooseIntro = "Setz einen Haken bei den Dateien und Ordnern, die gesichert werden sollen. Ein Ordner mit Haken wird mit allem darin gesichert. Um einen Ordner darin auszulassen, entferne seinen Haken."
+ChooseIntro = "Setz einen Haken bei den Dateien und Ordnern, die gesichert werden sollen. Ein Ordner mit Haken wird mit allem darin gesichert. Um eine Datei oder einen Ordner darin auszulassen, entferne den Haken."
 ChooseShowHidden = "Versteckte Dateien anzeigen"
 ChooseNoteLeftOut = "Ausgelassen"
 ChooseNoteLeftOutAbove = "Mit einem Ordner darüber ausgelassen"
@@ -279,7 +279,7 @@ ChoosePatternsDetail = "In jedem Ordner. * steht für beliebige Zeichen und ? f�
 ChoosePatternAdd = "Hinzufügen"
 ChoosePatternRemove = "Entfernen"
 ChoosePatternEmpty = "Gib zuerst einen Namen oder ein Muster ein."
-ChoosePatternSlash = "Ein Muster darf kein / enthalten. Um einen einzelnen Ordner auszulassen, entferne seinen Haken im Baum."
+ChoosePatternSlash = "Ein Muster darf kein / enthalten. Um eine einzelne Datei oder einen einzelnen Ordner auszulassen, entferne den Haken im Baum."
 ChoosePatternDuplicate = "Dieses Muster steht schon in der Liste."
 ChooseCounting = "Wird gezählt …"
 ChooseNothing = "Noch nichts ausgewählt."

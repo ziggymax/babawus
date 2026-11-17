@@ -44,6 +44,8 @@ pub struct Coverage {
     pub selected: Vec<Selected>,
     pub exclude_patterns: Vec<String>,
     pub exclude_folders: Vec<String>,
+    /// Files left out on their own (issue 160).
+    pub exclude_files: Vec<String>,
 }
 
 /// What reading the medium found.
@@ -103,6 +105,7 @@ impl Viewer<'_> {
             selected,
             exclude_patterns: account.exclude_patterns.clone(),
             exclude_folders: account.exclude_folders.clone(),
+            exclude_files: account.exclude_files.clone(),
         })
     }
 }
@@ -133,7 +136,7 @@ pub struct CoverageShown {
     pub items: Vec<Item>,
     /// "Left out:", if anything is.
     pub left_out_heading: Option<String>,
-    /// The excluded folders, then the name patterns in one line.
+    /// The excluded folders, then the excluded files, then the name patterns in one line.
     pub left_out: Vec<String>,
 }
 
@@ -183,7 +186,12 @@ pub fn coverage_screen(gathered: &Gathered, username: &str, language: Language) 
             }
         })
         .collect();
-    let mut left_out: Vec<String> = coverage.exclude_folders.clone();
+    let mut left_out: Vec<String> = coverage
+        .exclude_folders
+        .iter()
+        .chain(&coverage.exclude_files)
+        .cloned()
+        .collect();
     if !coverage.exclude_patterns.is_empty() {
         let names = either(&coverage.exclude_patterns, language);
         left_out.push(Text::CoveragePatterns.fill(language, &[("names", &names)]));

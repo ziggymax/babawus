@@ -36,6 +36,7 @@ fn choice(selected: &[&str], folders: &[&str]) -> Choice {
     Choice {
         selected: selected.iter().map(|s| s.to_string()).collect(),
         exclude_folders: folders.iter().map(|s| s.to_string()).collect(),
+        exclude_files: Vec::new(),
         exclude_patterns: vec!["*.tmp".to_owned()],
     }
 }
@@ -79,8 +80,8 @@ fn a_selected_folder_ticks_everything_in_it() {
     let inside = row(&choice, &file("Documents/letter.txt"));
     assert!(inside.ticked);
     assert!(
-        !inside.can_toggle,
-        "a file inside can't be left out on its own"
+        inside.can_toggle,
+        "a file inside can be left out (issue 160)"
     );
     assert!(row(&choice, &dir("Documents/old")).can_toggle);
     assert!(!row(&choice, &dir("Pictures")).ticked);
@@ -342,4 +343,91 @@ fn a_whole_ticked_folder_is_not_partly_ticked() {
 
     assert!(!row(&choice, &dir("Documents/old")).partly);
     assert!(!row(&choice, &file("Documents/letter.txt")).partly);
+}
+
+#[test]
+fn unticking_a_file_inside_a_ticked_folder_leaves_it_out() {
+    let mut choice = choice(&["Documents"], &[]);
+    let letter = file("Documents/letter.txt");
+
+    assert!(toggle(&mut choice, &letter));
+
+    assert_eq!(choice.exclude_files, ["Documents/letter.txt"]);
+    assert!(choice.exclude_folders.is_empty());
+    let shown = row(&choice, &letter);
+    assert!(!shown.ticked);
+    assert!(shown.crossed);
+    assert!(shown.can_toggle);
+    assert_eq!(shown.note.as_deref(), Some("Left out"));
+    assert!(row(&choice, &dir("Documents")).partly);
+    // Only Documents/old/draft.txt is left.
+    assert_eq!(
+        count(&choice),
+        Totals {
+            files: 1,
+            bytes: 50
+        }
+    );
+
+    assert!(toggle(&mut choice, &letter));
+
+    assert!(choice.exclude_files.is_empty());
+    assert!(row(&choice, &letter).ticked);
+    assert_eq!(count(&choice).files, 2);
+}
+
+#[test]
+fn unticking_a_selected_file_inside_a_ticked_folder_leaves_it_out() {
+    let mut choice = choice(&["Documents", "Documents/letter.txt"], &[]);
+
+    toggle(&mut choice, &file("Documents/letter.txt"));
+
+    assert_eq!(choice.selected, ["Documents"]);
+    assert_eq!(choice.exclude_files, ["Documents/letter.txt"]);
+}
+
+#[test]
+fn unticking_a_file_selected_on_its_own_only_unselects_it() {
+    let mut choice = choice(&["Pictures/cat.jpg"], &[]);
+
+    toggle(&mut choice, &file("Pictures/cat.jpg"));
+
+    assert!(choice.selected.is_empty());
+    assert!(choice.exclude_files.is_empty());
+}
+
+#[test]
+fn a_file_left_out_by_a_pattern_or_a_folder_still_can_not_be_ticked() {
+    let choice = choice(&["Documents"], &["Documents/old"]);
+
+    assert!(!row(&choice, &file("Documents/scratch.tmp")).can_toggle);
+    assert!(!row(&choice, &file("Documents/old/draft.txt")).can_toggle);
+}
+
+#[test]
+fn a_hidden_left_out_file_keeps_its_folder_in_sight() {
+    let mut choice = choice(&["."], &[]);
+    choice.exclude_files = vec![".config/settings".to_owned()];
+
+    assert!(choice.keeps_in_sight(Path::new(".config")));
+}
+
+#[test]
+fn the_choice_carries_the_left_out_files_to_and_from_the_account() {
+    let mut config = crate::config::Config::new();
+    config
+        .add_computer("0123456789abcdef0123456789abcdef", "mint", "mint", &[])
+        .unwrap();
+    config
+        .add_account("0123456789abcdef0123456789abcdef", "anna")
+        .unwrap();
+    let account = &mut config.computers[0].accounts[0];
+    account.exclude_files = vec!["a.txt".to_owned()];
+
+    let mut choice = Choice::of(account);
+    assert_eq!(choice.exclude_files, ["a.txt"]);
+    choice.exclude_files.push("b.txt".to_owned());
+    choice.apply(account);
+
+    assert_eq!(account.exclude_files, ["a.txt", "b.txt"]);
 }

@@ -20,6 +20,8 @@ use crate::text::{Text, size};
 pub struct Choice {
     pub selected: Vec<String>,
     pub exclude_folders: Vec<String>,
+    /// Files left out on their own (issue 160).
+    pub exclude_files: Vec<String>,
     pub exclude_patterns: Vec<String>,
 }
 
@@ -93,6 +95,7 @@ impl Choice {
         Self {
             selected: account.selected.clone(),
             exclude_folders: account.exclude_folders.clone(),
+            exclude_files: account.exclude_files.clone(),
             exclude_patterns: account.exclude_patterns.clone(),
         }
     }
@@ -101,6 +104,7 @@ impl Choice {
     pub fn apply(&self, account: &mut Account) {
         account.selected = self.selected.clone();
         account.exclude_folders = self.exclude_folders.clone();
+        account.exclude_files = self.exclude_files.clone();
         account.exclude_patterns = self.exclude_patterns.clone();
     }
 
@@ -112,8 +116,7 @@ impl Choice {
                 .iter()
                 .map(|folder| plain(folder))
                 .collect(),
-            // TODO(T-092): The tree shows the left-out files too.
-            files: Vec::new(),
+            files: self.exclude_files.iter().map(|file| plain(file)).collect(),
         }
     }
 
@@ -121,9 +124,20 @@ impl Choice {
         self.selected.iter().any(|path| plain(path) == relative)
     }
 
+    /// The folders and files left out by hand.
+    fn left_out(&self) -> Vec<String> {
+        self.exclude_folders
+            .iter()
+            .chain(&self.exclude_files)
+            .cloned()
+            .collect()
+    }
+
+    /// Whether `relative` itself is left out by hand, as a folder or a file.
     fn is_left_out(&self, relative: &Path) -> bool {
         self.exclude_folders
             .iter()
+            .chain(&self.exclude_files)
             .any(|path| plain(path) == relative)
     }
 
@@ -238,7 +252,7 @@ impl Choice {
             return Row {
                 ticked: true,
                 can_toggle: true,
-                partly: is_dir && self.has_inside(&self.exclude_folders, relative),
+                partly: is_dir && self.has_inside(&self.left_out(), relative),
                 crossed: false,
                 note: None,
             };
@@ -255,9 +269,9 @@ impl Choice {
             }
             return Row {
                 ticked: true,
-                // A file inside a ticked folder can't be left out on its own.
-                can_toggle: entry.text && entry.kind == FileKind::Dir,
-                partly: is_dir && self.has_inside(&self.exclude_folders, relative),
+                // Unticking leaves it out, a folder or a file (issue 160).
+                can_toggle: entry.text,
+                partly: is_dir && self.has_inside(&self.left_out(), relative),
                 crossed: false,
                 note: not_text,
             };
@@ -285,21 +299,26 @@ impl Choice {
         if self.is_left_out(relative) {
             self.exclude_folders
                 .retain(|folder| plain(folder) != relative);
+            self.exclude_files.retain(|file| plain(file) != relative);
             return true;
         }
+        let leave_out = |choice: &mut Self, path: String| match entry.kind {
+            FileKind::Dir => choice.exclude_folders.push(path),
+            _ => choice.exclude_files.push(path),
+        };
         let inherited = self
             .selected_above(relative)
             .is_some_and(|above| !Self::crosses_device(system, home, &above, relative));
         if self.is_selected(relative) {
             self.selected.retain(|selected| plain(selected) != relative);
             // Still ticked through the folder above, so unticking leaves it out.
-            if inherited && entry.kind == FileKind::Dir {
-                self.exclude_folders.push(path);
+            if inherited {
+                leave_out(self, path);
             }
             return true;
         }
         if row.ticked {
-            self.exclude_folders.push(path);
+            leave_out(self, path);
         } else {
             self.selected.push(path);
         }
@@ -332,6 +351,7 @@ impl Choice {
         self.selected
             .iter()
             .chain(&self.exclude_folders)
+            .chain(&self.exclude_files)
             .any(|path| plain(path).starts_with(relative))
     }
 
