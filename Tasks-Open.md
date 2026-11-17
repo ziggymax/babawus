@@ -37,7 +37,6 @@ Problems seen once and not since. Each is closed if it can't be made to happen a
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-061 | Find out why `computer_lock::tests::a_released_lock_can_be_taken_and_records_only_the_new_user` failed once on CI ([#74](https://github.com/ziggymax/babawus/pull/74)), reading back the first user's name instead of the second's. Not reproduced locally in 20 tries. If it can't be made to happen again, close it | Todo | [#74](https://github.com/ziggymax/babawus/pull/74) |
 | T-043 | Find out why the buttons under "You on this computer" were once drawn squeezed under the line below them, after the setup had been read again in another state. Seen once on the VM while checking T-040 ([#55](https://github.com/ziggymax/babawus/pull/55)), and not again in four tries; main may have it too. If it can't be made to happen again, close it | Todo | [#55](https://github.com/ziggymax/babawus/pull/55) |
 
 ## Later versions
