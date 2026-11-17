@@ -636,3 +636,12 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - It is the logo's normal tooltip, which shows after the usual short pause and looks like every other tooltip.
         - The text is "Babawus never forgets", "Babawus vergisst nie" and "Babawus glemmer aldrig", without a full stop, like the other tooltips that aren't sentences. The user reviews the wording in the pull request.
         - The text keeps its name, `Logo`; only its value changes, so a language file added by hand still loads and shows "Babawus" until it is updated.
+
+## Decisions on leaving out single files (T-091 to T-093)
+
+160. **How a single file is left out in "Choose what to back up" (T-091, T-092).** ReleasePlanning.md plans 1.1.0-alpha.2: adding or skipping single files in the tree. A single file can already be ticked on its own, and a ticked folder ticks everything in it, but a file inside a ticked folder can't be unticked. The questions were how a left-out file is stored (in the existing `exclude_folders` list, which Babawus 1.0.0 already honours for a file; a new list `exclude_files`, which needs a new configuration format; or a name pattern, which leaves out that name in every folder), how it is done in the tree, whether ticking a file that a name pattern or a left-out folder leaves out should make an exception for it, and, with a new list, when the new format is written.
+    - **Decided (2026-11-17):**
+        - Left-out files go in a new list of their own, `exclude_files`, next to `exclude_folders`, as exact paths relative to the home folder. That makes the configuration format 2.
+        - Babawus 1.1 always writes format 2, whether or not a file is left out. It still reads format 1, as having no left-out files. Babawus 1.0.0 shows a stick saved by 1.1 as needing a newer Babawus, so every computer that uses a stick needs 1.1 once 1.1 has saved it.
+        - In the tree it works like folders: unticking a file inside a ticked folder leaves it out and crosses out its name; ticking it again takes the exclusion back.
+        - What a name pattern or a left-out folder leaves out stays left out and can't be ticked, as in 1.0.0; there are no exceptions.

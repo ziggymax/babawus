@@ -432,10 +432,11 @@ On an exFAT medium, which does not distinguish upper and lower case in names, tw
 
 ### Exclusions
 
-Each account has its own exclusions, stored with the account's entry in the configuration. There are two kinds:
+Each account has its own exclusions, stored with the account's entry in the configuration. There are three kinds:
 
 - **Name patterns.** A pattern may use `*` (any characters), `?` (one character) and `[…]` (one of the listed characters), and is matched against a single file or folder *name*, at any depth. For example, `*.tmp` excludes every file ending in `.tmp`, and `node_modules` excludes every folder of that name. Patterns cannot contain `/`. An excluded folder is skipped with everything in it.
 - **Excluded folders.** Specific folders, picked in the file explorer, and stored as exact paths relative to the home folder (for example `Documents/old`). An excluded folder is skipped with everything in it.
+- **Excluded files.** Specific files, picked in the file explorer, and stored as exact paths relative to the home folder (for example `Documents/secret.txt`). Only that file is left out, not a file of the same name in another folder (issue 160).
 
 Exclusions are case-sensitive, as file names are on Linux: `*.tmp` excludes `file.tmp` but not `file.TMP`. Excluded files and folders do not count as skipped and do not appear in the verdict.
 
@@ -520,8 +521,8 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 `.babawus/babawus_config` is a TOML file, encoded in UTF-8, with LF line endings and a line ending after the last line.
 
 - The first line is the fixed marker comment `# Babawus configuration`, which identifies the file as a Babawus configuration. It is followed by the boilerplate header as comments, in English.
-- The `[babawus]` table comes first (issue 136). `config_format = 1` states the version of the file format. If a file has a newer format than this Babawus understands, the medium is shown as "Needs attention" in the media list (with the hint that a newer Babawus is needed), and Babawus never writes to it. `config_app_version` is the version of Babawus that last wrote the file, and `config_update_local` and `config_update_utc` say when, in the log's form, in local time with the UTC offset and in UTC. Babawus sets all three whenever it writes the file; writing it again doesn't count as a change to the configuration.
-- The configuration itself: for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, N (`older_versions`), the days before a reminder (`run_check_days`, see "Remind me at login when my last backup is too old"), the selected files and folders, and the exclusions.
+- The `[babawus]` table comes first (issue 136). `config_format = 2` states the version of the file format. Format 2 added `exclude_files` (issue 160). Babawus always writes format 2, and still reads format 1, which has no `exclude_files`, as having no excluded files. Once Babawus 1.1 has saved a file, Babawus 1.0.0 shows the medium as needing a newer Babawus. If a file has a newer format than this Babawus understands, the medium is shown as "Needs attention" in the media list (with the hint that a newer Babawus is needed), and Babawus never writes to it. `config_app_version` is the version of Babawus that last wrote the file, and `config_update_local` and `config_update_utc` say when, in the log's form, in local time with the UTC offset and in UTC. Babawus sets all three whenever it writes the file; writing it again doesn't count as a change to the configuration.
+- The configuration itself: for each computer its computer ID, folder name and last seen hostname, and for each of its accounts the user name, N (`older_versions`), the days before a reminder (`run_check_days`, see "Remind me at login when my last backup is too old"), the selected files and folders, and the exclusions: the name patterns, the excluded folders and the excluded files.
 - The last line is the checksum, written as a TOML comment, so the file stays valid TOML. The checksum is the validation marker; there is no separate one.
 
 A file in the layout of Babawus 0.1.0, which had `format` and one `older_versions` for the whole medium at the top and no `[babawus]` table, is not read: it is damaged, and a new configuration is started under Advanced. There were no real users of 0.1.0, so Babawus carries no code for older layouts (issue 136).
@@ -532,8 +533,8 @@ For example:
     # This file is written by Babawus. Change it with the Advanced functions in Babawus.
     # If it is edited by hand, the medium needs attention until it has been saved in Babawus.
     [babawus]
-    config_format = 1
-    config_app_version = "0.2.1"
+    config_format = 2
+    config_app_version = "1.1.0"
     config_update_local = "2026-11-13 12:43:40 +0100"
     config_update_utc = "2026-11-13 11:43:40 UTC"
 
@@ -549,6 +550,7 @@ For example:
     selected = ["Documents", "notes.txt"]
     exclude_patterns = [".cache", "*.tmp", "*~"]
     exclude_folders = [".local/share/Trash"]
+    exclude_files = ["Documents/secret.txt"]
 
     # checksum: 0123456789abcdef
 
@@ -566,13 +568,14 @@ If everything is in order, the configuration is used. Otherwise the configuratio
 
 These values are checked. Anything else makes the file invalid, including a field that Babawus does not know:
 
-- `config_format` is a whole number from 1 up, `config_app_version` is a version that isn't empty, and the two times are in the forms above.
+- `config_format` is 1 or 2 (a newer one is dealt with above), `config_app_version` is a version that isn't empty, and the two times are in the forms above.
 - N is from 1 to 99, and `run_check_days` from 0 to 365, where 0 means never remind.
 - A computer ID is 32 lower-case hexadecimal digits, and no two computers have the same one.
 - A computer folder is a single, lower-case name that can be stored on exFAT (see "Names that cannot be stored"), not `.` or `..`, and no two differ only in case.
 - A user name is a single name that can be stored on exFAT, and no two accounts on a computer differ only in case, because they would share a folder.
 - A name pattern is not empty and does not contain `/`.
-- An excluded folder is a relative path with no `.` or `..` in it.
+- An excluded folder or file is a relative path with no `.` or `..` in it.
+- Every account has `exclude_files` in format 2, and none has it in format 1.
 
 Selected files and folders are not checked here: a selection with `..` in its path is dealt with during the run (see "What is copied"), so that it shows in the verdict and the log.
 

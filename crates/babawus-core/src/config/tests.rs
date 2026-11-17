@@ -31,12 +31,33 @@ fn text_of(config: &Config) -> String {
 
 /// The `[babawus]` table as written at [`written`].
 fn header_table() -> String {
+    header_table_in(FORMAT)
+}
+
+/// The `[babawus]` table as written at [`written`], but stating the format `format`.
+fn header_table_in(format: u32) -> String {
     format!(
-        "[babawus]\nconfig_format = 1\nconfig_app_version = \"{}\"\n\
+        "[babawus]\nconfig_format = {format}\nconfig_app_version = \"{}\"\n\
          config_update_local = \"{}\"\nconfig_update_utc = \"2026-11-13 11:43:40 UTC\"\n",
         crate::VERSION,
         log_timestamp(written())
     )
+}
+
+/// An account table with the fields of format 1, and `extra` after them.
+fn account_table(extra: &str) -> String {
+    format!(
+        "[[computer.account]]\nusername = \"usera\"\nolder_versions = 10\nrun_check_days = 7\n\
+         selected = [\"Documents\"]\nexclude_patterns = []\nexclude_folders = []\n{extra}"
+    )
+}
+
+/// A sealed file in the format `format`, with one computer that has the account table `account`.
+fn file_in(format: u32, account: &str) -> String {
+    sealed(&format!(
+        "{}\n[[computer]]\nid = \"{ID}\"\nfolder = \"mint\"\nhostname = \"mint\"\n\n{account}\n",
+        header_table_in(format)
+    ))
 }
 
 /// A file with a correct checksum, whatever its fields say.
@@ -88,6 +109,7 @@ run_check_days = 7
 selected = [\"Documents\", \"notes.txt\"]
 exclude_patterns = [\".cache\", \"*.tmp\", \"*~\"]
 exclude_folders = [\".local/share/Trash\"]
+exclude_files = []
 
 ",
         header_table()
@@ -111,6 +133,7 @@ fn what_is_written_reads_back_the_same() {
     account_mut(&mut config).older_versions = 99;
     account_mut(&mut config).run_check_days = 365;
     account_mut(&mut config).selected = vec!["Bilder \"gut\"/é.txt".to_owned()];
+    account_mut(&mut config).exclude_files = vec!["Bilder/alt.txt".to_owned()];
     config
         .add_computer(OTHER_ID, "mint-2", "Mint", &[])
         .unwrap();
@@ -228,23 +251,23 @@ fn a_newer_format_is_recognised_whatever_the_rest_of_the_file_holds() {
         "new_field = \"something\"\n",
         "this isn't even toml\n",
     ] {
-        let text = format!("{MARKER}{HEADER}[babawus]\nconfig_format = 2\n{rest}");
+        let text = format!("{MARKER}{HEADER}[babawus]\nconfig_format = 3\n{rest}");
         assert_eq!(parse_text(&text), Loaded::NewerFormat, "{rest}");
     }
 }
 
 #[test]
 fn a_newer_format_needs_the_marker() {
-    let text = "[babawus]\nconfig_format = 2\n";
+    let text = "[babawus]\nconfig_format = 3\n";
 
     assert_eq!(parse_text(text), Loaded::Damaged(None));
 }
 
 #[test]
 fn the_format_is_only_looked_for_in_the_babawus_table() {
-    let outside = sealed("config_format = 2\n\n[babawus]\nconfig_format = 1\n");
+    let outside = sealed("config_format = 3\n\n[babawus]\nconfig_format = 2\n");
     let later_table = sealed(&format!(
-        "{}\n[[computer]]\nconfig_format = 2\n",
+        "{}\n[[computer]]\nconfig_format = 3\n",
         header_table()
     ));
 
@@ -258,9 +281,9 @@ fn a_header_that_breaks_the_rules_makes_the_file_unusable() {
     let cases = [
         (
             "format 0",
-            good.replace("config_format = 1", "config_format = 0"),
+            good.replace("config_format = 2", "config_format = 0"),
         ),
-        ("no format", good.replace("config_format = 1\n", "")),
+        ("no format", good.replace("config_format = 2\n", "")),
         (
             "empty version",
             good.replace(&format!("\"{}\"", crate::VERSION), "\"\""),
@@ -300,11 +323,14 @@ fn values_that_break_the_rules_make_the_file_unusable() {
             format!(
                 "[[computer.account]]\nusername = \"{username}\"\nolder_versions = {versions}\n\
              run_check_days = {days}\nselected = []\n\
-             exclude_patterns = {patterns}\nexclude_folders = {folders}\n"
+             exclude_patterns = {patterns}\nexclude_folders = {folders}\nexclude_files = []\n"
             )
         };
     let account = |username: &str, patterns: &str, folders: &str| {
         account_with(username, "10", "7", patterns, folders)
+    };
+    let with_files = |files: &str| {
+        account("a", "[]", "[]").replace("exclude_files = []", &format!("exclude_files = {files}"))
     };
     let good = computer(ID, "mint");
     let cases = [
@@ -375,6 +401,18 @@ fn values_that_break_the_rules_make_the_file_unusable() {
         (
             "excluded folder with dots",
             format!("{good}{}", account("a", "[]", "[\"a/../b\"]")),
+        ),
+        (
+            "empty excluded file",
+            format!("{good}{}", with_files("[\"\"]")),
+        ),
+        (
+            "absolute excluded file",
+            format!("{good}{}", with_files("[\"/home/a.txt\"]")),
+        ),
+        (
+            "excluded file with dots",
+            format!("{good}{}", with_files("[\"a/../b.txt\"]")),
         ),
         (
             "missing field",
@@ -902,4 +940,47 @@ fn the_hostname_of_an_unknown_computer_changes_nothing() {
 
     assert!(!config.note_hostname(OTHER_ID, "elsewhere"));
     assert_eq!(config, before);
+}
+
+#[test]
+fn a_file_in_format_1_reads_as_having_no_excluded_files_and_is_written_in_format_2() {
+    let text = file_in(1, &account_table(""));
+
+    let Loaded::Ready(config) = parse_text(&text) else {
+        panic!("format 1 isn't read: {text}");
+    };
+    assert_eq!(account(&config).selected, ["Documents"]);
+    assert!(account(&config).exclude_files.is_empty());
+    let written = text_of(&config);
+    assert!(written.contains("config_format = 2\n"), "{written}");
+    assert!(written.contains("exclude_files = []\n"), "{written}");
+}
+
+#[test]
+fn excluded_files_must_be_there_in_format_2_and_only_there() {
+    let with_files = account_table("exclude_files = [\"Documents/a.txt\"]\n");
+
+    let Loaded::Ready(config) = parse_text(&file_in(2, &with_files)) else {
+        panic!("format 2 with excluded files isn't read");
+    };
+    assert_eq!(account(&config).exclude_files, ["Documents/a.txt"]);
+    // Either way round, it is a field too many or too few, as in any other damaged file.
+    assert_eq!(parse_text(&file_in(1, &with_files)), Loaded::Damaged(None));
+    assert_eq!(
+        parse_text(&file_in(2, &account_table(""))),
+        Loaded::Damaged(None)
+    );
+}
+
+#[test]
+fn an_excluded_file_is_left_out_of_the_selection() {
+    let mut config = config();
+    let account = account_mut(&mut config);
+    account.selected = vec!["Documents".to_owned()];
+    account.exclude_files = vec!["Documents/secret.txt".to_owned()];
+
+    let exclusions = account.selection(Path::new("/home/usera")).exclusions;
+
+    assert!(exclusions.excludes(Path::new("Documents/secret.txt")));
+    assert!(!exclusions.excludes(Path::new("Documents/other.txt")));
 }

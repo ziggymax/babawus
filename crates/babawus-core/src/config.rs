@@ -23,9 +23,17 @@ use crate::scan::{Selection, account_folder};
 use crate::time::{log_timestamp, parse_log_timestamp, parse_utc_timestamp, utc_timestamp};
 use crate::versions::{Format, fits_on};
 
-/// The newest format this Babawus understands. A file in the layout of 0.1.0, which had no
-/// `[babawus]` table, is damaged: there were no real users yet (issue 136).
-pub const FORMAT: u32 = 1;
+/// The newest format this Babawus understands, and the one it writes. Format 2 added
+/// `exclude_files` (issue 160); a file in format 1 is read as having no excluded files. A file
+/// in the layout of 0.1.0, which had no `[babawus]` table, is damaged: there were no real users
+/// yet (issue 136).
+pub const FORMAT: u32 = 2;
+
+/// The oldest format this Babawus reads.
+const OLDEST_FORMAT: u32 = 1;
+
+/// The first format with `exclude_files` (issue 160).
+const EXCLUDE_FILES_FORMAT: u32 = 2;
 
 /// The table that says which Babawus wrote the file, and when.
 const HEADER_TABLE: &str = "[babawus]";
@@ -122,7 +130,7 @@ impl Header {
     }
 
     fn is_valid(&self) -> bool {
-        self.config_format == FORMAT
+        (OLDEST_FORMAT..=FORMAT).contains(&self.config_format)
             && !self.config_app_version.trim().is_empty()
             && parse_log_timestamp(&self.config_update_local).is_some()
             && parse_utc_timestamp(&self.config_update_utc).is_some()
@@ -157,6 +165,10 @@ pub struct Account {
     pub exclude_patterns: Vec<String>,
     /// Excluded folders, relative to the home folder.
     pub exclude_folders: Vec<String>,
+    /// Excluded files, relative to the home folder. Not in format 1, where it is read as empty
+    /// (issue 160).
+    #[serde(default)]
+    pub exclude_files: Vec<String>,
 }
 
 impl Account {
@@ -169,6 +181,7 @@ impl Account {
             selected: Vec::new(),
             exclude_patterns: SUGGESTED_PATTERNS.map(str::to_owned).to_vec(),
             exclude_folders: vec![SUGGESTED_FOLDER.to_owned()],
+            exclude_files: Vec::new(),
         }
     }
 
@@ -180,6 +193,7 @@ impl Account {
             exclusions: Exclusions {
                 patterns: self.exclude_patterns.clone(),
                 folders: self.exclude_folders.iter().map(PathBuf::from).collect(),
+                files: self.exclude_files.iter().map(PathBuf::from).collect(),
             },
         }
     }
@@ -196,6 +210,7 @@ impl Account {
                 .exclude_folders
                 .iter()
                 .all(|folder| is_plain_path(folder))
+            && self.exclude_files.iter().all(|file| is_plain_path(file))
     }
 }
 
@@ -453,6 +468,31 @@ fn declared_format(text: &str) -> Option<u32> {
         })
 }
 
+/// Whether every account has `exclude_files` if `format` has it, and none has it if not, so
+/// that a format-1 file with the field, or a format-2 file without it, is damaged like any file
+/// with a field too many or too few (issue 160). `text` has already been parsed as a [`File`].
+fn has_exclude_files_as_its_format_says(text: &str, format: u32) -> bool {
+    let Ok(table) = toml::from_str::<toml::Table>(text) else {
+        return false;
+    };
+    let wanted = format >= EXCLUDE_FILES_FORMAT;
+    let tables = |value: Option<&toml::Value>| -> Vec<toml::Table> {
+        value
+            .and_then(toml::Value::as_array)
+            .map(|items| {
+                items
+                    .iter()
+                    .filter_map(|item| item.as_table().cloned())
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    tables(table.get("computer"))
+        .iter()
+        .flat_map(|computer| tables(computer.get("account")))
+        .all(|account| account.contains_key("exclude_files") == wanted)
+}
+
 /// Works out what the contents of a configuration file hold. See "Reading the configuration file"
 /// in Requirements.md.
 pub fn parse(contents: &[u8]) -> Loaded {
@@ -466,6 +506,7 @@ pub fn parse(contents: &[u8]) -> Loaded {
     let config = toml::from_str::<File>(text)
         .ok()
         .filter(|file| file.babawus.is_valid())
+        .filter(|file| has_exclude_files_as_its_format_says(text, file.babawus.config_format))
         .map(|file| Config {
             computers: file.computers,
         })
