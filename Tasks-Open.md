@@ -20,12 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 0.2.1 is released (T-064). The three versions leading to 1.0.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done (T-065 to T-080), and Danish was added after them (T-081, T-082). Now 1.0.0 is being released (issue 157). T-087 came first, because from 1.0.0 the language file format is something others build on.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-085 | Run the release checklist on the 1.0.0 build, recorded in an issue "Release 1.0.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password. A failed step gets a task before the release goes ahead. Run in [#102](https://github.com/ziggymax/babawus/issues/102); its one failure is T-088 | In progress | Issue 157 |
-| T-086 | Release 1.0.0: the tag `v1.0.0` on main, and a GitHub release with the `.deb` and notes drafted by Claude and reviewed by the user. ReleasePlanning.md then names 1.0.0 as the latest release, and says the next isn't planned yet | Todo | Issue 157 |
+Babawus 1.0.0 is released (T-086), the first stable release. The next release isn't planned yet (see [ReleasePlanning.md](ReleasePlanning.md)).
 
 ## Needs a decision
 
