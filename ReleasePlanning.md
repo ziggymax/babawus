@@ -12,15 +12,33 @@ When work on a version begins, its items become tasks (T-entries) in the task li
 
 ## Latest release of Babawus
 
-The latest/current release is: 1.0.0, the first stable release (tag `v1.0.0`). From it on, Babawus follows semantic versioning (major.minor.patch).
+The latest/current release is: 1.0.0
 
-The latest interim version is: none since 1.0.0. The last was 1.0.0-alpha.3 (tag `v1.0.0-alpha.3`).
+The latest interim version is: 1.0.0-alpha.3 (tag `v1.0.0-alpha.3`) - has been merged into the 1.0.0 release.
 
 ## Next release of Babawus
 
 This section always describes the next upcoming version/release of Babawus. Some of the ideas may be very specific, and some more speculative in nature. Task(s) created to deal with speculative ideas will be investigative rather than implementation-oriented.
 
-The next release isn't planned yet. 1.0.0's plan, its three interim versions and their reasons, are kept in the issues (141 to 158) and the tasks (T-065 to T-088).
+### Administrative matters or other non-feature tasks
+
+None for the next release.
+
+### New features
+
+These features are not listed by priority.
+
+1. *Babawus fly-by text*. If the mouse cursor rests shortly on the Babawus logo on the main screen a fly-by text appears: "Babawus never forgets" (adjusted for each supported language).
+1. *Single file selection add/skip in "Choose what to backup for user"*. The Advanced folder/file view where the user can select which folders to backup is extended with single file add/skip. Clicking a single file allows the user to add or skip a file. The specifics need to be decided (what happens if the file is already implicitly added via a selected folder etc.). How to handle a file marked to be skipped also needs to be decided: Add a specific pattern to "Files to leave out by name" (kind of the obvious choice) or add a list of specific individual files to skip.
+1. *Restore file(s) window*. A user should be able to open a window showing files/folders (shown in much the same way that the what-backup pane does) and select one or more specific files to restore. When a file has earlier versions stored, the user should (also) be able to see and pick specific versions. The specifics need to be decided. The use of a separate window (which can be resized individually) makes it easier for the user to get an overview, plus it provides more screen space for a good combined folder/file view combined with extra info about versions for files.
+
+### Versions needed for this release
+
+Three versions will be made for the next release:
+
+1. 1.1.0-alpha.1: Babawus logo fly-by text.
+1. 1.1.0-alpha.2: Single file add/skip in "What to backup"
+1. 1.1.0-alpha.3: Restore file(s) window
 
 ## Future releases
 
@@ -29,7 +47,6 @@ This section captures ideas for some future, unspecified releases of Babawus. As
 To the extent possible the new features are listed by priority, from highest to lowest.
 
 1. *A runnable release script(?)*. Investigate the possibility of automating releases to the maximum by maintaining the release procedure as some kind of runnable script. Anything that can be done without human intervention should be done automatically, where human intervention is needed the script should prompt the person responsible for doing the release with step-by-step actions to perform (and, where the person must report some result back, provide simple fillable forms).
-1. *Restore file(s) window*. A user should be able to open a window showing files/folders (shown in much the same way that the what-backup pane does) and select one or more specific files to restore. When a file has earlier versions stored, the user should (also) be able to see and pick specific versions.
 1. *Prepare for other platforms*. Future versions of Babawus should be able to work with the platforms listed below. For the next release the task is to investigate the need for code restructuring/refactoring to accommodate this overarching goal.
 Any actual refactoring will be done in a later version - it will probably be a good idea to create some non-released interim versions to achieve these goals.
     - Ubuntu and other .deb using platforms (this is a short term goal). What differs from Mint is not known yet; finding out is part of the investigation.
