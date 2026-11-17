@@ -423,8 +423,9 @@ pub fn show(app: &Application) {
 
     let window = ApplicationWindow::builder()
         .application(app)
-        // Opens at 1024 × 768 with its title bar, assuming Full HD screens (issue 118).
-        .default_width(1024)
+        // Opens at 1100 × 768 with its title bar, assuming Full HD screens (issue 118). 1100 wide
+        // fits the five buttons of a stick on one line in German too, with Advanced on (T-102).
+        .default_width(1100)
         .default_height(768)
         .titlebar(&header)
         .child(&screens)

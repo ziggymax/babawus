@@ -103,8 +103,8 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Choose "Put them in this folder:", which shows a new folder such as `Restored from BACKUP-B` with the date and time, and press "Restore". → "1 file restored." and "Open folder". The ticks are cleared, the folders stay open, and another folder is suggested.
 - [ ] Press "Open folder". → The file manager shows the folder, with `BabawusTest/Letters/old/draft.txt` in it, with its old modification date. Close the file manager and delete the folder.
 - [ ] Tick `meeting: notes.txt`, choose "Put them back in the folders they came from", and press "Restore". → "One of the files is already there", with "Replace them", "Keep both", "Skip them" and "Cancel". Press "Keep both". → "1 file restored." `BabawusTest` now also has `meeting: notes (` with a date and time `).txt`. Delete it.
-- [ ] Tick `big.bin`, choose "Put them in this folder:", press "Restore", and while it shows "Restoring… 0 of 1 files" and the bar, press "Cancel". → "The restore was stopped. Nothing was restored." The folder has no `big.bin` and no other file. Delete the folder.
-- [ ] Start the same restore again, and close the window while it runs. → "Stop restoring?" Choose "Stop". → The window closes. Delete the folder.
+- [ ] Empty the computer's file cache first, or the 2 GB are read from it in a few seconds, too fast to press "Cancel": `sync; echo 3 | sudo tee /proc/sys/vm/drop_caches`. Then tick `big.bin`, choose "Put them in this folder:", press "Restore", and while it shows "Restoring… 0 of 1 files" and the bar, press "Cancel". → "The restore was stopped. Nothing was restored." The folder has no `big.bin` and no other file. Delete the folder.
+- [ ] Empty the file cache again, start the same restore, and close the window while it runs. → "Stop restoring?" Choose "Stop". → The window closes. Delete the folder.
 - [ ] Close the Restore window, and press "Restore files…" again. → The whole window shows again, as the first time, not an empty frame (T-097).
 - [ ] While the Restore window is open, eject stick B in the main window. → The Restore window closes.
 

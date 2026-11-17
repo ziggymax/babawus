@@ -138,6 +138,9 @@ pub struct RestoreWindow {
     versions_heading: Label,
     versions_hint: Label,
     versions: ListBox,
+    /// Never shown: the versions are grouped with it, so that a file with only one version gets
+    /// a round radio button too, not a square checkbox (T-102).
+    version_group: CheckButton,
     where_heading: Label,
     back_in_place: CheckButton,
     into_folder: CheckButton,
@@ -309,6 +312,7 @@ impl RestoreWindow {
             versions_heading,
             versions_hint,
             versions,
+            version_group: CheckButton::new(),
             where_heading,
             back_in_place,
             into_folder,
@@ -714,15 +718,11 @@ impl RestoreWindow {
             .find(|version| version.copy == wanted)
             .or(versions.first())
             .map(|version| version.copy.clone());
-        let mut first: Option<CheckButton> = None;
         for version in versions {
             let button = CheckButton::with_label(&version_text(&version, local_clock, language));
             button.set_tooltip_text(Some(Text::RestoreVersionTooltip.get(language)));
             button.set_sensitive(!row.left_out_above);
-            match &first {
-                Some(first) => button.set_group(Some(first)),
-                None => first = Some(button.clone()),
-            }
+            button.set_group(Some(&self.version_group));
             button.set_active(row.ticked && current.as_ref() == Some(&version.copy));
             let weak = Rc::downgrade(&self.shared);
             let relative = item.relative.clone();

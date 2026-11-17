@@ -683,3 +683,16 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - Claude's proposals in issue 161 are confirmed as built.
         - The German and Danish texts are checked in the checklist run: the Language steps name the Restore window and leaving out a single file among the screens to look through. Wording the user doesn't like becomes a task before the release.
         - The checklist also checks that the Restore window can be closed and opened again (T-097).
+
+## Decisions on what the 1.1.0 checklist run found (T-102)
+
+163. **Cancel during a restore, and two oddities (T-102).** The 1.1.0 checklist run ([#118](https://github.com/ziggymax/babawus/issues/118)) found three things:
+    - Pressing "Cancel" while `big.bin` (2 GB) was restored ended with "1 file restored.". On the VM the file comes from the cache in under a second and the whole restore takes about 3 seconds, so the click most likely came after the restore had finished. With the cache emptied first, "Cancel" stops it as it should. But the code also didn't look at "Cancel" while a file was flushed to disk, which can take long, nor after it: a file whose flush had begun was always finished.
+    - A file with only one version showed a square checkbox in the side pane instead of a round radio button, because GTK draws a check button that isn't in a group as a checkbox.
+    - With Advanced on, "Change setup…" wrapped onto a second line. In English it did so only because the run made the window 897 wide; at 1024 it fits. In German, "Einrichtung ändern …" wraps at 1024 too.
+    - **Decided (2026-11-17):**
+        - "Cancel" pressed while a file is flushed is honoured after the flush, which can't be broken off: the temporary file is removed, and the restore ends "The restore was stopped." Nothing changes on screen while the file is flushed.
+        - A lone version gets a round radio button too, like the others.
+        - The main window opens 1100 wide instead of 1024, which fits a stick's five buttons on one line in all three languages. A narrower window still wraps them, as issue 125 decided.
+        - The checklist empties the file cache before the steps that cancel a restore, so that the restore takes long enough.
+
