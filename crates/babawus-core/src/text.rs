@@ -324,6 +324,7 @@ texts! {
     RestoreVersionNewest,
     RestoreVersionOlder,
     RestoreVersionTooltip,
+    RestoreWhereHeading,
     RestoreBackInPlace,
     RestoreBackInPlaceTooltip,
     RestoreIntoFolder,

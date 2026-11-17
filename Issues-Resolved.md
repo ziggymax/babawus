@@ -661,6 +661,7 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Added later the same day (2026-11-17), at the user's request:** the user chooses where restored files go.
         - **Back where they were**, the default, or **into another folder**, where the files keep their folders below it: `Documents/report.pdf` goes to `<folder>/Documents/report.pdf`. The question about files already there is asked about that folder.
         - The choice sits below the tree, next to "Restore": "Back where they were", chosen at first, and "Into another folder", with the folder's name and "Choose…".
+        - **Wording changed the same day, at the user's request**, to make restoring two steps, picking the files and then where they go: the choice has the heading "Decide where to place the restored files:", and the options are "Put them back in the folders they came from" and "Put them in this folder:".
         - Babawus suggests a new folder in the home folder, such as "Restored from BACKUP-A 2026-11-17 15.02", and makes it when restoring. "Choose…" opens the system's folder dialog to pick or make another one.
         - The folder may be anywhere the user can write, also on another disk, but never on the stick being restored from, because restoring never writes to the stick.
         - It goes into T-094 (the logic) and T-095 (the window).
