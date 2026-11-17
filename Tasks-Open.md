@@ -20,11 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.0.0 is released (T-086), the first stable release. 1.1.0-alpha.1, the first of three versions leading to 1.1.0 ([ReleasePlanning.md](ReleasePlanning.md)), is done: a fly-by text on the logo (T-089 to T-090, issue 159). Being worked on is 1.1.0-alpha.2, the second: leaving out single files in "Choose what to back up" (issue 160).
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-093 | Raise the version to 1.1.0-alpha.2 and update ReleasePlanning.md. After it is merged, tag `v1.1.0-alpha.2` on main | Todo | Issue 160 |
+Babawus 1.0.0 is released (T-086), the first stable release. 1.1.0-alpha.1, the first of three versions leading to 1.1.0 ([ReleasePlanning.md](ReleasePlanning.md)), is done: a fly-by text on the logo (T-089 to T-090, issue 159). So is 1.1.0-alpha.2, the second: leaving out single files in "Choose what to back up" (T-091 to T-093, issue 160). Next is 1.1.0-alpha.3, the last before 1.1.0: a Restore window; its tasks are added when work on it begins.
 
 ## Needs a decision
 
