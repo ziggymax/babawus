@@ -14,7 +14,7 @@ When work on a version begins, its items become tasks (T-entries) in the task li
 
 The latest/current release is: 1.0.0
 
-The latest interim version is: 1.1.0-alpha.1 (tag `v1.1.0-alpha.1`)
+The latest interim version is: 1.1.0-alpha.2 (tag `v1.1.0-alpha.2`)
 
 ## Next release of Babawus
 
@@ -37,7 +37,7 @@ These features are not listed by priority.
 Three versions will be made for the next release:
 
 1. 1.1.0-alpha.1: Babawus logo fly-by text. Done in T-089 to T-090.
-1. 1.1.0-alpha.2: Single file add/skip in "What to backup"
+1. 1.1.0-alpha.2: Single file add/skip in "What to backup". Done in T-091 to T-093.
 1. 1.1.0-alpha.3: Restore file(s) window
 
 ## Future releases
