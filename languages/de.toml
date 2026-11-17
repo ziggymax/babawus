@@ -20,7 +20,7 @@ AdvancedDetail = "Mit ihnen kann ein Stick gelöscht und geändert werden, was a
 AdvancedContinue = "Weiter"
 # The language's own comment, shown in About below the name's long form.
 AboutComments = "Einfache Sicherung auf USB-Sticks"
-Logo = "Babawus"
+Logo = "Babawus vergisst nie"
 PlugIn = "Steck deinen Sicherungs-Stick ein"
 ChooseMedium = "Wähle einen Stick in der Liste"
 StickNotOpened = "Der Stick ist nicht geöffnet"

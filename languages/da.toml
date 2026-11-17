@@ -21,7 +21,7 @@ AdvancedDetail = "Med dem kan et USB-stik slettes, og man kan ændre hvilke file
 AdvancedContinue = "Fortsæt"
 # The language's own comment, shown in About below the name's long form.
 AboutComments = "Simpel backup på USB-stik"
-Logo = "Babawus"
+Logo = "Babawus glemmer aldrig"
 PlugIn = "Sæt dit backup-stik i"
 ChooseMedium = "Vælg et USB-stik på listen"
 StickNotOpened = "USB-stikket er ikke åbnet"

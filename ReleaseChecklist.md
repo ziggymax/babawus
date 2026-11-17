@@ -36,6 +36,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Look through the screens below once in German too, as far as you like. → No English left, and no text cut off.
 - [ ] Choose Menu → Language → Dansk. → Every text changes at once, for example "Sæt dit backup-stik i". Look through the screens below once in Danish too, as far as you like. → No English or German left, and no text cut off.
 - [ ] Choose Menu → Language → English. → Back to English, and it stays English on the next start.
+- [ ] Rest the mouse on the logo in the upper right. → After a short pause, the tooltip "Babawus never forgets". In German it is "Babawus vergisst nie", in Danish "Babawus glemmer aldrig".
 
 ## Adding a language by hand
 
