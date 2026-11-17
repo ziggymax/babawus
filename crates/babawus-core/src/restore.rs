@@ -772,6 +772,11 @@ impl Backup<'_> {
             writer.set_modified(modified).map_err(CopyError::writing)?;
             writer.sync().map_err(CopyError::writing)?;
             drop(writer);
+            // Flushing a big file can take a long while, and can't be broken off. Cancel pressed
+            // meanwhile still stops the file from appearing (T-102).
+            if cancel.load(Ordering::Relaxed) {
+                return Err(CopyError::Cancelled);
+            }
             self.system
                 .rename(&temp, target)
                 .map_err(CopyError::writing)

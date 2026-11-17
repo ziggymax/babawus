@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use super::*;
@@ -503,6 +504,36 @@ fn a_cancelled_restore_stops_before_the_next_file() {
 
     assert!(outcome.cancelled);
     assert_eq!(outcome.restored, 0);
+}
+
+#[test]
+fn cancel_pressed_while_a_file_is_flushed_leaves_the_file_there_alone() {
+    let setup = Setup::new(Format::Ext4);
+    let plan = setup.plan(&ticked(&["Documents/report.pdf"]));
+    let cancel = Arc::new(AtomicBool::new(false));
+    setup.system.raise_on_sync(cancel.clone());
+
+    let outcome = setup.backup().restore(
+        &plan,
+        Resolution::Replace,
+        &clock,
+        &Progress::default(),
+        &cancel,
+    );
+
+    assert!(outcome.cancelled);
+    assert_eq!(outcome.restored, 0);
+    let folder = PathBuf::from(HOME).join("Documents");
+    // The file there is untouched, and no temporary file is left.
+    assert_eq!(setup.system.read_dir(&folder).unwrap(), ["report.pdf"]);
+    let mut data = Vec::new();
+    setup
+        .system
+        .open(&folder.join("report.pdf"))
+        .unwrap()
+        .read_to_end(&mut data)
+        .unwrap();
+    assert_eq!(data, b"changed");
 }
 
 #[test]

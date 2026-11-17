@@ -17,6 +17,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::ffi::OsString;
 use std::io::{self, Cursor, ErrorKind, Read};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::SystemTime;
 
@@ -84,6 +85,7 @@ struct State {
     capacity: Option<u64>,
     failures: HashMap<PathBuf, ErrorKind>,
     ignore_case: bool,
+    raise_on_sync: Option<Arc<AtomicBool>>,
 }
 
 fn medium_gone() -> io::Error {
@@ -273,6 +275,12 @@ impl FakeFs {
     /// fails with [`ErrorKind::StorageFull`].
     pub fn set_capacity(&self, bytes: u64) {
         self.state().capacity = Some(bytes);
+    }
+
+    /// Sets `flag` whenever a file has been flushed, for example to press Cancel while a file is
+    /// being flushed.
+    pub fn raise_on_sync(&self, flag: Arc<AtomicBool>) {
+        self.state().raise_on_sync = Some(flag);
     }
 
     /// Makes every operation on exactly `path` fail with `kind`, for example to test a file that
@@ -535,6 +543,9 @@ impl WriteFile for FakeFile {
         state.step()?;
         let node = state.live.nodes[&self.id].clone();
         state.flushed.nodes.insert(self.id, node);
+        if let Some(flag) = &state.raise_on_sync {
+            flag.store(true, Ordering::Relaxed);
+        }
         Ok(())
     }
 }
