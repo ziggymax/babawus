@@ -141,6 +141,20 @@ mod tests {
         ComputerLock::take(path, username).unwrap()
     }
 
+    /// Takes a lock that was just released, waiting up to a second for it. Another test that
+    /// starts a program forks this process, and until that program has started, the fork still
+    /// has every open file, so the released lock can be held a moment longer. That made this
+    /// test fail now and then on CI, which runs those tests in parallel (T-061).
+    fn take_released(path: &Path, username: &str) -> Taken {
+        for _ in 0..100 {
+            match take(path, username) {
+                Taken::AlreadyOpen(_) => std::thread::sleep(std::time::Duration::from_millis(10)),
+                ours => return ours,
+            }
+        }
+        take(path, username)
+    }
+
     #[test]
     fn the_first_babawus_gets_the_lock() {
         let folder = Folder::new();
@@ -164,8 +178,9 @@ mod tests {
         let path = folder.lock_file();
         drop(take(&path, "a-long-user-name"));
 
-        let _lock = take(&path, "userb");
+        let lock = take_released(&path, "userb");
 
+        assert!(matches!(lock, Taken::Ours(_)));
         assert_eq!(fs::read_to_string(&path).unwrap(), "userb");
     }
 
