@@ -1,4 +1,4 @@
-//! The exclusions of an account: name patterns and specific folders.
+//! The exclusions of an account: name patterns, specific folders and specific files.
 
 use std::path::{Path, PathBuf};
 
@@ -9,6 +9,8 @@ pub struct Exclusions {
     pub patterns: Vec<String>,
     /// Exact paths relative to the home folder.
     pub folders: Vec<PathBuf>,
+    /// Exact paths relative to the home folder (issue 160).
+    pub files: Vec<PathBuf>,
 }
 
 impl Exclusions {
@@ -22,7 +24,9 @@ impl Exclusions {
                 !pattern.contains(&'/') && matches(&pattern, &name)
             })
         };
-        self.folders.iter().any(folder) || relative.iter().any(name)
+        self.folders.iter().any(folder)
+            || self.files.iter().any(|file| relative == file)
+            || relative.iter().any(name)
     }
 
     /// The first pattern that matches the single name `name`, if any.
@@ -67,7 +71,7 @@ mod tests {
     fn patterns(patterns: &[&str]) -> Exclusions {
         Exclusions {
             patterns: patterns.iter().map(ToString::to_string).collect(),
-            folders: Vec::new(),
+            ..Exclusions::default()
         }
     }
 
@@ -135,13 +139,27 @@ mod tests {
     #[test]
     fn a_folder_is_excluded_with_everything_in_it() {
         let exclusions = Exclusions {
-            patterns: Vec::new(),
             folders: vec![PathBuf::from("Documents/old")],
+            ..Exclusions::default()
         };
 
         assert!(exclusions.excludes(Path::new("Documents/old")));
         assert!(exclusions.excludes(Path::new("Documents/old/a/b.txt")));
         assert!(!exclusions.excludes(Path::new("Documents/older")));
+        assert!(!exclusions.excludes(Path::new("Documents")));
+    }
+
+    #[test]
+    fn a_file_is_excluded_only_by_its_exact_path() {
+        let exclusions = Exclusions {
+            files: vec![PathBuf::from("Documents/notes.txt")],
+            ..Exclusions::default()
+        };
+
+        assert!(exclusions.excludes(Path::new("Documents/notes.txt")));
+        assert!(!exclusions.excludes(Path::new("notes.txt")));
+        assert!(!exclusions.excludes(Path::new("Documents/notes.txt2")));
+        assert!(!exclusions.excludes(Path::new("Other/Documents/notes.txt")));
         assert!(!exclusions.excludes(Path::new("Documents")));
     }
 }

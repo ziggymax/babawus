@@ -247,6 +247,23 @@ fn an_excluded_folder_is_left_out_with_everything_in_it() {
 }
 
 #[test]
+fn an_excluded_file_is_left_out_without_a_report_and_nothing_else_is() {
+    let mut setup = Setup::new(Format::Ext4, &["Documents"]);
+    setup.exclusions.files = vec![PathBuf::from("Documents/secret.txt")];
+    setup.add("Documents/secret.txt", b"1");
+    setup.add("Documents/secret.txt.bak", b"2");
+    setup.add("Documents/sub/secret.txt", b"3");
+
+    let scan = setup.run();
+
+    assert_eq!(
+        files(&scan),
+        ["Documents/secret.txt.bak", "Documents/sub/secret.txt"]
+    );
+    assert!(scan.skipped.is_empty());
+}
+
+#[test]
 fn a_selection_inside_an_excluded_folder_stays_excluded() {
     let mut setup = Setup::new(Format::Ext4, &[".cache/keep.txt"]);
     setup.exclusions.patterns = vec![".cache".to_owned()];

@@ -112,6 +112,8 @@ impl Choice {
                 .iter()
                 .map(|folder| plain(folder))
                 .collect(),
+            // TODO(T-092): The tree shows the left-out files too.
+            files: Vec::new(),
         }
     }
 
