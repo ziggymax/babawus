@@ -669,7 +669,17 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - **While restoring**, the window shows below the tree "Restoring… 3 of 12 files", a progress bar by bytes, and "Cancel"; the tree is greyed out meanwhile. Closing the window asks whether to stop the restore.
         - **Left-over temporary files** (added the same day, at the user's request): a restore stopped by a crash or a power cut leaves its hidden temporary file, `.babawus-restore-<process>-<number>`, where the real file never appeared. The next restore removes such files of another process in every folder it writes to, before it copies.
         - **Afterwards** it shows the result below the tree, "12 files restored." or "10 of 12 files restored", listing those that weren't and why, with "Open folder" to see them in the file manager. The ticks are cleared, and the window stays open for more.
-    - **Proposed by Claude, to be confirmed in the pull requests:**
+    - **Proposed by Claude, confirmed by the user (2026-11-17), when 1.1.0 was planned (issue 162):**
         - Restoring only reads the stick. While a restore runs, "Start backup" for that stick is greyed out, and the Restore button is greyed out while a backup to the stick runs; only one Babawus runs on a computer.
         - Restored files keep their modification times, and missing folders are created. Each file is written to a temporary name next to its place and then renamed, so that an interrupted restore never leaves half a file under the real name.
         - The window is titled "Restore from BACKUP-A", isn't modal, and closes when the stick is ejected or pulled out.
+
+## Decisions on releasing 1.1.0 (T-098 to T-101)
+
+162. **How 1.1.0 is released.** The three versions before 1.1.0 are done (tagged `v1.1.0-alpha.1` to `v1.1.0-alpha.3`), and the user found one fault after them, a Restore window opened again showing an empty frame, fixed in T-097. 1.0.0 was released in four tasks (issue 157): bring the checklist up to date, raise the version, run the checklist in an issue, then tag and publish. Since 1.1.0 always saves a stick's setup in format 2, which 1.0.0 refuses, the checklist could also test updating from 1.0.0. Claude's proposals in issue 161 were still to be confirmed, and Claude wrote the German and Danish texts of the new features.
+    - **Decided (2026-11-17):**
+        - 1.1.0 is released the same way, in four tasks: T-098 brings ReleaseChecklist.md up to date, T-099 raises the version to 1.1.0, T-100 runs the whole checklist in an issue "Release 1.1.0 checklist", with Claude driving the GUI on the VM and the user doing hands and passwords, and T-101 tags `v1.1.0` and publishes the GitHub release with the `.deb`, with notes drafted by Claude in the form of 1.0.0's and reviewed by the user.
+        - Updating from 1.0.0 gets no steps of its own: the checklist installs 1.1.0 fresh, the existing "Updating" step covers installing over an older build, and the automated tests cover reading format 1.
+        - Claude's proposals in issue 161 are confirmed as built.
+        - The German and Danish texts are checked in the checklist run: the Language steps name the Restore window and leaving out a single file among the screens to look through. Wording the user doesn't like becomes a task before the release.
+        - The checklist also checks that the Restore window can be closed and opened again (T-097).

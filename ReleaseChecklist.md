@@ -33,8 +33,8 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 - [ ] Open Menu → Language. → Dansk, Deutsch and English, in that order, with English chosen.
 - [ ] Choose Menu → Language → Deutsch. → Every text changes at once, for example "Steck deinen Sicherungs-Stick ein". Nothing needs a restart.
 - [ ] Close Babawus and start it again. → It starts in German.
-- [ ] Look through the screens below once in German too, as far as you like. → No English left, and no text cut off.
-- [ ] Choose Menu → Language → Dansk. → Every text changes at once, for example "Sæt dit backup-stik i". Look through the screens below once in Danish too, as far as you like. → No English or German left, and no text cut off.
+- [ ] Look through the screens below once in German too, as far as you like, and at least the Restore window and "Choose what to back up" with a single file left out, whose German texts are new in 1.1.0. → No English left, no text cut off, and wording that reads well. Note in the issue any wording to change.
+- [ ] Choose Menu → Language → Dansk. → Every text changes at once, for example "Sæt dit backup-stik i". Look through the screens below once in Danish too, as far as you like, and at least the same two as in German. → No English or German left, no text cut off, and wording that reads well. Note in the issue any wording to change.
 - [ ] Choose Menu → Language → English. → Back to English, and it stays English on the next start.
 - [ ] Rest the mouse on the logo in the upper right. → After a short pause, the tooltip "Babawus never forgets". In German it is "Babawus vergisst nie", in Danish "Babawus glemmer aldrig".
 
@@ -105,6 +105,7 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Tick `meeting: notes.txt`, choose "Put them back in the folders they came from", and press "Restore". → "One of the files is already there", with "Replace them", "Keep both", "Skip them" and "Cancel". Press "Keep both". → "1 file restored." `BabawusTest` now also has `meeting: notes (` with a date and time `).txt`. Delete it.
 - [ ] Tick `big.bin`, choose "Put them in this folder:", press "Restore", and while it shows "Restoring… 0 of 1 files" and the bar, press "Cancel". → "The restore was stopped. Nothing was restored." The folder has no `big.bin` and no other file. Delete the folder.
 - [ ] Start the same restore again, and close the window while it runs. → "Stop restoring?" Choose "Stop". → The window closes. Delete the folder.
+- [ ] Close the Restore window, and press "Restore files…" again. → The whole window shows again, as the first time, not an empty frame (T-097).
 - [ ] While the Restore window is open, eject stick B in the main window. → The Restore window closes.
 
 ## Help
@@ -149,7 +150,7 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 ## Updating
 
-- [ ] Build the package again with the version raised (for example from `1.0.0` to `1.0.1` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
+- [ ] Build the package again with the version raised (for example from `1.1.0` to `1.1.1` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
 - [ ] Start Babawus. → It runs, keeps the chosen language, and stick A and its history are as before.
 - [ ] Run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml  fr.toml`: the update kept the file added by hand.
 
