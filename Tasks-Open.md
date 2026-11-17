@@ -24,7 +24,6 @@ Babawus 1.0.0 is released (T-086). The three versions leading to 1.1.0 ([Release
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-099 | Raise the version to 1.1.0 | Todo | Issue 162 |
 | T-100 | Run the whole release checklist on the 1.1.0 build, recorded in an issue "Release 1.1.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password, and looks through the German and Danish texts. A failed step, or wording the user doesn't like, gets a task before the release goes ahead | Todo | Issue 162 |
 | T-101 | Release 1.1.0: the tag `v1.1.0` on main, and a GitHub release with the `.deb` and notes drafted by Claude and reviewed by the user. ReleasePlanning.md then names 1.1.0 as the latest release, and says the next isn't planned yet | Todo | Issue 162 |
 
