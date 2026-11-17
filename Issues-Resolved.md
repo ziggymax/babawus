@@ -645,3 +645,26 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - Babawus 1.1 always writes format 2, whether or not a file is left out. It still reads format 1, as having no left-out files. Babawus 1.0.0 shows a stick saved by 1.1 as needing a newer Babawus, so every computer that uses a stick needs 1.1 once 1.1 has saved it.
         - In the tree it works like folders: unticking a file inside a ticked folder leaves it out and crosses out its name; ticking it again takes the exclusion back.
         - What a name pattern or a left-out folder leaves out stays left out and can't be ticked, as in 1.0.0; there are no exceptions.
+
+## Decisions on the Restore window (T-094 to T-096)
+
+161. **How files are got back from a stick (T-094, T-095).** ReleasePlanning.md plans 1.1.0-alpha.3: a separate window that shows the files and folders in a backup, much as "Choose what to back up" does, where one or more files can be restored, and where a file's earlier versions can be seen and picked. Until now Babawus has no restore function: the Help says to copy files back from the stick in the file manager. The questions were where the window is opened and for whom, whose backups it shows, where restored files go, how versions are seen and picked, how files are picked, whether files no longer on the computer are shown, how Babawus asks about files that are already in place, and what a file kept next to an existing one is called.
+    - **Decided (2026-11-17):**
+        - **Opening.** A button "Restore files…" sits next to "Show history" and "What's backed up", for every user, without Advanced: getting files back is an everyday function. It opens a window of its own, which can be resized on its own.
+        - **Whose backups.** Only the user's own backup profile on this computer, the same one as "What's backed up". A new computer gets at the old backups by being linked under Advanced, as before.
+        - **Picking** follows the logic of "Choose what to back up": ticking a folder ticks everything in it, and unticking a file or folder inside a ticked one leaves it out of the restore.
+        - **Versions.** The tree is on the left. Selecting a file shows its versions in a side pane on the right: the newest copy, and each older version with the date and time it was replaced. Every ticked file restores its newest copy, unless an older version is picked for it in the side pane; its row then shows that version's date. One "Restore" button restores everything ticked, each file in its chosen version.
+        - **Files no longer on the computer** are shown, marked, for example "Not on this computer": getting back a deleted file is a main reason to restore.
+        - **Destination.** Each file goes back where it was in the home folder.
+        - **Files already in place.** Babawus asks once, before anything is copied, for example "12 of the files are already on this computer", with Replace them, Keep both, Skip them, and Cancel.
+        - **Keep both** gives the restored file the date and time of its copy, such as "report (2026-11-03 17.54).pdf": the time it was last changed for the newest copy, or the time it was replaced for an older version. A number follows if that name is taken too.
+    - **Added later the same day (2026-11-17), at the user's request:** the user chooses where restored files go.
+        - **Back where they were**, the default, or **into another folder**, where the files keep their folders below it: `Documents/report.pdf` goes to `<folder>/Documents/report.pdf`. The question about files already there is asked about that folder.
+        - The choice sits below the tree, next to "Restore": "Back where they were", chosen at first, and "Into another folder", with the folder's name and "Choose…".
+        - Babawus suggests a new folder in the home folder, such as "Restored from BACKUP-A 2026-11-17 15.02", and makes it when restoring. "Choose…" opens the system's folder dialog to pick or make another one.
+        - The folder may be anywhere the user can write, also on another disk, but never on the stick being restored from, because restoring never writes to the stick.
+        - It goes into T-094 (the logic) and T-095 (the window).
+    - **Proposed by Claude, to be confirmed in the pull requests:**
+        - Restoring only reads the stick. While a restore runs, "Start backup" for that stick is greyed out, and the Restore button is greyed out while a backup to the stick runs; only one Babawus runs on a computer.
+        - Restored files keep their modification times, and missing folders are created. Each file is written to a temporary name next to its place and then renamed, so that an interrupted restore never leaves half a file under the real name.
+        - The window is titled "Restore from BACKUP-A", isn't modal, and closes when the stick is ejected or pulled out.

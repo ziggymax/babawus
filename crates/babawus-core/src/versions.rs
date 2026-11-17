@@ -5,7 +5,10 @@
 use std::ffi::{OsStr, OsString};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
 
+use std::time::SystemTime;
+
 use crate::names::fold;
+use crate::time::parse_log_timestamp;
 
 /// The file system on a medium.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -145,6 +148,56 @@ pub fn versions_to_remove(
         .take(excess)
         .map(|(_, entry)| entry.clone())
         .collect()
+}
+
+/// The file whose version folder is `folder`, if it is one: `report.pdf` for `report[]pdf`.
+/// `archive[]` gives `archive`, although `archive.` shares it; [`older_versions`] only counts a
+/// file's own versions.
+pub fn file_of_version_folder(folder: &OsStr) -> Option<OsString> {
+    let bytes = folder.as_bytes();
+    let at = bytes.windows(2).position(|pair| pair == b"[]")?;
+    let (base, extension) = (&bytes[..at], &bytes[at + 2..]);
+    // A file with `[]` in its name is never backed up, so only one `[]` can be the mark.
+    if base.is_empty() || extension.windows(2).any(|pair| pair == b"[]") {
+        return None;
+    }
+    let mut name = base.to_vec();
+    if !extension.is_empty() {
+        name.push(b'.');
+        name.extend_from_slice(extension);
+    }
+    Some(OsString::from_vec(name))
+}
+
+/// The older versions of the file `name` among `entries`, the names in its version folder, with
+/// the time each was replaced, newest first. Anything else in the folder is left out.
+pub fn older_versions(
+    entries: &[OsString],
+    name: &OsStr,
+    format: Format,
+) -> Vec<(OsString, SystemTime)> {
+    let comparable_name = comparable(name, format);
+    let mut versions: Vec<_> = entries
+        .iter()
+        .filter_map(|entry| {
+            let (timestamp, suffix) = parse_version(&comparable(entry, format), &comparable_name)?;
+            let time = replaced_at(&timestamp)?;
+            Some(((timestamp, suffix), time, entry.clone()))
+        })
+        .collect();
+    versions.sort_by(|a, b| b.0.cmp(&a.0));
+    versions
+        .into_iter()
+        .map(|(_, time, entry)| (entry, time))
+        .collect()
+}
+
+/// The time in a version's name, `YYYY-MM-DD_HHMMSS` in UTC.
+fn replaced_at(timestamp: &[u8]) -> Option<SystemTime> {
+    let text = std::str::from_utf8(timestamp).ok()?;
+    let (date, clock) = text.split_once('_')?;
+    let clock = format!("{}:{}:{}", &clock[..2], &clock[2..4], &clock[4..]);
+    parse_log_timestamp(&format!("{date} {clock} +0000"))
 }
 
 #[cfg(test)]
@@ -349,5 +402,67 @@ mod tests {
             versions_to_remove(&entries, os("a[b].txt"), 0, Format::Ext4).len(),
             1
         );
+    }
+
+    #[test]
+    fn a_version_folder_gives_its_file() {
+        let cases = [
+            ("report[]pdf", Some("report.pdf")),
+            ("archive.tar[]gz", Some("archive.tar.gz")),
+            ("Makefile[]", Some("Makefile")),
+            (".bashrc[]", Some(".bashrc")),
+            ("[]pdf", None),
+            ("plain", None),
+            ("a[]b[]c", None),
+        ];
+        for (folder, file) in cases {
+            assert_eq!(
+                file_of_version_folder(os(folder)),
+                file.map(OsString::from),
+                "{folder}"
+            );
+        }
+    }
+
+    #[test]
+    fn older_versions_come_newest_first_with_their_times() {
+        let entries = names(&[
+            "report[2026-11-03_175400].pdf",
+            "report[2026-11-03_175400-2].pdf",
+            "report[2026-11-01_080000].pdf",
+            "report[2026-11-02_080000].txt",
+            "notes.txt",
+        ]);
+
+        let versions = older_versions(&entries, os("report.pdf"), Format::Ext4);
+
+        let names: Vec<_> = versions.iter().map(|(name, _)| name.clone()).collect();
+        assert_eq!(
+            names,
+            names_of(&[
+                "report[2026-11-03_175400-2].pdf",
+                "report[2026-11-03_175400].pdf",
+                "report[2026-11-01_080000].pdf",
+            ])
+        );
+        assert_eq!(
+            versions[2].1,
+            parse_log_timestamp("2026-11-01 08:00:00 +0000").unwrap()
+        );
+    }
+
+    #[test]
+    fn on_exfat_older_versions_in_another_case_count() {
+        let entries = names(&["Report[2026-11-03_175400].PDF"]);
+
+        assert_eq!(
+            older_versions(&entries, os("report.pdf"), Format::ExFat).len(),
+            1
+        );
+        assert!(older_versions(&entries, os("report.pdf"), Format::Ext4).is_empty());
+    }
+
+    fn names_of(names: &[&str]) -> Vec<OsString> {
+        names.iter().map(OsString::from).collect()
     }
 }
