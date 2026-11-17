@@ -292,6 +292,62 @@ ChooseTooBig_56 = "That is more than the free space on the stick, unless much of
 ChooseDone = "Done"
 ChooseDoneTooltip = "Go back to the setup. The changes are written when you save there."
 ChooseCancelTooltip = "Go back to the setup without these changes"
+RestoreFiles = "Restore files…"
+RestoreFilesTooltip = "Get files back from this stick"
+RestoreTitle = "Restore from {label}"
+RestoreHeading = "Restore files for {user}"
+RestoreIntro = "Tick the files and folders to get back. A ticked folder brings back everything in it. To leave out a file or folder inside it, untick it. Select a file to see its earlier versions."
+RestoreNoteNotHere = "Not on this computer"
+RestoreNoteOnlyOlder = "Only older versions"
+RestoreNoteVersion = "Version of {when}"
+RestoreVersionsHeading = "Versions"
+RestoreVersionsHint = "Select a file to see its versions."
+RestoreVersionsOf = "Versions of {name}"
+RestoreVersionNewest = "Newest copy, changed {when}"
+RestoreVersionOlder = "Replaced {when}"
+RestoreVersionTooltip = "Restore this version of the file"
+RestoreBackInPlace = "Back where they were"
+RestoreBackInPlaceTooltip = "Put each file back in its place in your home folder"
+RestoreIntoFolder = "Into another folder:"
+RestoreIntoFolderTooltip = "Put the files in this folder, each in its own folders below it"
+RestoreChoose = "Choose…"
+RestoreChooseTooltip = "Choose another folder to restore into"
+RestoreChooseTitle = "Choose a folder to restore into"
+RestoreSuggested = "Restored from {label}"
+RestoreButton = "Restore"
+RestoreButtonTooltip = "Get the ticked files back"
+RestoreNothingTicked = "Tick the files and folders to restore first"
+RestoreBackupRunning = "A backup to this stick is running. Wait until it has finished."
+RestoreRunning = "Files are being restored from this stick. Wait until that has finished."
+RestoreReading = "Reading the stick…"
+RestoreFinding = "Finding the files to restore…"
+RestoreProgress = "Restoring… {done} of {total} files"
+RestoreCancelTooltip = "Stop restoring. The files restored so far are kept."
+RestoreQuestion = "{count} of the files are already there"
+RestoreQuestionOne = "One of the files is already there"
+RestoreQuestionDetail = "Choose what to do with the files that are already there. “Keep both” puts each restored file next to the one that is there, with its date and time in the name."
+RestoreReplace = "Replace them"
+RestoreKeepBoth = "Keep both"
+RestoreSkip = "Skip them"
+RestoreDone = "{files} restored."
+RestoreNone = "Nothing was restored."
+RestoreSome = "{done} of {total} files restored."
+RestoreSkipped = "Skipped, because they were already there: {files}"
+RestoreStopped = "The restore was stopped."
+RestoreNotRestored = "These weren't restored:"
+RestoreFailedLine = "{path}: {reason}"
+RestoreOpenFolder = "Open folder"
+RestoreOpenFolderTooltip = "See the restored files in the file manager"
+RestoreStopQuestion = "Stop restoring?"
+RestoreStopDetail = "The files restored so far are kept."
+RestoreKeepGoing = "Keep restoring"
+RestoreStop = "Stop"
+RestoreUnreadable_57 = "Couldn't be read from the stick"
+RestoreNotWritable_58 = "Couldn't be written"
+RestoreInTheWay_59 = "Something else of that name is in the way"
+RestoreFull_60 = "The disk is full, so the restore stopped."
+RestoreOnStick_61 = "That folder is on the stick, and Babawus never restores to the stick. Choose another folder."
+RestoreCantRead_62 = "The backup on this stick can't be read. Close this window and try again."
 
 Bytes = "{size} bytes"
 Kilobytes = "{size} kB"
@@ -334,7 +390,9 @@ Keep the stick away from the computer between backups, so that whatever happens 
 
 # Getting files back
 
-Babawus has no restore button. Open the stick in the file manager: your files are in the folder "backup", under the computer's and your own name, in the same folders as on the computer. Copy what you need back. The older versions of a file are in a folder next to it, named like the file with [] in it, such as report[]pdf for report.pdf, each with the date and time it was replaced in its name.
+Press "{RestoreFiles}" below the stick to get files back. Tick the files and folders you want, as when choosing what to back up. A file shows its newest copy and its older versions, each with its date: select it, and choose a version on the right. The files go back where they were, or into another folder that you choose, and Babawus asks first about files that are already there. Babawus never changes the stick while restoring.
+
+You can also open the stick in the file manager: your files are in the folder "backup", under the computer's and your own name, in the same folders as on the computer. The older versions of a file are in a folder next to it, named like the file with [] in it, such as report[]pdf for report.pdf, each with the date and time it was replaced in its name.
 
 # Advanced functions
 
@@ -511,4 +569,22 @@ Your account isn't allowed to read it, so it can't be backed up.
 
 #56
 Choose less, or use a bigger stick.
+
+#57
+The stick may have been pulled out, or the copy on it is damaged. Plug the stick back in and restore the file again. If it happens again, the stick may be failing; try an older version of the file.
+
+#58
+Check that you may write to the folder, and that the disk has room. Then restore the file again.
+
+#59
+A folder, link or other file has the file's name, or a file has the name of one of its folders. Rename or move it, or restore into another folder.
+
+#60
+Make room on the disk, or restore into a folder on another disk, then restore the rest again.
+
+#61
+Choose a folder on the computer, or on another disk.
+
+#62
+Pull the stick out and plug it back in. If it happens again, see #6.
 """

@@ -664,6 +664,10 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - Babawus suggests a new folder in the home folder, such as "Restored from BACKUP-A 2026-11-17 15.02", and makes it when restoring. "Choose…" opens the system's folder dialog to pick or make another one.
         - The folder may be anywhere the user can write, also on another disk, but never on the stick being restored from, because restoring never writes to the stick.
         - It goes into T-094 (the logic) and T-095 (the window).
+    - **Decided when T-095 began (2026-11-17):**
+        - **While restoring**, the window shows below the tree "Restoring… 3 of 12 files", a progress bar by bytes, and "Cancel"; the tree is greyed out meanwhile. Closing the window asks whether to stop the restore.
+        - **Left-over temporary files** (added the same day, at the user's request): a restore stopped by a crash or a power cut leaves its hidden temporary file, `.babawus-restore-<process>-<number>`, where the real file never appeared. The next restore removes such files of another process in every folder it writes to, before it copies.
+        - **Afterwards** it shows the result below the tree, "12 files restored." or "10 of 12 files restored", listing those that weren't and why, with "Open folder" to see them in the file manager. The ticks are cleared, and the window stays open for more.
     - **Proposed by Claude, to be confirmed in the pull requests:**
         - Restoring only reads the stick. While a restore runs, "Start backup" for that stick is greyed out, and the Restore button is greyed out while a backup to the stick runs; only one Babawus runs on a computer.
         - Restored files keep their modification times, and missing folders are created. Each file is written to a temporary name next to its place and then renamed, so that an interrupted restore never leaves half a file under the real name.

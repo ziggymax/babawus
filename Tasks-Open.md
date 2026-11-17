@@ -24,7 +24,6 @@ Babawus 1.0.0 is released (T-086), the first stable release. 1.1.0-alpha.1, the 
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-095 | The Restore window: the button "Restore files…", the tree with ticks, the side pane of versions, where the files go (back where they were, or into another folder, with "Choose…"), the question about files already in place, progress and result, in English, German and Danish. The Help's "Getting files back", Requirements.md and ReleaseChecklist.md | Todo | Issue 161 |
 | T-096 | Raise the version to 1.1.0-alpha.3 and update ReleasePlanning.md. After it is merged, tag `v1.1.0-alpha.3` on main | Todo | Issue 161 |
 
 ## Needs a decision

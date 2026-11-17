@@ -203,7 +203,7 @@ fn the_users_actions_appear_when_they_apply() {
     let details = details_of(Some(&ready(None)), false);
     assert_eq!(
         actions(&details),
-        [Action::ShowHistory, Action::WhatsBackedUp]
+        [Action::ShowHistory, Action::WhatsBackedUp, Action::Restore]
     );
 
     let no_history = Checked {

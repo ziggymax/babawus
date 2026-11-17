@@ -290,6 +290,62 @@ ChooseTooBig_56 = "Det er mere end den ledige plads på USB-stikket, medmindre d
 ChooseDone = "Færdig"
 ChooseDoneTooltip = "Gå tilbage til opsætningen. Ændringerne bliver skrevet, når du gemmer der."
 ChooseCancelTooltip = "Gå tilbage til opsætningen uden disse ændringer"
+RestoreFiles = "Gendan filer…"
+RestoreFilesTooltip = "Hent filer tilbage fra dette USB-stik"
+RestoreTitle = "Gendan fra {label}"
+RestoreHeading = "Gendan filer for {user}"
+RestoreIntro = "Sæt flueben ved de filer og mapper, du vil have tilbage. En mappe med flueben henter alt, hvad den indeholder. Fjern fluebenet ved en fil eller mappe inde i den for at udelade den. Vælg en fil for at se dens tidligere versioner."
+RestoreNoteNotHere = "Ikke på denne computer"
+RestoreNoteOnlyOlder = "Kun ældre versioner"
+RestoreNoteVersion = "Version fra {when}"
+RestoreVersionsHeading = "Versioner"
+RestoreVersionsHint = "Vælg en fil for at se dens versioner."
+RestoreVersionsOf = "Versioner af {name}"
+RestoreVersionNewest = "Nyeste kopi, ændret {when}"
+RestoreVersionOlder = "Erstattet {when}"
+RestoreVersionTooltip = "Gendan denne version af filen"
+RestoreBackInPlace = "Tilbage, hvor de var"
+RestoreBackInPlaceTooltip = "Læg hver fil tilbage på sin plads i din hjemmemappe"
+RestoreIntoFolder = "I en anden mappe:"
+RestoreIntoFolderTooltip = "Læg filerne i denne mappe, hver i sine egne mapper under den"
+RestoreChoose = "Vælg…"
+RestoreChooseTooltip = "Vælg en anden mappe at gendanne til"
+RestoreChooseTitle = "Vælg en mappe at gendanne til"
+RestoreSuggested = "Gendannet fra {label}"
+RestoreButton = "Gendan"
+RestoreButtonTooltip = "Hent filerne med flueben tilbage"
+RestoreNothingTicked = "Sæt først flueben ved de filer og mapper, der skal gendannes"
+RestoreBackupRunning = "Der kører en backup til dette USB-stik. Vent, til den er færdig."
+RestoreRunning = "Der bliver gendannet filer fra dette USB-stik. Vent, til det er færdigt."
+RestoreReading = "Læser USB-stikket…"
+RestoreFinding = "Finder de filer, der skal gendannes…"
+RestoreProgress = "Gendanner… {done} af {total} filer"
+RestoreCancelTooltip = "Stop gendannelsen. De filer, der er gendannet indtil nu, bliver."
+RestoreQuestion = "{count} af filerne er der allerede"
+RestoreQuestionOne = "En af filerne er der allerede"
+RestoreQuestionDetail = "Vælg, hvad der skal ske med de filer, der er der i forvejen. »Behold begge« lægger hver gendannet fil ved siden af den, der er der, med dato og klokkeslæt i navnet."
+RestoreReplace = "Erstat dem"
+RestoreKeepBoth = "Behold begge"
+RestoreSkip = "Spring dem over"
+RestoreDone = "{files} gendannet."
+RestoreNone = "Intet blev gendannet."
+RestoreSome = "{done} af {total} filer gendannet."
+RestoreSkipped = "Sprunget over, fordi de var der allerede: {files}"
+RestoreStopped = "Gendannelsen blev stoppet."
+RestoreNotRestored = "Disse blev ikke gendannet:"
+RestoreFailedLine = "{path}: {reason}"
+RestoreOpenFolder = "Åbn mappe"
+RestoreOpenFolderTooltip = "Se de gendannede filer i filhåndteringen"
+RestoreStopQuestion = "Stop gendannelsen?"
+RestoreStopDetail = "De filer, der er gendannet indtil nu, bliver."
+RestoreKeepGoing = "Bliv ved med at gendanne"
+RestoreStop = "Stop"
+RestoreUnreadable_57 = "Kunne ikke læses fra USB-stikket"
+RestoreNotWritable_58 = "Kunne ikke skrives"
+RestoreInTheWay_59 = "Noget andet med det navn står i vejen"
+RestoreFull_60 = "Disken er fuld, så gendannelsen stoppede."
+RestoreOnStick_61 = "Den mappe ligger på USB-stikket, og Babawus gendanner aldrig til USB-stikket. Vælg en anden mappe."
+RestoreCantRead_62 = "Backuppen på dette USB-stik kan ikke læses. Luk dette vindue, og prøv igen."
 
 Bytes = "{size} byte"
 Kilobytes = "{size} kB"
@@ -332,7 +388,9 @@ Opbevar USB-stikket væk fra computeren mellem backups, så hvad måtte der ske 
 
 # Få filer tilbage
 
-Babawus har ingen gendannelsesknap. Åbn USB-stikket i filhåndteringen: dine filer ligger i mappen "backup", under computerens og dit eget navn, i de samme mapper som på computeren. Kopiér det, du har brug for, tilbage. De ældre versioner af en fil ligger i en mappe ved siden af med samme navn filen, men med [] i, for eksempel rapport[]pdf for rapport.pdf, hver med dato og klokkeslæt for, hvornår den blev erstattet, i navnet.
+Tryk på "{RestoreFiles}" under USB-stikket for at få filer tilbage. Sæt flueben ved de filer og mapper, du vil have, som når du vælger, hvad der skal tages backup af. En fil viser sin nyeste kopi og sine ældre versioner, hver med sin dato: Vælg den, og vælg en version til højre. Filerne kommer tilbage, hvor de var, eller i en anden mappe, som du vælger, og Babawus spørger først om filer, der er der i forvejen. Babawus ændrer aldrig USB-stikket under en gendannelse.
+
+Du kan også åbne USB-stikket i filhåndteringen: dine filer ligger i mappen "backup", under computerens og dit eget navn, i de samme mapper som på computeren. De ældre versioner af en fil ligger i en mappe ved siden af med samme navn som filen, men med [] i, for eksempel rapport[]pdf for rapport.pdf, hver med dato og klokkeslæt for, hvornår den blev erstattet, i navnet.
 
 # Avancerede funktioner
 
@@ -509,4 +567,22 @@ Din konto har ikke lov til at læse den, så der kan ikke tages backup af den.
 
 #56
 Vælg mindre, eller brug et større USB-stik.
+
+#57
+USB-stikket er måske blevet trukket ud, eller kopien på det er beskadiget. Sæt USB-stikket i igen, og gendan filen igen. Sker det igen, er USB-stikket måske ved at gå i stykker; prøv en ældre version af filen.
+
+#58
+Tjek, at du må skrive i mappen, og at der er plads på disken. Gendan så filen igen.
+
+#59
+En mappe, et link eller en anden fil har filens navn, eller en fil har navnet på en af dens mapper. Omdøb eller flyt den, eller gendan til en anden mappe.
+
+#60
+Gør plads på disken, eller gendan til en mappe på en anden disk, og gendan så resten igen.
+
+#61
+Vælg en mappe på computeren eller på en anden disk.
+
+#62
+Træk USB-stikket ud, og sæt det i igen. Sker det igen, så se #6.
 """

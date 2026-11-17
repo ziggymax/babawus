@@ -151,15 +151,18 @@ pub fn row(medium: &Medium, checked: Option<&Checked>, language: Language) -> Ro
 pub enum Action {
     ShowHistory,
     WhatsBackedUp,
+    /// Opens the Restore window (issue 161).
+    Restore,
     Prepare,
     ChangeSetup,
 }
 
 impl Action {
     /// The order on the screen: the everyday actions, then the advanced ones.
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 5] = [
         Self::ShowHistory,
         Self::WhatsBackedUp,
+        Self::Restore,
         Self::Prepare,
         Self::ChangeSetup,
     ];
@@ -173,6 +176,7 @@ impl Action {
         match self {
             Self::ShowHistory => Text::ShowHistory,
             Self::WhatsBackedUp => Text::WhatsBackedUp,
+            Self::Restore => Text::RestoreFiles,
             Self::Prepare => Text::Prepare,
             Self::ChangeSetup => Text::ChangeSetup,
         }
@@ -183,6 +187,7 @@ impl Action {
         match self {
             Self::ShowHistory => Text::ShowHistoryTooltip,
             Self::WhatsBackedUp => Text::WhatsBackedUpTooltip,
+            Self::Restore => Text::RestoreFilesTooltip,
             Self::Prepare => Text::PrepareTooltip,
             Self::ChangeSetup => Text::ChangeSetupTooltip,
         }
@@ -279,7 +284,7 @@ pub fn details(
         .filter(|action| advanced || !action.is_advanced())
         .filter(|action| match action {
             Action::ShowHistory => checked.is_some_and(|checked| checked.has_history),
-            Action::WhatsBackedUp => ready,
+            Action::WhatsBackedUp | Action::Restore => ready,
             // What is on a stick open for another account is unknown, so it isn't offered
             // for erasing (issue 110).
             Action::Prepare => formattable && !matches!(status, Some(Status::OtherAccount)),
