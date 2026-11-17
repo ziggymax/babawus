@@ -5,6 +5,7 @@ mod help_window;
 mod icons;
 mod info_page;
 mod log_window;
+mod restore_window;
 mod scroll;
 mod setup_page;
 mod window;

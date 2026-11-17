@@ -310,6 +310,62 @@ texts! {
     ChooseDone,
     ChooseDoneTooltip,
     ChooseCancelTooltip,
+    RestoreFiles,
+    RestoreFilesTooltip,
+    RestoreTitle,
+    RestoreHeading,
+    RestoreIntro,
+    RestoreNoteNotHere,
+    RestoreNoteOnlyOlder,
+    RestoreNoteVersion,
+    RestoreVersionsHeading,
+    RestoreVersionsHint,
+    RestoreVersionsOf,
+    RestoreVersionNewest,
+    RestoreVersionOlder,
+    RestoreVersionTooltip,
+    RestoreBackInPlace,
+    RestoreBackInPlaceTooltip,
+    RestoreIntoFolder,
+    RestoreIntoFolderTooltip,
+    RestoreChoose,
+    RestoreChooseTooltip,
+    RestoreChooseTitle,
+    RestoreSuggested,
+    RestoreButton,
+    RestoreButtonTooltip,
+    RestoreNothingTicked,
+    RestoreBackupRunning,
+    RestoreRunning,
+    RestoreReading,
+    RestoreFinding,
+    RestoreProgress,
+    RestoreCancelTooltip,
+    RestoreQuestion,
+    RestoreQuestionOne,
+    RestoreQuestionDetail,
+    RestoreReplace,
+    RestoreKeepBoth,
+    RestoreSkip,
+    RestoreDone,
+    RestoreNone,
+    RestoreSome,
+    RestoreSkipped,
+    RestoreStopped,
+    RestoreNotRestored,
+    RestoreFailedLine,
+    RestoreOpenFolder,
+    RestoreOpenFolderTooltip,
+    RestoreStopQuestion,
+    RestoreStopDetail,
+    RestoreKeepGoing,
+    RestoreStop,
+    RestoreUnreadable,
+    RestoreNotWritable,
+    RestoreInTheWay,
+    RestoreFull,
+    RestoreOnStick,
+    RestoreCantRead,
 
     Bytes,
     Kilobytes,
@@ -390,6 +446,12 @@ impl Text {
             Self::SetupSaveFailed => 54,
             Self::ChooseUnreadable => 55,
             Self::ChooseTooBig => 56,
+            Self::RestoreUnreadable => 57,
+            Self::RestoreNotWritable => 58,
+            Self::RestoreInTheWay => 59,
+            Self::RestoreFull => 60,
+            Self::RestoreOnStick => 61,
+            Self::RestoreCantRead => 62,
             _ => return None,
         })
     }
@@ -525,11 +587,11 @@ mod tests {
     use crate::language::testing::{english, german};
 
     #[test]
-    fn the_numbers_run_from_1_to_56_with_none_twice() {
+    fn the_numbers_run_from_1_to_62_with_none_twice() {
         let mut numbers: Vec<u16> = Text::ALL.iter().filter_map(|text| text.number()).collect();
         numbers.sort_unstable();
 
-        assert_eq!(numbers, (1..=56).collect::<Vec<_>>());
+        assert_eq!(numbers, (1..=62).collect::<Vec<_>>());
     }
 
     #[test]

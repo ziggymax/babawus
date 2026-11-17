@@ -52,6 +52,7 @@ use crate::help_window::HelpWindow;
 use crate::icons;
 use crate::info_page::InfoPage;
 use crate::log_window::LogWindow;
+use crate::restore_window::RestoreWindow;
 use crate::setup_page::{Instead, SetupEvent, SetupPage};
 use babawus_core::reminder::state_file;
 
@@ -332,6 +333,12 @@ struct Window {
     log_windows: RefCell<HashMap<String, Rc<LogWindow>>>,
     /// The Help window, while it is open.
     help_window: RefCell<Option<Rc<HelpWindow>>>,
+    /// The open Restore windows, by the udisks2 object path of their medium's file system: at
+    /// most one per stick (issue 161).
+    restore_windows: RefCell<HashMap<String, Rc<RestoreWindow>>>,
+    /// The sticks that files are being restored from, by the same path. "Start backup" is greyed
+    /// out for them.
+    restoring: RefCell<HashSet<String>>,
 }
 
 /// Opens the start screen.
@@ -462,6 +469,8 @@ pub fn show(app: &Application) {
         unlisted: Cell::new(None),
         log_windows: RefCell::new(HashMap::new()),
         help_window: RefCell::new(None),
+        restore_windows: RefCell::new(HashMap::new()),
+        restoring: RefCell::new(HashSet::new()),
     });
     *setup_events.borrow_mut() = Rc::downgrade(&this_window);
     this_window.connect_signals();
@@ -888,6 +897,11 @@ impl Window {
         if let Some(help_window) = help_window {
             help_window.set_language(language);
         }
+        let restore_windows: Vec<Rc<RestoreWindow>> =
+            self.restore_windows.borrow().values().cloned().collect();
+        for restore_window in restore_windows {
+            restore_window.set_language(language);
+        }
         let settings = Settings {
             language: Some(language.code().to_owned()),
         };
@@ -1042,6 +1056,21 @@ impl Window {
         };
         for log_window in gone {
             log_window.window.close();
+        }
+        // So does a Restore window, stopping a restore that is going on (issue 161).
+        let gone: Vec<Rc<RestoreWindow>> = {
+            let mut windows = self.restore_windows.borrow_mut();
+            let paths: HashSet<String> = media.iter().map(path).collect();
+            let gone: Vec<String> = windows
+                .keys()
+                .filter(|key| !paths.contains(*key))
+                .cloned()
+                .collect();
+            gone.iter().filter_map(|key| windows.remove(key)).collect()
+        };
+        for restore_window in gone {
+            restore_window.stop();
+            restore_window.window.close();
         }
         *self.media.borrow_mut() = media;
         self.update_rows();
@@ -1246,9 +1275,16 @@ impl Window {
             .iter()
             .find(|row| row.row.widget_name() == medium.volume.object_path.as_str());
         if let (Some(row), Some(start)) = (row, &details.start_backup) {
+            // Not while files are being restored from the stick (issue 161).
+            let restoring = self.restoring.borrow().contains(&medium.volume.object_path);
             row.start_backup.set_visible(true);
-            row.start_backup.set_sensitive(start.enabled);
-            row.start_backup.set_tooltip_text(Some(&start.tooltip));
+            row.start_backup.set_sensitive(start.enabled && !restoring);
+            let tooltip = if restoring {
+                Text::RestoreRunning.get(language).to_owned()
+            } else {
+                start.tooltip.clone()
+            };
+            row.start_backup.set_tooltip_text(Some(&tooltip));
         }
     }
 
@@ -1257,6 +1293,7 @@ impl Window {
         match action {
             Action::ShowHistory => self.open_history(),
             Action::WhatsBackedUp => self.open_coverage(),
+            Action::Restore => self.open_restore(),
             Action::Prepare => self.open_format(),
             Action::ChangeSetup => {
                 if let Some(medium) = self.selected_medium()
@@ -1314,6 +1351,16 @@ impl Window {
         for log_window in open {
             log_window.window.close();
         }
+        let open: Vec<Rc<RestoreWindow>> = self
+            .restore_windows
+            .borrow_mut()
+            .drain()
+            .map(|(_, open)| open)
+            .collect();
+        for restore_window in open {
+            restore_window.stop();
+            restore_window.window.close();
+        }
     }
 
     /// Shows the run `run_id` of the history's medium in its log window, which opens if it
@@ -1348,6 +1395,81 @@ impl Window {
         self.log_windows
             .borrow_mut()
             .insert(object_path, log_window);
+    }
+
+    /// Opens the Restore window for the selected medium, or brings it to the front if it is open
+    /// already (issue 161). Finding the backup only reads the setup, which is small.
+    fn open_restore(self: &Rc<Self>) {
+        let Some(medium) = self.selected_medium() else {
+            return;
+        };
+        let object_path = medium.volume.object_path.clone();
+        let open = self.restore_windows.borrow().get(&object_path).cloned();
+        if let Some(open) = open {
+            open.window.present();
+            return;
+        }
+        let Some(format) = medium.volume.format() else {
+            return;
+        };
+        let viewer = Viewer {
+            system: &RealFs,
+            this: &self.this,
+            username: &self.username,
+        };
+        let language = self.language.get();
+        let Some(folder) = viewer.backup_folder(&RealFs, &medium.root) else {
+            *self.notice.borrow_mut() = Some(Notice {
+                text: Text::RestoreCantRead,
+                label: medium.volume.label.clone(),
+            });
+            self.show_details();
+            return;
+        };
+        let Some(app) = self.window.application() else {
+            return;
+        };
+        let weak = Rc::downgrade(self);
+        let drive_id = medium.drive.id.clone();
+        let backup_running =
+            std::boxed::Box::new(move || {
+                weak.upgrade().is_some_and(|window| {
+                    window.backup.borrow().as_ref().is_some_and(|backup| {
+                        backup.running.is_some() && backup.drive_id == drive_id
+                    })
+                })
+            });
+        let weak = Rc::downgrade(self);
+        let busy_path = object_path.clone();
+        let on_busy = std::boxed::Box::new(move |busy: bool| {
+            let Some(window) = weak.upgrade() else { return };
+            if busy {
+                window.restoring.borrow_mut().insert(busy_path.clone());
+            } else {
+                window.restoring.borrow_mut().remove(&busy_path);
+            }
+            window.show_details();
+        });
+        let restore_window = RestoreWindow::open(
+            &app,
+            &medium.volume.label,
+            &self.username,
+            folder,
+            format,
+            language,
+            backup_running,
+            on_busy,
+        );
+        let weak = Rc::downgrade(self);
+        let closed_path = object_path.clone();
+        restore_window.window.connect_destroy(move |_| {
+            if let Some(window) = weak.upgrade() {
+                window.restore_windows.borrow_mut().remove(&closed_path);
+            }
+        });
+        self.restore_windows
+            .borrow_mut()
+            .insert(object_path, restore_window);
     }
 
     /// Opens "What's backed up" for the selected medium, and reads it off the main thread.
@@ -2331,7 +2453,8 @@ impl Window {
         let Some(format) = medium.volume.format() else {
             return;
         };
-        if !ready || self.backup.borrow().is_some() {
+        let restoring = self.restoring.borrow().contains(&medium.volume.object_path);
+        if !ready || restoring || self.backup.borrow().is_some() {
             return;
         }
         // Only shown in the log and the configuration, so a missing hostname stops nothing.

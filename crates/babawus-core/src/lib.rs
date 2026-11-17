@@ -25,6 +25,7 @@ pub mod medium;
 pub mod names;
 pub mod reminder;
 pub mod restore;
+pub mod restore_screen;
 pub mod run;
 pub mod scan;
 pub mod settings;

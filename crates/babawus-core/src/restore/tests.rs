@@ -677,3 +677,64 @@ fn a_file_in_the_way_of_the_target_folder_stops_every_file() {
 
     assert_eq!(outcome.failed, [(path("notes.txt"), Failure::InTheWay)]);
 }
+
+#[test]
+fn a_left_over_is_the_temporary_name_of_another_process() {
+    let own = 4321;
+    let cases = [
+        (".babawus-restore-1234-3", true),
+        (".babawus-restore-4321-3", false),
+        (".babawus-restore-1234-", false),
+        (".babawus-restore-1234", false),
+        (".babawus-restore-x-3", false),
+        (".babawus-restore-1234-3.txt", false),
+        ("babawus-restore-1234-3", false),
+        ("notes.txt", false),
+    ];
+    for (name, left_over) in cases {
+        assert_eq!(is_left_over(OsStr::new(name), own), left_over, "{name}");
+    }
+}
+
+#[test]
+fn files_left_over_by_a_restore_that_crashed_are_removed_where_it_writes() {
+    let setup = Setup::new(Format::Ext4);
+    let other = std::process::id().wrapping_add(1);
+    let own = std::process::id();
+    let documents = PathBuf::from(HOME).join("Documents");
+    for name in [
+        format!(".babawus-restore-{other}-1"),
+        format!(".babawus-restore-{own}-9"),
+        ".babawus-restore-notes".to_owned(),
+    ] {
+        setup
+            .system
+            .add_file(documents.join(name), b"half", time(1));
+    }
+    setup.system.add_dir_on_device("/home/anna/Elsewhere", 1);
+    let elsewhere =
+        PathBuf::from("/home/anna/Elsewhere").join(format!(".babawus-restore-{other}-2"));
+    setup.system.add_file(&elsewhere, b"half", time(1));
+
+    setup.restore(&ticked(&["Documents/deleted.txt"]), Resolution::Skip);
+
+    let names: Vec<String> = setup
+        .system
+        .read_dir(&documents)
+        .unwrap()
+        .iter()
+        .map(|name| name.to_string_lossy().into_owned())
+        .filter(|name| name.starts_with(".babawus"))
+        .collect();
+    assert_eq!(
+        names,
+        [
+            format!(".babawus-restore-{own}-9"),
+            ".babawus-restore-notes".to_owned()
+        ]
+    );
+    assert!(
+        setup.system.metadata(&elsewhere).is_ok(),
+        "not a folder it writes to"
+    );
+}

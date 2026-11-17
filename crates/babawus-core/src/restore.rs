@@ -5,7 +5,7 @@
 //!
 //! This only reads the stick. Everything it writes goes to the target folder.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::{OsStr, OsString};
 use std::io::{self, ErrorKind, Read as _};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
@@ -588,6 +588,7 @@ impl Backup<'_> {
             // A folder that can't be made shows up as a failure of the files in it.
             let _ = self.make_folder(&plan.target, folder);
         }
+        self.remove_left_overs(plan);
         let mut temp_number = 0;
         for file in &plan.files {
             if cancel.load(Ordering::Relaxed) {
@@ -646,6 +647,38 @@ impl Backup<'_> {
             }
         }
         outcome
+    }
+
+    /// Removes the temporary files that an earlier restore left in the folders this one writes
+    /// to, because it was stopped in the middle of a file by a crash or a power cut. Only one
+    /// Babawus runs on a computer, so a temporary file of another process is left over. One that
+    /// can't be removed is left, and is tried again next time.
+    fn remove_left_overs(&self, plan: &Plan) {
+        let mut folders: BTreeSet<PathBuf> = BTreeSet::new();
+        folders.insert(plan.target.clone());
+        folders.extend(plan.folders.iter().map(|folder| plan.target.join(folder)));
+        folders.extend(
+            plan.files
+                .iter()
+                .filter_map(|file| file.relative.parent())
+                .map(|parent| plan.target.join(parent)),
+        );
+        let own = std::process::id();
+        for folder in folders {
+            let Ok(names) = self.system.read_dir(&folder) else {
+                continue;
+            };
+            for name in names.iter().filter(|name| is_left_over(name, own)) {
+                let path = folder.join(name);
+                if self
+                    .system
+                    .metadata(&path)
+                    .is_ok_and(|metadata| metadata.kind == FileKind::File)
+                {
+                    let _ = self.system.remove_file(&path);
+                }
+            }
+        }
     }
 
     /// Makes the target folder, and any folders above it that are missing.
@@ -717,10 +750,7 @@ impl Backup<'_> {
             .medium
             .open(&source)
             .map_err(|_| CopyError::Failed(Failure::Unreadable))?;
-        let temp = target.with_file_name(format!(
-            ".babawus-restore-{}-{temp_number}",
-            std::process::id()
-        ));
+        let temp = target.with_file_name(temp_name(std::process::id(), temp_number));
         let result = (|| {
             let mut writer = self.system.create_new(&temp).map_err(CopyError::writing)?;
             let mut chunk = vec![0; CHUNK_SIZE];
@@ -751,6 +781,31 @@ impl Backup<'_> {
         }
         result
     }
+}
+
+/// The start of the name of a file being restored, before it is renamed.
+const TEMP_PREFIX: &str = ".babawus-restore-";
+
+/// The temporary name of the `number`th file restored by the process `process`:
+/// `.babawus-restore-12345-3`.
+fn temp_name(process: u32, number: u32) -> String {
+    format!("{TEMP_PREFIX}{process}-{number}")
+}
+
+/// Whether `name` is the temporary name of a file that another process than `own` was
+/// restoring, so that it was left over.
+pub fn is_left_over(name: &OsStr, own: u32) -> bool {
+    let Some(rest) = name
+        .to_str()
+        .and_then(|name| name.strip_prefix(TEMP_PREFIX))
+    else {
+        return false;
+    };
+    let Some((process, number)) = rest.split_once('-') else {
+        return false;
+    };
+    let digits = |text: &str| !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit());
+    digits(process) && digits(number) && process.parse::<u32>().is_ok_and(|process| process != own)
 }
 
 enum CopyError {

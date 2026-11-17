@@ -289,6 +289,62 @@ ChooseTooBig_56 = "Das ist mehr als der freie Platz auf dem Stick, es sei denn, 
 ChooseDone = "Fertig"
 ChooseDoneTooltip = "Zurück zur Einrichtung. Die Änderungen werden geschrieben, wenn du dort speicherst."
 ChooseCancelTooltip = "Ohne diese Änderungen zurück zur Einrichtung"
+RestoreFiles = "Dateien wiederherstellen…"
+RestoreFilesTooltip = "Dateien von diesem Stick zurückholen"
+RestoreTitle = "Wiederherstellen von {label}"
+RestoreHeading = "Dateien für {user} wiederherstellen"
+RestoreIntro = "Setz einen Haken bei den Dateien und Ordnern, die du zurückhaben willst. Ein Ordner mit Haken bringt alles darin zurück. Um eine Datei oder einen Ordner darin auszulassen, entferne den Haken. Wähl eine Datei aus, um ihre früheren Versionen zu sehen."
+RestoreNoteNotHere = "Nicht auf diesem Computer"
+RestoreNoteOnlyOlder = "Nur ältere Versionen"
+RestoreNoteVersion = "Version von {when}"
+RestoreVersionsHeading = "Versionen"
+RestoreVersionsHint = "Wähl eine Datei aus, um ihre Versionen zu sehen."
+RestoreVersionsOf = "Versionen von {name}"
+RestoreVersionNewest = "Neueste Kopie, geändert {when}"
+RestoreVersionOlder = "Ersetzt {when}"
+RestoreVersionTooltip = "Diese Version der Datei wiederherstellen"
+RestoreBackInPlace = "Dorthin, wo sie waren"
+RestoreBackInPlaceTooltip = "Jede Datei an ihren Platz in deinem persönlichen Ordner zurücklegen"
+RestoreIntoFolder = "In einen anderen Ordner:"
+RestoreIntoFolderTooltip = "Die Dateien in diesen Ordner legen, jede in ihren eigenen Ordnern darunter"
+RestoreChoose = "Auswählen…"
+RestoreChooseTooltip = "Einen anderen Ordner zum Wiederherstellen auswählen"
+RestoreChooseTitle = "Ordner zum Wiederherstellen auswählen"
+RestoreSuggested = "Wiederhergestellt von {label}"
+RestoreButton = "Wiederherstellen"
+RestoreButtonTooltip = "Die Dateien mit Haken zurückholen"
+RestoreNothingTicked = "Setz zuerst einen Haken bei den Dateien und Ordnern, die wiederhergestellt werden sollen"
+RestoreBackupRunning = "Eine Sicherung auf diesen Stick läuft. Warte, bis sie fertig ist."
+RestoreRunning = "Von diesem Stick werden gerade Dateien wiederhergestellt. Warte, bis das fertig ist."
+RestoreReading = "Der Stick wird gelesen…"
+RestoreFinding = "Die Dateien zum Wiederherstellen werden gesucht…"
+RestoreProgress = "Wird wiederhergestellt… {done} von {total} Dateien"
+RestoreCancelTooltip = "Das Wiederherstellen anhalten. Die bisher wiederhergestellten Dateien bleiben."
+RestoreQuestion = "{count} der Dateien sind schon da"
+RestoreQuestionOne = "Eine der Dateien ist schon da"
+RestoreQuestionDetail = "Wähl, was mit den Dateien geschehen soll, die schon da sind. „Beide behalten“ legt jede wiederhergestellte Datei neben die vorhandene, mit Datum und Uhrzeit im Namen."
+RestoreReplace = "Ersetzen"
+RestoreKeepBoth = "Beide behalten"
+RestoreSkip = "Überspringen"
+RestoreDone = "{files} wiederhergestellt."
+RestoreNone = "Nichts wurde wiederhergestellt."
+RestoreSome = "{done} von {total} Dateien wiederhergestellt."
+RestoreSkipped = "Übersprungen, weil sie schon da waren: {files}"
+RestoreStopped = "Das Wiederherstellen wurde angehalten."
+RestoreNotRestored = "Diese wurden nicht wiederhergestellt:"
+RestoreFailedLine = "{path}: {reason}"
+RestoreOpenFolder = "Ordner öffnen"
+RestoreOpenFolderTooltip = "Die wiederhergestellten Dateien in der Dateiverwaltung ansehen"
+RestoreStopQuestion = "Wiederherstellen anhalten?"
+RestoreStopDetail = "Die bisher wiederhergestellten Dateien bleiben."
+RestoreKeepGoing = "Weiter wiederherstellen"
+RestoreStop = "Anhalten"
+RestoreUnreadable_57 = "Konnte nicht vom Stick gelesen werden"
+RestoreNotWritable_58 = "Konnte nicht geschrieben werden"
+RestoreInTheWay_59 = "Etwas anderes mit diesem Namen steht im Weg"
+RestoreFull_60 = "Der Datenträger ist voll, darum wurde das Wiederherstellen angehalten."
+RestoreOnStick_61 = "Dieser Ordner liegt auf dem Stick, und Babawus stellt nie auf dem Stick wieder her. Wähl einen anderen Ordner."
+RestoreCantRead_62 = "Die Sicherung auf diesem Stick kann nicht gelesen werden. Schließ dieses Fenster und versuch es noch einmal."
 
 Bytes = "{size} Bytes"
 Kilobytes = "{size} kB"
@@ -331,7 +387,9 @@ Bewahre den Stick zwischen den Sicherungen getrennt vom Computer auf, damit das,
 
 # Dateien zurückholen
 
-Babawus hat keinen Knopf zum Wiederherstellen. Öffne den Stick in der Dateiverwaltung: Deine Dateien liegen im Ordner "backup", unter dem Namen des Computers und deinem eigenen, in denselben Ordnern wie auf dem Computer. Kopiere zurück, was du brauchst. Die älteren Versionen einer Datei liegen in einem Ordner daneben, der wie die Datei heißt, aber [] im Namen hat, etwa report[]pdf für report.pdf, jede mit Datum und Uhrzeit, zu der sie ersetzt wurde, im Namen.
+Drück "{RestoreFiles}" unter dem Stick, um Dateien zurückzuholen. Setz einen Haken bei den Dateien und Ordnern, die du willst, wie beim Auswählen, was gesichert wird. Eine Datei zeigt ihre neueste Kopie und ihre älteren Versionen, jede mit ihrem Datum: Wähl sie aus und such rechts eine Version aus. Die Dateien kommen dorthin zurück, wo sie waren, oder in einen anderen Ordner, den du auswählst, und Babawus fragt vorher nach Dateien, die schon da sind. Beim Wiederherstellen ändert Babawus den Stick nie.
+
+Du kannst den Stick auch in der Dateiverwaltung öffnen: Deine Dateien liegen im Ordner "backup", unter dem Namen des Computers und deinem eigenen, in denselben Ordnern wie auf dem Computer. Die älteren Versionen einer Datei liegen in einem Ordner daneben, der wie die Datei heißt, aber [] im Namen hat, etwa report[]pdf für report.pdf, jede mit Datum und Uhrzeit, zu der sie ersetzt wurde, im Namen.
 
 # Erweiterte Funktionen
 
@@ -508,4 +566,22 @@ Dein Konto darf ihn nicht lesen, deshalb kann er nicht gesichert werden.
 
 #56
 Wähle weniger aus, oder nimm einen größeren Stick.
+
+#57
+Der Stick wurde vielleicht herausgezogen, oder die Kopie darauf ist beschädigt. Steck den Stick wieder ein und stell die Datei noch einmal wieder her. Passiert es wieder, ist der Stick vielleicht defekt; versuch eine ältere Version der Datei.
+
+#58
+Prüf, ob du in den Ordner schreiben darfst und ob auf dem Datenträger Platz ist. Stell die Datei dann noch einmal wieder her.
+
+#59
+Ein Ordner, eine Verknüpfung oder eine andere Datei hat den Namen der Datei, oder eine Datei hat den Namen eines ihrer Ordner. Benenne sie um oder verschieb sie, oder stell in einen anderen Ordner wieder her.
+
+#60
+Schaff Platz auf dem Datenträger oder stell in einen Ordner auf einem anderen Datenträger wieder her, und stell dann den Rest noch einmal wieder her.
+
+#61
+Wähl einen Ordner auf dem Computer oder auf einem anderen Datenträger.
+
+#62
+Zieh den Stick heraus und steck ihn wieder ein. Passiert es wieder, siehe #6.
 """
