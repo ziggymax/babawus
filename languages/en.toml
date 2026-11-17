@@ -23,7 +23,7 @@ AdvancedContinue = "Continue"
 # The name's long form, which About shows, with the letters that spell Babawus in bold, in every
 # language.
 AboutComments = "Basic Backup with USB Storage"
-Logo = "Babawus"
+Logo = "Babawus never forgets"
 PlugIn = "Plug in your backup stick"
 ChooseMedium = "Choose a stick in the list"
 StickNotOpened = "The stick isn't opened"
