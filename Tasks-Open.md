@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-098.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-102.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -20,7 +20,13 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.0.0 is released (T-086), the first stable release. The three versions leading to 1.1.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done: 1.1.0-alpha.1, a fly-by text on the logo (T-089 to T-090, issue 159); 1.1.0-alpha.2, leaving out single files in "Choose what to back up" (T-091 to T-093, issue 160); and 1.1.0-alpha.3, a Restore window (T-094 to T-096, issue 161). Next is releasing 1.1.0; its tasks are added when work on it begins.
+Babawus 1.0.0 is released (T-086). The three versions leading to 1.1.0 ([ReleasePlanning.md](ReleasePlanning.md)) are done (T-089 to T-096), and a fault found after them is fixed (T-097). Now 1.1.0 is being released (issue 162).
+
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-099 | Raise the version to 1.1.0 | Todo | Issue 162 |
+| T-100 | Run the whole release checklist on the 1.1.0 build, recorded in an issue "Release 1.1.0 checklist": Claude drives the GUI on the VM, the user does the steps that need hands or a password, and looks through the German and Danish texts. A failed step, or wording the user doesn't like, gets a task before the release goes ahead | Todo | Issue 162 |
+| T-101 | Release 1.1.0: the tag `v1.1.0` on main, and a GitHub release with the `.deb` and notes drafted by Claude and reviewed by the user. ReleasePlanning.md then names 1.1.0 as the latest release, and says the next isn't planned yet | Todo | Issue 162 |
 
 ## Needs a decision
 
