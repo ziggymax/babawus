@@ -423,9 +423,9 @@ pub fn show(app: &Application) {
 
     let window = ApplicationWindow::builder()
         .application(app)
-        // Opens at 1100 × 768 with its title bar, assuming Full HD screens (issue 118). 1100 wide
-        // fits the five buttons of a stick on one line in German too, with Advanced on (T-102).
-        .default_width(1100)
+        // Opens at 700 × 768 with its title bar, assuming Full HD screens (issue 118). A stick's
+        // buttons wrap onto centred lines when they don't fit on one (issue 165).
+        .default_width(700)
         .default_height(768)
         .titlebar(&header)
         .child(&screens)
@@ -722,7 +722,7 @@ impl Window {
             }
             // Leaving with unsaved changes asks first. See issue 84.
             if window.setup_unsaved() {
-                window.ask_to_leave_setup(true);
+                window.ask_to_leave_setup(AfterLeaving::CloseWindow);
                 return glib::Propagation::Stop;
             }
             let running = window
@@ -788,7 +788,7 @@ impl Window {
         advanced.connect_activate(move |action, _| {
             let Some(window) = weak.upgrade() else { return };
             if window.advanced.get() {
-                window.set_advanced(action, false);
+                window.turn_advanced_off(action);
             } else {
                 window.ask_for_advanced(action);
             }
@@ -864,6 +864,41 @@ impl Window {
         action.set_state(&on.to_variant());
         self.advanced.set(on);
         self.set_texts();
+    }
+
+    /// Turns Advanced off, leaving an advanced page for the start page first: "Prepare a stick",
+    /// or the setup with "Choose what to back up". Unsaved changes to the setup ask first, and
+    /// "Keep editing" keeps Advanced on (issue 165). While a stick is formatted, Advanced is
+    /// greyed out in the menu, so this isn't reached then.
+    fn turn_advanced_off(self: &Rc<Self>, action: &gio::SimpleAction) {
+        if self.formatting() {
+            return;
+        }
+        if self.setup.borrow().is_some() {
+            if self.setup_unsaved() {
+                self.ask_to_leave_setup(AfterLeaving::AdvancedOff);
+                return;
+            }
+            self.close_setup();
+        }
+        if self.format.borrow().is_some() {
+            self.close_format();
+        }
+        self.set_advanced(action, false);
+    }
+
+    /// The menu's Advanced, a toggle.
+    fn advanced_action(&self) -> Option<gio::SimpleAction> {
+        self.window
+            .lookup_action("advanced")
+            .and_then(|action| action.downcast::<gio::SimpleAction>().ok())
+    }
+
+    /// Greys out Advanced in the menu while a stick is formatted, which can't be stopped.
+    fn update_advanced_action(&self) {
+        if let Some(action) = self.advanced_action() {
+            action.set_enabled(!self.formatting());
+        }
     }
 
     /// Warns before Advanced is turned on, and turns it on only after "Continue". "Cancel" has
@@ -1597,7 +1632,7 @@ impl Window {
         page.back.connect_clicked(move |_| {
             let Some(window) = weak.upgrade() else { return };
             if window.setup_unsaved() {
-                window.ask_to_leave_setup(false);
+                window.ask_to_leave_setup(AfterLeaving::Nothing);
             } else {
                 window.close_setup();
             }
@@ -1686,8 +1721,8 @@ impl Window {
             })
     }
 
-    /// Asks whether to leave the editor without saving. `closing` closes the window too.
-    fn ask_to_leave_setup(self: &Rc<Self>, closing: bool) {
+    /// Asks whether to leave the editor without saving, and then does `after` too.
+    fn ask_to_leave_setup(self: &Rc<Self>, after: AfterLeaving) {
         let language = self.language.get();
         let dialog = AlertDialog::builder()
             .message(Text::SetupDiscardQuestion.get(language))
@@ -1710,8 +1745,14 @@ impl Window {
                     return;
                 }
                 window.close_setup();
-                if closing {
-                    window.window.close();
+                match after {
+                    AfterLeaving::Nothing => {}
+                    AfterLeaving::CloseWindow => window.window.close(),
+                    AfterLeaving::AdvancedOff => {
+                        if let Some(action) = window.advanced_action() {
+                            window.set_advanced(&action, false);
+                        }
+                    }
                 }
             },
         );
@@ -2349,6 +2390,7 @@ impl Window {
                 page.show_result(&result_screen(label, Some(failure), language));
             }
         }
+        self.update_advanced_action();
     }
 
     /// Leaves the format view, unless formatting is going on. A newly formatted medium is
@@ -2371,6 +2413,7 @@ impl Window {
                 *self.selected.borrow_mut() = selected;
             }
         }
+        self.update_advanced_action();
         self.show_screen("start");
         self.media_changed();
     }
@@ -2678,7 +2721,17 @@ fn unselectable(widget: &gtk4::Widget) {
     }
 }
 
-/// A row of action buttons that wraps like words when it runs out of room.
+/// What leaving the setup without saving does next.
+enum AfterLeaving {
+    /// Only goes back to the start page.
+    Nothing,
+    /// Closes the window too.
+    CloseWindow,
+    /// Turns Advanced off too (issue 165).
+    AdvancedOff,
+}
+
+/// A row of action buttons that wraps like words onto centred lines when it runs out of room.
 fn action_row() -> Box {
     let row = Box::new(Orientation::Horizontal, 0);
     row.set_layout_manager(Some(crate::wrap::WrapLayout::new(8)));

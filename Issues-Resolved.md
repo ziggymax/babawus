@@ -696,3 +696,17 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - The main window opens 1100 wide instead of 1024, which fits a stick's five buttons on one line in all three languages. A narrower window still wraps them, as issue 125 decided.
         - The checklist empties the file cache before the steps that cancel a restore, so that the restore takes long enough.
 
+## Decisions on the restore folder's language (T-103)
+
+164. **The suggested restore folder keeps its language (T-103).** The 1.1.0 checklist run ([#118](https://github.com/ziggymax/babawus/issues/118)) found that the folder suggested for "Put them in this folder:" is named when the Restore window opens, in the language then. After a change from Danish to German it still said "Gendannet fra BACKUP-A …", and a restore would have made a folder with a Danish name.
+    - **Decided (2026-11-17):** fixed before 1.1.0 is released. When the language changes, the Restore window suggests a new folder in the new language, with the time then. A folder the user chose with "Choose…" is kept as it is, and so is the folder of a restore that is going on.
+
+## Decisions on the button row, the window's width, and turning Advanced off (T-104 and T-105)
+
+165. **Buttons that wrap, a narrower window, and Advanced turned off on an advanced page (T-104, T-105).** After the 1.1.0 checklist run the user found that the window's width had been tuned twice (issues 125 and 163) to keep a stick's buttons on one line, and more languages would mean more of that, while there is plenty of room below the buttons. Trying sizes, the user also found that turning Advanced off on an advanced page left that page, with its advanced functions, in use.
+    - **Decided (2026-11-17):**
+        - A stick's buttons fill as much of a line as fits, and wrap like words onto the next lines, as before; now each line is centred. Only this row changes: the bottom rows of the pages stay left-aligned.
+        - The main window opens at 700 × 768 instead of 1100 × 768 (T-102), so the buttons often take two lines, more or fewer depending on the language. Its height stays, so that no page needs scrolling at the start size (issue 118). A page that needs more width still makes the window wider, as before.
+        - Turning Advanced off on "Prepare a stick", or on the setup of a stick or its "Choose what to back up", goes back to the start page. With unsaved changes to the setup it asks "Leave without saving?" first; "Keep editing" keeps the page, the changes and Advanced on.
+        - While a stick is formatted, which can't be stopped, Advanced is greyed out in the menu, and can be turned off once the stick is ready.
+

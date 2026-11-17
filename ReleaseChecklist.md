@@ -52,7 +52,7 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 ## Formatting (Advanced)
 
 - [ ] Plug in stick A. → It appears in the list, with a grey stick and its own round Eject button, if it isn't a Babawus medium yet. Select it. → No "Start backup" below it.
-- [ ] Choose Menu → Advanced. → "Turn on the advanced functions?" asks first, with "Cancel" and "Continue". Press Esc. → Advanced stays off. Choose Menu → Advanced again and press "Continue". → The title bar shows an orange "Advanced" marker, and "Prepare…" and, for a Babawus medium, "Change setup…" appear, on the same row as the everyday buttons, after them.
+- [ ] Choose Menu → Advanced. → "Turn on the advanced functions?" asks first, with "Cancel" and "Continue". Press Esc. → Advanced stays off. Choose Menu → Advanced again and press "Continue". → The title bar shows an orange "Advanced" marker, and "Prepare…" and, for a Babawus medium, "Change setup…" appear after the everyday buttons. At the start size of 700 wide they wrap onto a second line, and each line is centred.
 - [ ] Press "Prepare…". → "Prepare a stick" lists stick A with its maker, size and what is on it, and no internal disks. Stick A is chosen, a name such as "BACKUP-A" is filled in, and exFAT is chosen. The warning names the stick and what will be erased. "Erase and format" is greyed out.
 - [ ] Type a name with a space in it. → "Use 1 to 11 letters, digits and dashes, with no spaces." shows, and the button stays greyed out. Put the suggested name back.
 - [ ] Tick "I understand that everything on this stick will be erased". → "Erase and format" turns red, and can be pressed.
@@ -66,6 +66,7 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Select stick B, which your account formatted with Ext4. Press "Change setup…", "Add this computer and your account", and "Choose what to back up…", tick a folder with a file in it, then "Done" and "Save", and "Start backup". → "All good". Note in the issue any password that was asked for, and whose.
 - [ ] Close Babawus, and log back in to your own account. Pull out both sticks and plug them back in.
 - [ ] Turn Advanced off in the menu. → It asks nothing, and the marker and the advanced buttons go away. Close and start Babawus. → Advanced is off.
+- [ ] Turn Advanced on, press "Prepare…", and turn Advanced off in the menu. → The start page, Advanced off. Turn it on again, press "Change setup…", press the + of "Older versions to keep", and turn Advanced off. → "Leave without saving?" Choose "Keep editing". → The setup is still showing with the change, and Advanced is still ticked in the menu. Turn Advanced off again and choose "Leave without saving". → The start page, Advanced off, and the setup unchanged.
 
 ## Setting up
 
