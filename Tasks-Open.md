@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-094.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-097.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -20,7 +20,12 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.0.0 is released (T-086), the first stable release. 1.1.0-alpha.1, the first of three versions leading to 1.1.0 ([ReleasePlanning.md](ReleasePlanning.md)), is done: a fly-by text on the logo (T-089 to T-090, issue 159). So is 1.1.0-alpha.2, the second: leaving out single files in "Choose what to back up" (T-091 to T-093, issue 160). Next is 1.1.0-alpha.3, the last before 1.1.0: a Restore window; its tasks are added when work on it begins.
+Babawus 1.0.0 is released (T-086), the first stable release. 1.1.0-alpha.1, the first of three versions leading to 1.1.0 ([ReleasePlanning.md](ReleasePlanning.md)), is done: a fly-by text on the logo (T-089 to T-090, issue 159). So is 1.1.0-alpha.2, the second: leaving out single files in "Choose what to back up" (T-091 to T-093, issue 160). Being worked on is 1.1.0-alpha.3, the last before 1.1.0: a Restore window (issue 161).
+
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-095 | The Restore window: the button "Restore files…", the tree with ticks, the side pane of versions, where the files go (back where they were, or into another folder, with "Choose…"), the question about files already in place, progress and result, in English, German and Danish. The Help's "Getting files back", Requirements.md and ReleaseChecklist.md | Todo | Issue 161 |
+| T-096 | Raise the version to 1.1.0-alpha.3 and update ReleasePlanning.md. After it is merged, tag `v1.1.0-alpha.3` on main | Todo | Issue 161 |
 
 ## Needs a decision
 

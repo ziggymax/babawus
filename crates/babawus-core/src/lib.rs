@@ -24,6 +24,7 @@ pub mod media;
 pub mod medium;
 pub mod names;
 pub mod reminder;
+pub mod restore;
 pub mod run;
 pub mod scan;
 pub mod settings;
