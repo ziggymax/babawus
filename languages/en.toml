@@ -268,7 +268,7 @@ SetupBothFolders_53 = "Both your earlier and your new name have a folder on the 
 SetupSaveFailed_54 = "The setup couldn't be saved: {error}"
 
 ChooseHeading = "Choose what to back up for {user}"
-ChooseIntro = "Tick the files and folders to back up. A ticked folder is backed up with everything in it. To leave out a folder inside it, untick that folder."
+ChooseIntro = "Tick the files and folders to back up. A ticked folder is backed up with everything in it. To leave out a file or folder inside it, untick it."
 ChooseShowHidden = "Show hidden files"
 ChooseNoteLeftOut = "Left out"
 ChooseNoteLeftOutAbove = "Left out with a folder above it"
@@ -282,7 +282,7 @@ ChoosePatternsDetail = "In any folder. * stands for any characters, and ? for on
 ChoosePatternAdd = "Add"
 ChoosePatternRemove = "Remove"
 ChoosePatternEmpty = "Type a name or a pattern first."
-ChoosePatternSlash = "A pattern can't contain /. To leave out one folder, untick it in the tree."
+ChoosePatternSlash = "A pattern can't contain /. To leave out one file or folder, untick it in the tree."
 ChoosePatternDuplicate = "That pattern is in the list already."
 ChooseCounting = "Counting…"
 ChooseNothing = "Nothing is chosen yet."

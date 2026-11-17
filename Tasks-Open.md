@@ -24,7 +24,6 @@ Babawus 1.0.0 is released (T-086), the first stable release. 1.1.0-alpha.1, the 
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-092 | In "Choose what to back up", unticking a file inside a ticked folder leaves it out and crosses it out, and ticking it again takes that back. "What's backed up" and ReleaseChecklist.md cover left-out files | Todo | Issue 160 |
 | T-093 | Raise the version to 1.1.0-alpha.2 and update ReleasePlanning.md. After it is merged, tag `v1.1.0-alpha.2` on main | Todo | Issue 160 |
 
 ## Needs a decision

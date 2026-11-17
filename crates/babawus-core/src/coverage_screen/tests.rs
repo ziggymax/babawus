@@ -169,6 +169,7 @@ fn nothing_left_out_has_no_heading() {
         selected: Vec::new(),
         exclude_patterns: Vec::new(),
         exclude_folders: Vec::new(),
+        exclude_files: Vec::new(),
     };
 
     let shown = coverage_screen(&Gathered::Covered(coverage), "anna", en());
@@ -186,4 +187,44 @@ fn a_medium_that_no_longer_has_the_account_says_so() {
             .intro
             .starts_with("This stick hasn't been set up for you")
     );
+}
+
+#[test]
+fn left_out_files_come_after_the_folders_and_before_the_patterns() {
+    let coverage = Coverage {
+        selected: Vec::new(),
+        exclude_patterns: vec!["*.tmp".to_owned()],
+        exclude_folders: vec!["Documents/old".to_owned()],
+        exclude_files: vec!["Documents/secret.txt".to_owned()],
+    };
+
+    let shown = coverage_screen(&Gathered::Covered(coverage), "anna", en());
+
+    assert_eq!(
+        shown.left_out,
+        [
+            "Documents/old",
+            "Documents/secret.txt",
+            "Anything named *.tmp, in any folder"
+        ]
+    );
+}
+
+#[test]
+fn a_selected_file_that_is_left_out_is_not_backed_up() {
+    let mut config = Config::new();
+    config.add_computer(ID, "laptop", "laptop", &[]).unwrap();
+    config.add_account(ID, "anna").unwrap();
+    config.computers[0].accounts[0].selected = vec!["notes.txt".to_owned()];
+    config.computers[0].accounts[0].exclude_files = vec!["notes.txt".to_owned()];
+    let files = FakeFs::exfat();
+    files.add_dir_on_device(PathBuf::from(ROOT).join(".babawus"), 1);
+    save(&files, &PathBuf::from(ROOT), Format::ExFat, &config).unwrap();
+
+    let Gathered::Covered(coverage) = gather(&files, "anna") else {
+        panic!("not covered");
+    };
+
+    assert_eq!(coverage.selected[0].kind, Kind::Excluded);
+    assert_eq!(coverage.exclude_files, ["notes.txt"]);
 }

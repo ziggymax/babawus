@@ -266,7 +266,7 @@ SetupBothFolders_53 = "Både dit tidligere og dit nye navn har en mappe på USB-
 SetupSaveFailed_54 = "Opsætningen kunne ikke gemmes: {error}"
 
 ChooseHeading = "Vælg, hvad der skal tages backup af for {user}"
-ChooseIntro = "Sæt flueben ved de filer og mapper, der skal tages backup af. En mappe med flueben tages med alt, hvad den indeholder. Fjern fluebenet ved en mappe inde i den for at udelade den."
+ChooseIntro = "Sæt flueben ved de filer og mapper, der skal tages backup af. En mappe med flueben tages med alt, hvad den indeholder. Fjern fluebenet ved en fil eller mappe inde i den for at udelade den."
 ChooseShowHidden = "Vis skjulte filer"
 ChooseNoteLeftOut = "Udeladt"
 ChooseNoteLeftOutAbove = "Udeladt sammen med en mappe ovenover"
@@ -280,7 +280,7 @@ ChoosePatternsDetail = "I alle mapper. * står for vilkårlige tegn og ? for ét
 ChoosePatternAdd = "Tilføj"
 ChoosePatternRemove = "Fjern"
 ChoosePatternEmpty = "Skriv først et navn eller et mønster."
-ChoosePatternSlash = "Et mønster kan ikke indeholde /. Fjern fluebenet ved mappen i træet for at udelade én mappe."
+ChoosePatternSlash = "Et mønster kan ikke indeholde /. Fjern fluebenet i træet for at udelade én fil eller mappe."
 ChoosePatternDuplicate = "Det mønster er allerede på listen."
 ChooseCounting = "Tæller…"
 ChooseNothing = "Intet er valgt endnu."

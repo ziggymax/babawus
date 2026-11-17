@@ -75,9 +75,10 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Press "Choose what to back up…". → A tree with "Your home folder" open. Hidden folders don't show, except those holding something chosen or left out, such as `.local`, which holds `.local/share/Trash`, left out by default.
 - [ ] Tick `BabawusTest` and open it. → Everything in it is ticked. `notes.tmp` is crossed out, with "Left out by the name pattern *.tmp". The totals count, then show the files and size, with the free space on the stick.
 - [ ] Open `Letters` and untick `old`. → It is crossed out, "Left out", and the totals go down. `Letters` and `BabawusTest` now show partly ticked boxes.
+- [ ] Untick `anna.txt` in `Letters`. → It is crossed out, "Left out", and the totals go down by one file. Tick it again. → Ticked again, and the totals go back up. Untick it once more, so that it stays left out.
 - [ ] Press "Done", then "Save". → "Stick setup saved." The start screen shows stick A as "Ready", "No backup yet".
 - [ ] A stick set up with Babawus 0.1.0, if you have one: plug it in. → "Needs attention", and "Change setup…" offers only "Start a new setup…" (issue 136). Its backups stay on it.
-- [ ] Damage the setup by hand: open `.babawus/babawus_config` on stick A in a text editor, change `older_versions = 10` to `11` in your backup profile, and save. Replug the stick. → "Needs attention". "Change setup…" warns that the setup "was changed outside Babawus, or is damaged", and shows 11 in your backup profile. Set it back to 10, press the + of "Remind after days without a backup" once, and press "Save". → "Ready" again. The file now says `older_versions = 10` and `run_check_days = 8` in your profile, and its `[babawus]` table has this version of Babawus and the time it was saved.
+- [ ] Damage the setup by hand: open `.babawus/babawus_config` on stick A in a text editor, change `older_versions = 10` to `11` in your backup profile, and save. Replug the stick. → "Needs attention". "Change setup…" warns that the setup "was changed outside Babawus, or is damaged", and shows 11 in your backup profile. Set it back to 10, press the + of "Remind after days without a backup" once, and press "Save". → "Ready" again. The file now says `older_versions = 10` and `run_check_days = 8` in your profile, and its `[babawus]` table has `config_format = 2`, this version of Babawus and the time it was saved. Your profile has `exclude_files = ["BabawusTest/Letters/anna.txt"]`.
 
 ## Backing up
 
@@ -90,7 +91,8 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Right-click the newer run and choose "Show in the log". → The same window comes to the front, with the newer run highlighted instead.
 - [ ] Leave the log window open, press "Back" and "Start backup". → When it has finished, the log window shows the new run's lines too, and the highlight hasn't moved.
 - [ ] Close Babawus. → The log window closes with it. Advanced is off again when Babawus next starts.
-- [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders and the name patterns.
+- [ ] Press "Back", then "What's backed up". → `BabawusTest`, then under "Left out:" the left-out folders, `BabawusTest/Letters/anna.txt`, and the name patterns.
+- [ ] Look in stick A's backup of `BabawusTest/Letters`. → No `anna.txt`, and no `notes.tmp`.
 - [ ] Set up stick B as for stick A, with `BabawusTest` ticked, and back up to it once. → `meeting: notes.txt` is backed up there, because Ext4 can store the name. Only `secret.txt` is skipped.
 
 ## Help
