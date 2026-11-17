@@ -138,6 +138,7 @@ pub struct RestoreWindow {
     versions_heading: Label,
     versions_hint: Label,
     versions: ListBox,
+    where_heading: Label,
     back_in_place: CheckButton,
     into_folder: CheckButton,
     folder: Label,
@@ -220,6 +221,7 @@ impl RestoreWindow {
             .vexpand(true)
             .build();
 
+        let where_heading = label(Some("babawus-next-step"));
         let back_in_place = CheckButton::new();
         let into_folder = CheckButton::new();
         into_folder.set_group(Some(&back_in_place));
@@ -275,6 +277,7 @@ impl RestoreWindow {
         page.append(&intro);
         page.append(&paned);
         page.append(&Separator::new(Orientation::Horizontal));
+        page.append(&where_heading);
         page.append(&back_in_place);
         page.append(&folder_row);
         page.append(&progress_row);
@@ -306,6 +309,7 @@ impl RestoreWindow {
             versions_heading,
             versions_hint,
             versions,
+            where_heading,
             back_in_place,
             into_folder,
             folder,
@@ -425,6 +429,8 @@ impl RestoreWindow {
         self.heading
             .set_label(&Text::RestoreHeading.fill(language, &[("user", &self.user)]));
         self.intro.set_label(Text::RestoreIntro.get(language));
+        self.where_heading
+            .set_label(Text::RestoreWhereHeading.get(language));
         self.back_in_place
             .set_label(Some(Text::RestoreBackInPlace.get(language)));
         self.back_in_place

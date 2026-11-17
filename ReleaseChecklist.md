@@ -97,13 +97,13 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 
 ## Restoring
 
-- [ ] Select stick B and press "Restore files…". → A window "Restore from BACKUP-B", headed "Restore files for" you, with "Your home folder" open, `BabawusTest` in it, "Versions" on the right with "Select a file to see its versions.", and "Back where they were" chosen. "Restore" is greyed out, and its tooltip says to tick first.
+- [ ] Select stick B and press "Restore files…". → A window "Restore from BACKUP-B", headed "Restore files for" you, with "Your home folder" open, `BabawusTest` in it, "Versions" on the right with "Select a file to see its versions.", and "Put them back in the folders they came from" chosen. "Restore" is greyed out, and its tooltip says to tick first.
 - [ ] Open `BabawusTest` and `Photos`, and select `big.bin`. → Its versions on the right: "Newest copy, changed" with a date and "2.1 GB", and older versions, if any, each "Replaced" with a date.
 - [ ] Tick `Letters`, and untick `anna.txt` in it. → `anna.txt` is crossed out, "Left out", and `Letters`, `BabawusTest` and "Your home folder" show partly ticked boxes.
-- [ ] Choose "Into another folder:", which shows a new folder such as `Restored from BACKUP-B` with the date and time, and press "Restore". → "1 file restored." and "Open folder". The ticks are cleared, the folders stay open, and another folder is suggested.
+- [ ] Choose "Put them in this folder:", which shows a new folder such as `Restored from BACKUP-B` with the date and time, and press "Restore". → "1 file restored." and "Open folder". The ticks are cleared, the folders stay open, and another folder is suggested.
 - [ ] Press "Open folder". → The file manager shows the folder, with `BabawusTest/Letters/old/draft.txt` in it, with its old modification date. Close the file manager and delete the folder.
-- [ ] Tick `meeting: notes.txt`, choose "Back where they were", and press "Restore". → "One of the files is already there", with "Replace them", "Keep both", "Skip them" and "Cancel". Press "Keep both". → "1 file restored." `BabawusTest` now also has `meeting: notes (` with a date and time `).txt`. Delete it.
-- [ ] Tick `big.bin`, choose "Into another folder:", press "Restore", and while it shows "Restoring… 0 of 1 files" and the bar, press "Cancel". → "The restore was stopped. Nothing was restored." The folder has no `big.bin` and no other file. Delete the folder.
+- [ ] Tick `meeting: notes.txt`, choose "Put them back in the folders they came from", and press "Restore". → "One of the files is already there", with "Replace them", "Keep both", "Skip them" and "Cancel". Press "Keep both". → "1 file restored." `BabawusTest` now also has `meeting: notes (` with a date and time `).txt`. Delete it.
+- [ ] Tick `big.bin`, choose "Put them in this folder:", press "Restore", and while it shows "Restoring… 0 of 1 files" and the bar, press "Cancel". → "The restore was stopped. Nothing was restored." The folder has no `big.bin` and no other file. Delete the folder.
 - [ ] Start the same restore again, and close the window while it runs. → "Stop restoring?" Choose "Stop". → The window closes. Delete the folder.
 - [ ] While the Restore window is open, eject stick B in the main window. → The Restore window closes.
 
