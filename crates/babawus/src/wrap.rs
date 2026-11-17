@@ -1,6 +1,7 @@
 //! A row of buttons that wraps like words: each keeps its own width and sits close to the one
-//! before, and one that doesn't fit starts a new line. GTK 4.14 has no such container, and its
-//! `FlowBox` lines its children up in columns, which spreads them out (issue 125).
+//! before, and one that doesn't fit starts a new line. Each line is centred (issue 165). GTK 4.14
+//! has no such container, and its `FlowBox` lines its children up in columns, which spreads them
+//! out (issue 125).
 
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
@@ -65,7 +66,9 @@ mod imp {
             let children = shown_children(widget);
             let mut y = 0;
             for line in lines(&children, width, spacing) {
-                let mut x = 0;
+                let used = line.children.iter().map(|(_, width)| width).sum::<i32>()
+                    + spacing * (line.children.len() as i32 - 1).max(0);
+                let mut x = ((width - used) / 2).max(0);
                 for (child, child_width) in line.children {
                     let rectangle = gtk4::Allocation::new(x, y, child_width, line.height);
                     child.size_allocate(&rectangle, -1);

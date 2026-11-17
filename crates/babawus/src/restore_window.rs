@@ -454,6 +454,12 @@ impl RestoreWindow {
         self.open_folder
             .set_tooltip_text(Some(Text::RestoreOpenFolderTooltip.get(language)));
         self.restore.set_label(Text::RestoreButton.get(language));
+        // The suggested folder is named in the new language too, unless the user chose a folder
+        // with "Choose…", or a restore into it is going on (T-103).
+        let suggested = self.suggested.borrow().to_string_lossy().into_owned();
+        if self.running.borrow().is_none() && self.folder.label() == suggested {
+            self.suggest_folder();
+        }
         self.update_restore_button();
         self.build_tree();
         self.show_versions();
