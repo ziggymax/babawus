@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-106.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-115.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -20,7 +20,19 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.0 is released (T-101). The next release isn't planned yet (see [ReleasePlanning.md](ReleasePlanning.md)).
+Babawus 1.1.0 is released (T-101). Next is release 1.1.1, step 0 of bringing Babawus to more platforms: the Linux-specific code moves behind a platform layer, without changing what Babawus does (see "Step 0" in [ReleasePlanning.md](ReleasePlanning.md)). The tasks for 1.2.0, other Linux distributions, are created when work on it begins.
+
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-106 | Design the platform layer: what it offers the rest of `babawus-core`, where it lives (for example `src/platform/`, with a `linux` module chosen by `#[cfg(target_os = "linux")]`), and how the fakes for tests fit in, as `FileSystem` does today. Record the design in Requirements.md | Todo | ReleasePlanning.md: "Step 0" |
+| T-107 | Move the handling of sticks behind the platform layer: listing, mounting, ejecting, formatting and setting permissions (`udisks.rs`, `media.rs`, `format.rs`; udisks2, `mkfs.exfat`, `mkfs.ext4`, `setfacl`). `gio` then becomes a Linux-only dependency of `babawus-core` | Todo | ReleasePlanning.md: "Step 0" |
+| T-108 | Move identity behind the platform layer: the computer's ID (`/etc/machine-id`) and name (`identity.rs`), and the boot ID (`lock.rs`) | Todo | ReleasePlanning.md: "Step 0" |
+| T-109 | Move flushing and locking behind the platform layer: `syncfs` and `fsync` (`fs/real.rs`, `copy.rs`), the computer lock (`computer_lock.rs`), and how a lock checks whether its process is still running (`/proc` in `lock.rs`) | Todo | ReleasePlanning.md: "Step 0" |
+| T-110 | Move paths behind the platform layer: the settings file (`settings.rs`), the note of the last backup (`reminder.rs`) and the installed language files (`language.rs`) | Todo | ReleasePlanning.md: "Step 0" |
+| T-114 | Make CI check that `babawus-core` compiles for Windows, so that Linux-only code can't slip back into the shared parts: a placeholder Windows implementation of the platform layer that compiles but says Windows isn't supported yet, and a CI step `cargo check -p babawus-core --target x86_64-pc-windows-gnu`. Needs T-107 to T-110, so that `gio`, `libc` and `/proc` are only used on Linux | Todo | ReleasePlanning.md: "Step 0" |
+| T-111 | Raise the version to 1.1.1, the build that the release checklist runs on (T-112) | Todo | ReleasePlanning.md: "Step 0" |
+| T-112 | Run the whole release checklist on the 1.1.1 build on Linux Mint 22.x. Nothing a user sees should have changed | Todo | ReleasePlanning.md: "Step 0" |
+| T-113 | Release 1.1.1: tag `v1.1.1` on main, and a GitHub release with the `.deb` and notes. ReleasePlanning.md names 1.1.1 as the latest release | Todo | ReleasePlanning.md: "Step 0" |
 
 ## Needs a decision
 
