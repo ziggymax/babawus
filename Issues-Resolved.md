@@ -710,3 +710,11 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
         - Turning Advanced off on "Prepare a stick", or on the setup of a stick or its "Choose what to back up", goes back to the start page. With unsaved changes to the setup it asks "Leave without saving?" first; "Keep editing" keeps the page, the changes and Advanced on.
         - While a stick is formatted, which can't be stopped, Advanced is greyed out in the menu, and can be turned off once the stick is ready.
 
+
+## Decisions on the platform layer (T-106)
+
+166. **How the shared code reaches the Linux-specific parts (T-106).** Release 1.1.1 moves the Linux-specific code of `babawus-core` behind a platform layer (ReleasePlanning.md, "Step 0").
+    - **Decided (2026-11-18):** a `platform` module whose `linux` submodule is chosen at compile time with `#[cfg(target_os = "linux")]`, offering plain types and functions. There is no `Platform` trait passed around. Tests keep using `FileSystem` with `FakeFs`, and pure functions that take plain data; a trait is added only where a fake is really needed.
+    - **Decided (2026-11-18):** one file per area. `platform.rs` chooses the operating system. `platform/linux/` holds `sticks.rs` (where `udisks.rs` moves), `identity.rs`, `flush.rs` (flushing and locking) and `paths.rs`; later `platform/windows/` gets the same four files. Shared logic, such as `media.rs` and `format.rs`, stays where it is.
+    - **Decided (2026-11-18):** neutral names. The platform layer offers `platform::Sticks` (connecting, formatting, ejecting, …) with its result and error types, so the UI crate never names udisks2 and needs no change per operating system. On Linux, `Sticks` is built on udisks2 in `platform/linux/sticks.rs`.
+    - **Decided (2026-11-18):** `RealFs` stays in `fs/real.rs`, the one implementation for every operating system. Its three Linux-only methods, `set_mode`, `free_space` and `sync_medium`, call functions in the platform layer. The `FileSystem` trait and `FakeFs` don't change.

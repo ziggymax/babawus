@@ -670,6 +670,21 @@ At the start of each run, after taking the medium's lock, Babawus writes the mis
     - **Checks.** A file that can't be read as TOML, whose code isn't its file name, whose name is empty, that lacks a text or has an empty one, or whose placeholders differ from the English ones, is rejected: it isn't offered in the Language menu, and the reason is written to standard error, as "Babawus: <file>: not offered, because …". A text that Babawus doesn't know is left out, with a warning there, and the file is offered all the same, so that a file made for a newer Babawus still works. Without a usable English file, Babawus shows only a message, in English, that it can't start, with the reason, and a Close button. A test checks that the files in the source tree are complete.
 - **Administrator rights.** Babawus contains no code that runs as root. Partitioning, formatting, mounting while formatting, unmounting and powering off go through the udisks2 service over D-Bus (using the `gio` crate). udisks2 may ask for the administrator password itself, depending on the rules of the system, but it may also ask for nothing. On Mint, it asks for Ext4, and for unmounting a stick that another account mounted, but not for exFAT, unmounting, ejecting or powering off the user's own stick. Babawus must work either way, so the safeguard against formatting by mistake is the explicit confirmation (see "Format USB media"), not a password. Every step works through udisks2, so Babawus never runs `pkexec` or `sudo`.
 
+### Platform layer
+
+Everything in `babawus-core` that depends on the operating system sits behind a platform layer, so that the rest of the library is the same on every platform (issue 166). It is a module, `platform`, with one submodule per operating system, chosen at compile time with `#[cfg(target_os = "…")]`. Each submodule offers the same plain types and functions; there is no trait that callers pass around.
+
+- **Files.** `platform.rs` chooses the operating system and re-exports its submodule. `platform/linux/` has one file per area:
+    - `sticks.rs`: listing, mounting, ejecting and formatting sticks, and setting their permissions, through udisks2, `mkfs.exfat`, `mkfs.ext4` and `setfacl` (`setxattr`).
+    - `identity.rs`: the computer's ID (`/etc/machine-id`), its name, the boot ID, and the user's groups.
+    - `flush.rs`: flushing (`syncfs`, `fsync`), free space (`statvfs`), file permissions, the computer lock, and whether the process that holds a lock is still running (`/proc`).
+    - `paths.rs`: where the settings, the note of the last backup, the computer lock and the installed language files are.
+- **Other operating systems.** Another operating system gets a submodule with the same four files. Until it is supported, a placeholder that compiles but says the platform isn't supported yet stands in for it; CI checks that `babawus-core` compiles for Windows with it.
+- **Names.** The layer's names don't name the Linux tools. The UI uses `platform::Sticks` to connect, format and eject, with its result and error types, and never names udisks2, so it doesn't change per operating system.
+- **What stays shared.** The decisions about sticks (`media.rs`, `format.rs`), the computer ID made from the machine ID, the lock's rules, and the file names under the folders stay outside the layer, as plain functions that take plain data. `RealFs` stays in `fs/real.rs`, one implementation for every operating system; its three methods that depend on it (`set_mode`, `free_space`, `sync_medium`) call the platform layer.
+- **Tests.** Tests keep using the `FileSystem` interface with its in-memory fake, and plain functions. A trait with a fake is added to the layer only where a test really needs one.
+- **Dependencies.** `gio` and `libc` are dependencies of `babawus-core` only on Linux.
+
 ### Responsiveness
 
 The user interface must never freeze.
