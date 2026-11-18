@@ -7,8 +7,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 
-use babawus_core::computer_lock::{ComputerLock, Taken};
 use babawus_core::log::new_run_id;
+use babawus_core::platform::{ComputerLock, Taken};
 
 const OTHER_USER: &str = "nobody";
 const TAKE_FILE: &str = "BABAWUS_TEST_TAKE_FILE";

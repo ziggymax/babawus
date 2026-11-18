@@ -9,7 +9,7 @@ use crate::fs::WriteFile;
 use crate::fs::fake::FakeFs;
 use crate::fs::{Metadata, RealFs};
 use crate::log::new_run_id;
-use crate::platform::BOOT_ID_FILE;
+use crate::platform::{BOOT_ID_FILE, OWN_PROGRAM_FILE, program_file};
 
 const COMPUTER: &str = "0123456789abcdef0123456789abcdef";
 const OTHER_COMPUTER: &str = "fedcba9876543210fedcba9876543210";
@@ -61,7 +61,7 @@ impl Setup {
         let medium = FakeFs::new();
         medium.add_file(root().join(".babawus/file"), b"", SystemTime::UNIX_EPOCH);
         let system = FakeFs::new();
-        let name = |process| format!("/proc/{process}/comm");
+        let name = program_file;
         let line = format!("{PROGRAM}\n");
         system.add_file(name(OTHER_PROCESS), line.as_bytes(), SystemTime::UNIX_EPOCH);
         system.add_file(name(REUSED_PROCESS), b"firefox\n", SystemTime::UNIX_EPOCH);

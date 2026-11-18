@@ -16,9 +16,9 @@ use std::path::Path;
 use std::rc::Rc;
 use std::time::SystemTime;
 
-use babawus_core::computer_lock::{COMPUTER_LOCK_FILE, ComputerLock, Taken};
 use babawus_core::fs::RealFs;
 use babawus_core::language::{self, Languages};
+use babawus_core::platform::{COMPUTER_LOCK_FILE, ComputerLock, Taken};
 use babawus_core::reminder::{self, CHECK_OPTION, state_file};
 use babawus_core::settings::SETTINGS_FILE;
 use babawus_core::text::Text;

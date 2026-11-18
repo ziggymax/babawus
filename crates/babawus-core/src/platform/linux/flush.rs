@@ -1,6 +1,8 @@
-//! The lock that allows one Babawus per computer. See "One Babawus at a time" in Requirements.md.
+//! Flushing and locking on Linux: flushing a medium, free space, file permissions, the lock that
+//! allows one Babawus per computer, and whether the process that holds a medium's lock is still
+//! running. See "Platform layer" and "One Babawus at a time" in Requirements.md.
 //!
-//! This uses the real file system, because the point of it is what the system does: it releases
+//! The computer lock uses the real file system, because the point of it is what the system does: it releases
 //! the lock when the process ends, even after a crash. The lock file stays behind, and the system
 //! empties `/run/lock/` when it starts.
 //!
@@ -8,10 +10,88 @@
 //! open another user's file with the option to create it (`fs.protected_regular`), so the file is
 //! opened first, and only created if it isn't there.
 
-use std::fs::{File, OpenOptions, Permissions, TryLockError};
+use std::ffi::CString;
+use std::fs::{self, File, OpenOptions, Permissions, TryLockError};
 use std::io::{self, ErrorKind, Read, Write};
-use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
-use std::path::Path;
+use std::mem::MaybeUninit;
+use std::os::fd::AsRawFd;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
+use std::path::{Path, PathBuf};
+
+use crate::fs::FileSystem;
+use crate::medium::read_file;
+
+/// The name of this process's program.
+pub(crate) const OWN_PROGRAM_FILE: &str = "/proc/self/comm";
+
+/// Sets the permissions of the file or folder `path` to `mode`, such as `0o666`.
+pub fn set_mode(path: &Path, mode: u32) -> io::Result<()> {
+    fs::set_permissions(path, Permissions::from_mode(mode))
+}
+
+/// The permissions of a file or folder, such as `0o666`.
+pub fn mode(metadata: &fs::Metadata) -> u32 {
+    metadata.mode() & 0o7777
+}
+
+/// The device that holds a file or folder, which tells one file system from another.
+pub fn device(metadata: &fs::Metadata) -> u64 {
+    metadata.dev()
+}
+
+/// The space that a user can still use on the file system that holds `path`, in bytes.
+pub fn free_space(path: &Path) -> io::Result<u64> {
+    let path = CString::new(path.as_os_str().as_encoded_bytes())?;
+    let mut stats = MaybeUninit::<libc::statvfs>::uninit();
+    // SAFETY: `path` is a valid C string, and `stats` is valid for writes.
+    if unsafe { libc::statvfs(path.as_ptr(), stats.as_mut_ptr()) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    // SAFETY: `statvfs` succeeded, so it has filled in `stats`.
+    let stats = unsafe { stats.assume_init() };
+    Ok(stats.f_bavail * stats.f_frsize)
+}
+
+/// Writes out everything that is still in memory for the file system that holds `path`.
+pub fn flush_file_system(path: &Path) -> io::Result<()> {
+    let file = File::open(path)?;
+    // SAFETY: `file` keeps the file descriptor open during the call.
+    if unsafe { libc::syncfs(file.as_raw_fd()) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(())
+}
+
+/// Whether `error` says that the medium has gone, for example because it was pulled out.
+pub fn is_medium_gone(error: &io::Error) -> bool {
+    matches!(
+        error.raw_os_error(),
+        Some(libc::EIO | libc::ENODEV | libc::ENXIO)
+    )
+}
+
+/// The name of this process's program, read from `system`, the computer's own file system.
+pub fn own_program(system: &dyn FileSystem) -> io::Result<String> {
+    read_line(system, Path::new(OWN_PROGRAM_FILE))
+}
+
+/// The name of the program that the process `process_id` runs, read from `system`, the
+/// computer's own file system. Without a readable name, the process has ended.
+pub fn program_of(system: &dyn FileSystem, process_id: u32) -> io::Result<String> {
+    read_line(system, &program_file(process_id))
+}
+
+/// The file that holds the name of the program that the process `process_id` runs.
+pub(crate) fn program_file(process_id: u32) -> PathBuf {
+    PathBuf::from(format!("/proc/{process_id}/comm"))
+}
+
+/// A file's contents without the line ending.
+fn read_line(system: &dyn FileSystem, path: &Path) -> io::Result<String> {
+    let contents = String::from_utf8(read_file(system, path)?)
+        .map_err(|error| io::Error::new(ErrorKind::InvalidData, error))?;
+    Ok(contents.trim_end().to_owned())
+}
 
 /// The lock file of a real Babawus.
 pub const COMPUTER_LOCK_FILE: &str = "/run/lock/babawus.lock";
@@ -233,5 +313,17 @@ mod tests {
         let path = Path::new("/nonexistent/babawus.lock");
 
         assert!(ComputerLock::take(path, "usera").is_err());
+    }
+
+    #[test]
+    fn only_the_errors_of_a_pulled_out_medium_say_it_has_gone() {
+        for code in [libc::EIO, libc::ENODEV, libc::ENXIO] {
+            assert!(
+                is_medium_gone(&io::Error::from_raw_os_error(code)),
+                "{code}"
+            );
+        }
+        assert!(!is_medium_gone(&io::Error::from_raw_os_error(libc::ENOSPC)));
+        assert!(!is_medium_gone(&ErrorKind::NotFound.into()));
     }
 }
