@@ -151,7 +151,7 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 ## Updating
 
-- [ ] Build the package again with the version raised (for example from `1.1.0` to `1.1.1` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
+- [ ] Build the package again with the version raised (for example from `1.1.1` to `1.1.2` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
 - [ ] Start Babawus. → It runs, keeps the chosen language, and stick A and its history are as before.
 - [ ] Run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml  fr.toml`: the update kept the file added by hand.
 

@@ -24,7 +24,6 @@ Babawus 1.1.0 is released (T-101). Next is release 1.1.1, step 0 of bringing Bab
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-111 | Raise the version to 1.1.1, the build that the release checklist runs on (T-112) | Todo | ReleasePlanning.md: "Step 0" |
 | T-112 | Run the whole release checklist on the 1.1.1 build on Linux Mint 22.x. Nothing a user sees should have changed | Todo | ReleasePlanning.md: "Step 0" |
 | T-113 | Release 1.1.1: tag `v1.1.1` on main, and a GitHub release with the `.deb` and notes. ReleasePlanning.md names 1.1.1 as the latest release | Todo | ReleasePlanning.md: "Step 0" |
 
