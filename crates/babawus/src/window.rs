@@ -20,14 +20,12 @@ use babawus_core::format_screen::{
 };
 use babawus_core::fs::{FileSystem, RealFs};
 use babawus_core::history_screen::history;
-use babawus_core::identity::{
-    is_administrator, this_computer_id, this_hostname, this_users_groups,
-};
+use babawus_core::identity::this_computer_id;
 use babawus_core::language::{Language, Languages};
 use babawus_core::lock::ThisProcess;
 use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
-use babawus_core::platform::{EjectError, Ejected, Sticks};
+use babawus_core::platform::{self, EjectError, Ejected, Sticks};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
 use babawus_core::settings::{SETTINGS_FILE, Settings};
 use babawus_core::setup_screen::{
@@ -405,8 +403,7 @@ pub fn show(app: &Application) {
     screens.add_named(&backup_page.root, Some("backup"));
     let info_page = InfoPage::new();
     screens.add_named(&info_page.root, Some("info"));
-    let groups = this_users_groups().unwrap_or_default();
-    let format_page = FormatPage::new(is_administrator(groups.iter().map(String::as_str)));
+    let format_page = FormatPage::new(platform::is_administrator());
     screens.add_named(&format_page.root, Some("format"));
     // The page passes what is pressed in its lists to the window, which only exists further
     // down.
@@ -1768,7 +1765,7 @@ impl Window {
         self.setup_generation.set(generation);
         *self.notice.borrow_mut() = None;
         // Only shown in the configuration, so a missing hostname stops nothing.
-        let hostname = this_hostname(&RealFs).unwrap_or_default();
+        let hostname = platform::hostname(&RealFs).unwrap_or_default();
         *self.setup.borrow_mut() = Some(SetupState {
             label,
             root: root.clone(),
@@ -2506,7 +2503,7 @@ impl Window {
             return;
         }
         // Only shown in the log and the configuration, so a missing hostname stops nothing.
-        let hostname = this_hostname(&RealFs).unwrap_or_default();
+        let hostname = platform::hostname(&RealFs).unwrap_or_default();
         let backup = Backup {
             medium: Arc::new(RealFs),
             root: medium.root.clone(),

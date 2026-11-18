@@ -17,9 +17,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::fs::FileSystem;
 use crate::medium::{FILE_MODE, LOCK_FILE, read_file, set_mode};
+use crate::platform;
 use crate::versions::Format;
 
-const BOOT_ID_FILE: &str = "/proc/sys/kernel/random/boot_id";
 const OWN_PROGRAM_FILE: &str = "/proc/self/comm";
 
 /// The runs of this process that hold a lock. A lock with this process's ID and any other run ID
@@ -45,7 +45,7 @@ impl ThisProcess {
     pub fn read(system: &dyn FileSystem, computer_id: &str) -> io::Result<Self> {
         Ok(Self {
             computer_id: computer_id.to_owned(),
-            boot_id: read_line(system, Path::new(BOOT_ID_FILE))?,
+            boot_id: platform::boot_id(system)?,
             process_id: std::process::id(),
             program: read_line(system, Path::new(OWN_PROGRAM_FILE))?,
         })

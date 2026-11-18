@@ -9,6 +9,7 @@ use crate::fs::WriteFile;
 use crate::fs::fake::FakeFs;
 use crate::fs::{Metadata, RealFs};
 use crate::log::new_run_id;
+use crate::platform::BOOT_ID_FILE;
 
 const COMPUTER: &str = "0123456789abcdef0123456789abcdef";
 const OTHER_COMPUTER: &str = "fedcba9876543210fedcba9876543210";

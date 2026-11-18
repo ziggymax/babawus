@@ -676,7 +676,7 @@ Everything in `babawus-core` that depends on the operating system sits behind a 
 
 - **Files.** `platform.rs` chooses the operating system and re-exports its submodule. `platform/linux/` has one file per area:
     - `sticks.rs`: listing, mounting, ejecting and formatting sticks, and setting their permissions, through udisks2, `mkfs.exfat`, `mkfs.ext4` and `setfacl` (`setxattr`).
-    - `identity.rs`: the computer's ID (`/etc/machine-id`), its name, the boot ID, and the user's groups.
+    - `identity.rs`: the machine ID (`/etc/machine-id`), the computer's name, the boot ID, and whether the user is an administrator (a member of `sudo` or `admin`). The computer ID is made from the machine ID outside the layer, the same way on every operating system.
     - `flush.rs`: flushing (`syncfs`, `fsync`), free space (`statvfs`), file permissions, the computer lock, and whether the process that holds a lock is still running (`/proc`).
     - `paths.rs`: where the settings, the note of the last backup, the computer lock and the installed language files are.
 - **Other operating systems.** Another operating system gets a submodule with the same four files. Until it is supported, a placeholder that compiles but says the platform isn't supported yet stands in for it; CI checks that `babawus-core` compiles for Windows with it.
