@@ -1,16 +1,14 @@
-use std::ffi::{CString, OsString};
-use std::fs::{self, File, OpenOptions, Permissions};
+use std::ffi::OsString;
+use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
-use std::mem::MaybeUninit;
-use std::os::fd::AsRawFd;
-use std::os::unix::ffi::OsStrExt;
-use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::Path;
 use std::time::SystemTime;
 
 use super::{FileKind, FileSystem, Metadata, WriteFile};
+use crate::platform;
 
-/// The real file systems of the computer.
+/// The real file systems of the computer. What depends on the operating system is in the
+/// platform layer.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct RealFs;
 
@@ -29,8 +27,8 @@ impl FileSystem for RealFs {
             kind,
             len: metadata.len(),
             modified: metadata.modified()?,
-            mode: metadata.mode() & 0o7777,
-            device: metadata.dev(),
+            mode: platform::mode(&metadata),
+            device: platform::device(&metadata),
         })
     }
 
@@ -38,7 +36,7 @@ impl FileSystem for RealFs {
         let mut names = fs::read_dir(path)?
             .map(|entry| Ok(entry?.file_name()))
             .collect::<io::Result<Vec<_>>>()?;
-        names.sort_by(|a, b| a.as_bytes().cmp(b.as_bytes()));
+        names.sort_by(|a, b| a.as_encoded_bytes().cmp(b.as_encoded_bytes()));
         Ok(names)
     }
 
@@ -69,28 +67,15 @@ impl FileSystem for RealFs {
     }
 
     fn set_mode(&self, path: &Path, mode: u32) -> io::Result<()> {
-        fs::set_permissions(path, Permissions::from_mode(mode))
+        platform::set_mode(path, mode)
     }
 
     fn free_space(&self, path: &Path) -> io::Result<u64> {
-        let path = CString::new(path.as_os_str().as_bytes())?;
-        let mut stats = MaybeUninit::<libc::statvfs>::uninit();
-        // SAFETY: `path` is a valid C string, and `stats` is valid for writes.
-        if unsafe { libc::statvfs(path.as_ptr(), stats.as_mut_ptr()) } != 0 {
-            return Err(io::Error::last_os_error());
-        }
-        // SAFETY: `statvfs` succeeded, so it has filled in `stats`.
-        let stats = unsafe { stats.assume_init() };
-        Ok(stats.f_bavail * stats.f_frsize)
+        platform::free_space(path)
     }
 
     fn sync_medium(&self, path: &Path) -> io::Result<()> {
-        let file = File::open(path)?;
-        // SAFETY: `file` keeps the file descriptor open during the call.
-        if unsafe { libc::syncfs(file.as_raw_fd()) } != 0 {
-            return Err(io::Error::last_os_error());
-        }
-        Ok(())
+        platform::flush_file_system(path)
     }
 }
 

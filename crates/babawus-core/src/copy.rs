@@ -10,6 +10,7 @@ use std::time::{Duration, SystemTime};
 
 use crate::fs::{FileKind, FileSystem, Metadata, WriteFile};
 use crate::medium::{DIR_MODE, FILE_MODE, TEMP_FOLDER, set_mode};
+use crate::platform;
 use crate::versions::{Format, fits_on, older_version, version_folder, versions_to_remove};
 
 /// Each chunk is flushed before the next, so that progress shows what has reached the medium.
@@ -486,10 +487,7 @@ impl<'a> FileCopier<'a> {
 }
 
 fn is_gone(medium: &dyn FileSystem, root: &Path, error: &io::Error) -> bool {
-    matches!(
-        error.raw_os_error(),
-        Some(libc::EIO | libc::ENODEV | libc::ENXIO)
-    ) || medium.metadata(root).is_err()
+    platform::is_medium_gone(error) || medium.metadata(root).is_err()
 }
 
 fn skip_or_stop(medium: &dyn FileSystem, root: &Path, error: &io::Error) -> Result<Skip, Stop> {

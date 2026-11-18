@@ -20,8 +20,6 @@ use crate::medium::{FILE_MODE, LOCK_FILE, read_file, set_mode};
 use crate::platform;
 use crate::versions::Format;
 
-const OWN_PROGRAM_FILE: &str = "/proc/self/comm";
-
 /// The runs of this process that hold a lock. A lock with this process's ID and any other run ID
 /// is left over, for example because the medium was pulled during a backup.
 static HELD_RUNS: Mutex<BTreeSet<String>> = Mutex::new(BTreeSet::new());
@@ -47,7 +45,7 @@ impl ThisProcess {
             computer_id: computer_id.to_owned(),
             boot_id: platform::boot_id(system)?,
             process_id: std::process::id(),
-            program: read_line(system, Path::new(OWN_PROGRAM_FILE))?,
+            program: platform::own_program(system)?,
         })
     }
 
@@ -64,16 +62,8 @@ impl ThisProcess {
     /// Whether `process_id` is a running process of this program. Without a readable name, it
     /// has ended.
     fn runs_this_program(&self, system: &dyn FileSystem, process_id: u32) -> bool {
-        let name = format!("/proc/{process_id}/comm");
-        read_line(system, Path::new(&name)).is_ok_and(|program| program == self.program)
+        platform::program_of(system, process_id).is_ok_and(|program| program == self.program)
     }
-}
-
-/// A file's contents without the line ending.
-fn read_line(system: &dyn FileSystem, path: &Path) -> io::Result<String> {
-    let contents = String::from_utf8(read_file(system, path)?)
-        .map_err(|error| io::Error::new(ErrorKind::InvalidData, error))?;
-    Ok(contents.trim_end().to_owned())
 }
 
 /// What a lock file records.

@@ -5,7 +5,6 @@
 
 pub mod backup_screen;
 pub mod choose_screen;
-pub mod computer_lock;
 pub mod config;
 pub mod copy;
 pub mod coverage_screen;
