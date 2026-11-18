@@ -19,6 +19,7 @@ use babawus_core::choose_screen::{
 };
 use babawus_core::fs::{FileKind, RealFs};
 use babawus_core::language::Language;
+use babawus_core::platform;
 use babawus_core::start_screen::Mark;
 use babawus_core::text::Text;
 use gtk4::prelude::*;
@@ -272,7 +273,7 @@ impl ChoosePage {
             shared: Rc::new(Shared {
                 choice: RefCell::new(Choice::default()),
                 original: RefCell::new(Choice::default()),
-                home: glib::home_dir(),
+                home: platform::home_folder(),
                 show_hidden: Cell::new(false),
                 language: Cell::new(crate::window::languages().english()),
                 updating: Cell::new(false),

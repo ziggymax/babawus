@@ -9,7 +9,7 @@ const DAY: Duration = Duration::from_secs(86_400);
 const HOUR: Duration = Duration::from_secs(3600);
 
 fn path() -> PathBuf {
-    PathBuf::from("/home/anna/.local/state").join(STATE_FILE)
+    PathBuf::from("/home/anna/.local/state/babawus/last_backup")
 }
 
 /// 2024-10-04 12:00 UTC.
@@ -84,18 +84,4 @@ fn no_reminder_without_a_note_or_with_0_days() {
 #[test]
 fn a_clock_that_went_back_gives_no_reminder() {
     assert_eq!(due(noted(7), noon() - 30 * DAY, utc_clock), None);
-}
-
-#[test]
-fn the_state_file_follows_xdg_state_home_if_it_is_absolute() {
-    let home = Path::new("/home/anna");
-    let default = PathBuf::from("/home/anna/.local/state/babawus/last_backup");
-
-    assert_eq!(state_file(None, home), default);
-    assert_eq!(state_file(Some(OsStr::new("")), home), default);
-    assert_eq!(state_file(Some(OsStr::new("relative")), home), default);
-    assert_eq!(
-        state_file(Some(OsStr::new("/var/state/anna")), home),
-        PathBuf::from("/var/state/anna/babawus/last_backup")
-    );
 }

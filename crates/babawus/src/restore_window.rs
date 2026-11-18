@@ -17,6 +17,7 @@ use std::time::{Duration, SystemTime};
 
 use babawus_core::fs::{FileKind, RealFs};
 use babawus_core::language::Language;
+use babawus_core::platform;
 use babawus_core::restore::{
     Backup, Choice, Copy, Item, Outcome, Plan, Progress, Resolution, Version,
 };
@@ -299,7 +300,7 @@ impl RestoreWindow {
             root,
             format,
             system: &RealFs,
-            home: glib::home_dir(),
+            home: platform::home_folder(),
         };
         let restore_window = Rc::new(Self {
             window,
@@ -981,7 +982,7 @@ fn backup_at(root: PathBuf, format: Format) -> Backup<'static> {
         root,
         format,
         system: &RealFs,
-        home: glib::home_dir(),
+        home: platform::home_folder(),
     }
 }
 

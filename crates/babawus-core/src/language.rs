@@ -18,10 +18,8 @@ use serde::Deserialize;
 use crate::fs::FileSystem;
 use crate::help;
 use crate::medium::read_file;
+use crate::platform;
 use crate::text::Text;
-
-/// Where an installed Babawus finds its language files.
-pub const INSTALLED_FOLDER: &str = "/usr/share/babawus/languages";
 
 /// The code of the language that every other language is checked against, and that is shown
 /// when no other one fits.
@@ -30,12 +28,13 @@ pub const ENGLISH: &str = "en";
 const EXTENSION: &str = "toml";
 
 /// The folder to read the language files from: in a debug build, the source tree's `languages/`
-/// folder, so that `cargo run` works; otherwise [`INSTALLED_FOLDER`] (issue 149).
+/// folder, so that `cargo run` works; otherwise where an installed Babawus keeps them,
+/// [`platform::installed_languages_folder`] (issue 149).
 pub fn folder() -> PathBuf {
     if cfg!(debug_assertions) {
         Path::new(env!("CARGO_MANIFEST_DIR")).join("../../languages")
     } else {
-        PathBuf::from(INSTALLED_FOLDER)
+        platform::installed_languages_folder()
     }
 }
 

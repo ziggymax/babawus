@@ -12,15 +12,13 @@ mod window;
 mod wrap;
 
 use std::cell::{Cell, RefCell};
-use std::path::Path;
 use std::rc::Rc;
 use std::time::SystemTime;
 
 use babawus_core::fs::RealFs;
 use babawus_core::language::{self, Languages};
-use babawus_core::platform::{COMPUTER_LOCK_FILE, ComputerLock, Taken};
-use babawus_core::reminder::{self, CHECK_OPTION, state_file};
-use babawus_core::settings::SETTINGS_FILE;
+use babawus_core::platform::{self, ComputerLock, Taken};
+use babawus_core::reminder::{self, CHECK_OPTION};
 use babawus_core::text::Text;
 use babawus_core::time::local_clock;
 use gtk4::prelude::*;
@@ -39,11 +37,7 @@ fn main() -> glib::ExitCode {
     // otherwise it closes without a trace.
     let reminder_days = if args.iter().any(|arg| arg == CHECK_OPTION) {
         args.retain(|arg| arg != CHECK_OPTION);
-        let state_file = state_file(
-            std::env::var_os("XDG_STATE_HOME").as_deref(),
-            &glib::home_dir(),
-        );
-        let noted = reminder::read(&RealFs, &state_file);
+        let noted = reminder::read(&RealFs, &platform::last_backup_file());
         match reminder::due(noted, SystemTime::now(), local_clock) {
             Some(days) => Some(days),
             None => return glib::ExitCode::SUCCESS,
@@ -94,7 +88,8 @@ fn activate(app: &Application, lock: &Rc<RefCell<Option<ComputerLock>>>) {
     }
     let username = glib::user_name();
     let username = username.to_string_lossy();
-    match ComputerLock::take(Path::new(COMPUTER_LOCK_FILE), &username) {
+    let lock_file = platform::computer_lock_file();
+    match ComputerLock::take(&lock_file, &username) {
         Ok(Taken::Ours(taken)) => {
             *lock.borrow_mut() = Some(taken);
             window::show(app);
@@ -103,7 +98,10 @@ fn activate(app: &Application, lock: &Rc<RefCell<Option<ComputerLock>>>) {
         // The lock only guards against a second window. Each medium has a lock of its own, so
         // Babawus is more use open than closed.
         Err(error) => {
-            eprintln!("Babawus could not take the lock in {COMPUTER_LOCK_FILE}: {error}");
+            eprintln!(
+                "Babawus could not take the lock in {}: {error}",
+                lock_file.display()
+            );
             window::show(app);
         }
     }
@@ -113,7 +111,7 @@ fn activate(app: &Application, lock: &Rc<RefCell<Option<ComputerLock>>>) {
 /// opens Babawus as a normal start would; "Not now", or closing, closes it (issue
 /// 137).
 fn show_reminder(app: &Application, days: i64, lock: &Rc<RefCell<Option<ComputerLock>>>) {
-    let language = window::current_language(&glib::user_config_dir().join(SETTINGS_FILE));
+    let language = window::current_language(&platform::settings_file());
     let heading = Text::ReminderDays.fill(language, &[("days", &days.to_string())]);
     let not_now = Button::with_label(Text::ReminderNotNow.get(language));
     let back_up = Button::with_label(Text::ReminderBackUp.get(language));
@@ -143,7 +141,7 @@ fn show_reminder(app: &Application, days: i64, lock: &Rc<RefCell<Option<Computer
 /// Says that Babawus is open for another account already, as a message with an OK button that
 /// closes it (`ui-review/UiReview.md` W06).
 fn show_already_open(app: &Application, user: &str) {
-    let language = window::current_language(&glib::user_config_dir().join(SETTINGS_FILE));
+    let language = window::current_language(&platform::settings_file());
     let message = Text::AlreadyOpen.fill(language, &[("user", user)]);
     let ok = Button::with_label(Text::Ok.get(language));
     ok.add_css_class("suggested-action");
