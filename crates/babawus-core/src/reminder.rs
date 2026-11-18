@@ -4,9 +4,8 @@
 //! not plugged in at login. See "Remind me at login when my last backup is too old" in
 //! Requirements.md and issue 137.
 
-use std::ffi::OsStr;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::SystemTime;
 
 use serde::{Deserialize, Serialize};
@@ -15,20 +14,6 @@ use crate::fs::FileSystem;
 use crate::medium::read_file;
 use crate::settings::save_user_file;
 use crate::time::{ClockTime, log_timestamp, parse_log_timestamp};
-
-/// The state file, in the user's state folder (`$XDG_STATE_HOME`).
-pub const STATE_FILE: &str = "babawus/last_backup";
-
-/// The state file of the user whose home folder is `home`, in `$XDG_STATE_HOME`, which is
-/// `xdg_state_home` if it is set to an absolute path, and `~/.local/state` otherwise, as the XDG
-/// Base Directory Specification says.
-pub fn state_file(xdg_state_home: Option<&OsStr>, home: &Path) -> PathBuf {
-    let folder = xdg_state_home
-        .map(Path::new)
-        .filter(|folder| folder.is_absolute())
-        .map_or_else(|| home.join(".local/state"), Path::to_path_buf);
-    folder.join(STATE_FILE)
-}
 
 /// The command line option that asks for the reminder.
 pub const CHECK_OPTION: &str = "--checklastbackup";

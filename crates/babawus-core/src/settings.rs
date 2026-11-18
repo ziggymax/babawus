@@ -13,9 +13,6 @@ use crate::fs::FileSystem;
 use crate::language::{Language, Languages};
 use crate::medium::read_file;
 
-/// The settings file, in the user's configuration folder.
-pub const SETTINGS_FILE: &str = "babawus/settings.toml";
-
 const TEMP_SUFFIX: &str = ".tmp";
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]

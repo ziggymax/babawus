@@ -24,7 +24,6 @@ Babawus 1.1.0 is released (T-101). Next is release 1.1.1, step 0 of bringing Bab
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-110 | Move paths behind the platform layer: the settings file (`settings.rs`), the note of the last backup (`reminder.rs`) and the installed language files (`language.rs`), and the computer lock's `COMPUTER_LOCK_FILE`, which T-109 left in `platform/linux/flush.rs` | Todo | ReleasePlanning.md: "Step 0" |
 | T-114 | Make CI check that `babawus-core` compiles for Windows, so that Linux-only code can't slip back into the shared parts: a placeholder Windows implementation of the platform layer that compiles but says Windows isn't supported yet, and a CI step `cargo check -p babawus-core --target x86_64-pc-windows-gnu`. Needs T-107 to T-110, so that `gio`, `libc` and `/proc` are only used on Linux. T-109 found more Unix-only code outside the four areas, for this task to place: `getrandom` and `OsStrExt` in `log.rs`, `OsStrExt`/`OsStringExt` in `restore.rs`, and `libc::EIO` in `fs/fake.rs` | Todo | ReleasePlanning.md: "Step 0" |
 | T-111 | Raise the version to 1.1.1, the build that the release checklist runs on (T-112) | Todo | ReleasePlanning.md: "Step 0" |
 | T-112 | Run the whole release checklist on the 1.1.1 build on Linux Mint 22.x. Nothing a user sees should have changed | Todo | ReleasePlanning.md: "Step 0" |

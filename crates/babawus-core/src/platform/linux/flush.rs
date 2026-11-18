@@ -93,9 +93,6 @@ fn read_line(system: &dyn FileSystem, path: &Path) -> io::Result<String> {
     Ok(contents.trim_end().to_owned())
 }
 
-/// The lock file of a real Babawus.
-pub const COMPUTER_LOCK_FILE: &str = "/run/lock/babawus.lock";
-
 const MODE: u32 = 0o666;
 
 /// Another user could have created the file again in between, but not forever.

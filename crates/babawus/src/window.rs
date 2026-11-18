@@ -27,7 +27,7 @@ use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
 use babawus_core::platform::{self, EjectError, Ejected, Sticks};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
-use babawus_core::settings::{SETTINGS_FILE, Settings};
+use babawus_core::settings::Settings;
 use babawus_core::setup_screen::{
     self, Editor, Here, HereAction, Opened, SaveError, overview, save_error_text,
 };
@@ -52,7 +52,6 @@ use crate::info_page::InfoPage;
 use crate::log_window::LogWindow;
 use crate::restore_window::RestoreWindow;
 use crate::setup_page::{Instead, SetupEvent, SetupPage};
-use babawus_core::reminder::state_file;
 
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
@@ -342,7 +341,7 @@ struct Window {
 /// Opens the start screen.
 pub fn show(app: &Application) {
     add_css();
-    let settings_path = glib::user_config_dir().join(SETTINGS_FILE);
+    let settings_path = platform::settings_file();
     let language = current_language(&settings_path);
     let sticks = Sticks::connect()
         .inspect_err(|error| eprintln!("Babawus could not list the sticks: {error}"))
@@ -1518,7 +1517,7 @@ impl Window {
         let this = self.this.clone();
         let username = self.username.clone();
         let root = medium.root.clone();
-        let home = glib::home_dir();
+        let home = platform::home_folder();
         let reading = gio::spawn_blocking(move || {
             let viewer = Viewer {
                 system: &RealFs,
@@ -2512,12 +2511,9 @@ impl Window {
             this: self.this.clone(),
             username: self.username.clone(),
             hostname,
-            home: glib::home_dir(),
+            home: platform::home_folder(),
             now: Arc::new(SystemTime::now),
-            state_file: Some(state_file(
-                std::env::var_os("XDG_STATE_HOME").as_deref(),
-                &glib::home_dir(),
-            )),
+            state_file: Some(platform::last_backup_file()),
         };
         *self.notice.borrow_mut() = None;
         *self.backup.borrow_mut() = Some(BackupState {
