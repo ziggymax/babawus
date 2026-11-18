@@ -5,11 +5,11 @@
 
 use std::time::Instant;
 
-use babawus_core::udisks::Udisks;
+use babawus_core::platform::Sticks;
 use gio::glib;
 
 fn main() {
-    let udisks = Udisks::connect().expect("connect to udisks2");
+    let udisks = Sticks::connect().expect("connect to udisks2");
     let Some(id) = std::env::args().nth(1) else {
         println!("USB media:");
         let snapshot = udisks.snapshot();

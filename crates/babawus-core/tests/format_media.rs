@@ -2,7 +2,7 @@
 //!
 //! These use sudo, loop devices and udisks2, so a plain `cargo test` skips them. A loop device
 //! has no drive, so it can't pass the check for USB media: these tests format it with
-//! [`Udisks::format_target`], and the check itself is tested in the unit tests.
+//! [`Sticks::format_target`], and the check itself is tested in the unit tests.
 
 #[allow(dead_code)]
 mod support;
@@ -16,7 +16,7 @@ use babawus_core::config::{self, Config, Loaded};
 use babawus_core::format::{Table, Target};
 use babawus_core::fs::RealFs;
 use babawus_core::media::{Drive, Snapshot};
-use babawus_core::udisks::{FormatError, Step, Udisks};
+use babawus_core::platform::{FormatError, Step, Sticks};
 use babawus_core::versions::Format;
 use gio::glib;
 use support::BlankLoop;
@@ -32,7 +32,7 @@ fn with_context(test: impl FnOnce(&glib::MainContext)) {
 }
 
 /// Waits until udisks2 reports the loop device, and returns what it reports.
-fn wait_for(context: &glib::MainContext, udisks: &Udisks, blank: &BlankLoop) -> Snapshot {
+fn wait_for(context: &glib::MainContext, udisks: &Sticks, blank: &BlankLoop) -> Snapshot {
     let start = Instant::now();
     loop {
         let snapshot = udisks.snapshot();
@@ -84,7 +84,7 @@ fn format(
 ) -> Result<std::path::PathBuf, FormatError> {
     let mut result = None;
     with_context(|context| {
-        let udisks = Udisks::connect().expect("connect to udisks2");
+        let udisks = Sticks::connect().expect("connect to udisks2");
         let snapshot = wait_for(context, &udisks, blank);
         let target = target(&snapshot, blank, table);
         result = Some(context.block_on(udisks.format_target(&target, format, label)));
@@ -260,7 +260,7 @@ fn an_invalid_label_changes_nothing() {
 #[ignore = "needs udisks2"]
 fn a_drive_that_is_not_attached_is_refused() {
     with_context(|context| {
-        let udisks = Udisks::connect().expect("connect to udisks2");
+        let udisks = Sticks::connect().expect("connect to udisks2");
         let error = context
             .block_on(udisks.format("No-Such-Drive", Format::ExFat, "BACKUP-A"))
             .unwrap_err();

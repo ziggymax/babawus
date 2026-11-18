@@ -7,12 +7,12 @@ use babawus_core::fs::RealFs;
 use babawus_core::identity::this_computer_id;
 use babawus_core::lock::ThisProcess;
 use babawus_core::media::{Snapshot, Viewer};
-use babawus_core::udisks::Udisks;
+use babawus_core::platform::Sticks;
 use gio::glib;
 
 fn main() {
     let follow = std::env::args().any(|arg| arg == "--follow");
-    let udisks = Udisks::connect().expect("connect to udisks2");
+    let udisks = Sticks::connect().expect("connect to udisks2");
     let computer_id = this_computer_id(&RealFs)
         .expect("read the computer ID")
         .unwrap_or_default();

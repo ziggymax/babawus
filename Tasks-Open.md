@@ -24,7 +24,6 @@ Babawus 1.1.0 is released (T-101). Next is release 1.1.1, step 0 of bringing Bab
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-107 | Move the handling of sticks behind the platform layer: listing, mounting, ejecting, formatting and setting permissions (`udisks.rs`, `media.rs`, `format.rs`; udisks2, `mkfs.exfat`, `mkfs.ext4`, `setfacl`). `gio` then becomes a Linux-only dependency of `babawus-core` | Todo | ReleasePlanning.md: "Step 0" |
 | T-108 | Move identity behind the platform layer: the computer's ID (`/etc/machine-id`) and name (`identity.rs`), and the boot ID (`lock.rs`) | Todo | ReleasePlanning.md: "Step 0" |
 | T-109 | Move flushing and locking behind the platform layer: `syncfs` and `fsync` (`fs/real.rs`, `copy.rs`), the computer lock (`computer_lock.rs`), and how a lock checks whether its process is still running (`/proc` in `lock.rs`) | Todo | ReleasePlanning.md: "Step 0" |
 | T-110 | Move paths behind the platform layer: the settings file (`settings.rs`), the note of the last backup (`reminder.rs`) and the installed language files (`language.rs`) | Todo | ReleasePlanning.md: "Step 0" |
