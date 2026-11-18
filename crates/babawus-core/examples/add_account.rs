@@ -9,7 +9,8 @@ use std::path::PathBuf;
 
 use babawus_core::config::{Loaded, folders_on_medium, load, save};
 use babawus_core::fs::RealFs;
-use babawus_core::identity::{this_computer_id, this_hostname};
+use babawus_core::identity::this_computer_id;
+use babawus_core::platform;
 use babawus_core::versions::Format;
 
 fn main() {
@@ -19,7 +20,7 @@ fn main() {
     let id = this_computer_id(&RealFs)
         .expect("read the computer ID")
         .expect("this computer has an ID");
-    let hostname = this_hostname(&RealFs).expect("read the hostname");
+    let hostname = platform::hostname(&RealFs).expect("read the hostname");
     let username = std::env::var("USER").expect("USER is set");
     let format = match std::fs::read_to_string("/proc/self/mounts")
         .unwrap()
