@@ -1,14 +1,13 @@
 //! What the start screen shows for each medium. See "Start Babawus and see status" in
 //! Requirements.md. The UI only puts these texts and marks on the screen.
 
-use std::ffi::CString;
-use std::path::Path;
 use std::time::SystemTime;
 
 use crate::fs::FileSystem;
 use crate::language::Language;
 use crate::log::read_runs;
 use crate::media::{Medium, Snapshot, Status, Viewer};
+use crate::platform;
 use crate::text::{Text, size};
 use crate::time::ClockTime;
 use crate::verdict_screen::last_backup_text;
@@ -32,23 +31,10 @@ impl Viewer<'_> {
             babawus && read_runs(files, &medium.root).is_ok_and(|runs| !runs.is_empty());
         Checked {
             status,
-            free: free_space(&medium.root),
+            free: platform::free_space(&medium.root).ok(),
             has_history,
         }
     }
-}
-
-/// The space left for files on the file system at `root`, in bytes.
-fn free_space(root: &Path) -> Option<u64> {
-    let path = CString::new(root.as_os_str().as_encoded_bytes()).ok()?;
-    let mut stats = std::mem::MaybeUninit::<libc::statvfs>::uninit();
-    // SAFETY: `path` is a valid C string, and `stats` is valid for writes of a `statvfs`.
-    if unsafe { libc::statvfs(path.as_ptr(), stats.as_mut_ptr()) } != 0 {
-        return None;
-    }
-    // SAFETY: `statvfs` succeeded, so it filled in `stats`.
-    let stats = unsafe { stats.assume_init() };
-    Some(stats.f_bavail.saturating_mul(stats.f_frsize))
 }
 
 /// The file system that udisks2 calls `id`, named as people know it, the same in every language

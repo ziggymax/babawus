@@ -534,7 +534,7 @@ struct BrokenReader;
 
 impl Read for BrokenReader {
     fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> {
-        Err(io::Error::from_raw_os_error(libc::EIO))
+        Err(crate::platform::medium_gone_error())
     }
 }
 

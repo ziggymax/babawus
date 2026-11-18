@@ -8,13 +8,13 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::{OsStr, OsString};
 use std::io::{self, ErrorKind, Read as _};
-use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::SystemTime;
 
 use crate::copy::CHUNK_SIZE;
 use crate::fs::{FileKind, FileSystem};
+use crate::platform;
 use crate::time::ClockTime;
 use crate::versions::{
     Format, file_of_version_folder, has_version_folder_form, older_versions, version_folder,
@@ -531,7 +531,7 @@ pub struct Outcome {
 /// `number` 2 `report (2026-11-03 17.54, 2).pdf`. The date goes before the extension, which is
 /// split at the last dot, as for older versions.
 pub fn kept_name(name: &OsStr, time: ClockTime, number: u32) -> OsString {
-    let bytes = name.as_bytes();
+    let bytes = name.as_encoded_bytes();
     let (base, extension) = match bytes.iter().rposition(|&byte| byte == b'.') {
         Some(dot) if dot > 0 => (&bytes[..dot], Some(&bytes[dot..])),
         _ => (bytes, None),
@@ -547,7 +547,7 @@ pub fn kept_name(name: &OsStr, time: ClockTime, number: u32) -> OsString {
     let mut kept = base.to_vec();
     kept.extend_from_slice(stamp.as_bytes());
     kept.extend_from_slice(extension.unwrap_or_default());
-    OsString::from_vec(kept)
+    platform::name_from_bytes(kept)
 }
 
 /// Counts what has been restored so far, for the progress shown.

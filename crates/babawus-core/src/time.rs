@@ -2,29 +2,43 @@
 //! `2026-11-03 17:54:00 +0100`, and in the names of older versions, in UTC, for example
 //! `2026-11-03_165400`.
 
-use std::mem::MaybeUninit;
 use std::time::{Duration, SystemTime};
+
+use crate::platform;
 
 const SECONDS_PER_DAY: u64 = 24 * 60 * 60;
 
 /// `YYYY-MM-DD HH:MM:SS +HHMM`
 const TIMESTAMP_FORM: &[u8] = b"dddd-dd-dd dd:dd:dd sdddd";
 
-/// Splits `time` into its fields, using `localtime_r` or `gmtime_r`.
-fn broken_down(
-    time: SystemTime,
-    convert: unsafe extern "C" fn(*const libc::time_t, *mut libc::tm) -> *mut libc::tm,
-) -> libc::tm {
+/// A date and time of day, down to the second.
+struct Fields {
+    year: i64,
+    month: i64,
+    day: i64,
+    hour: i64,
+    minute: i64,
+    second: i64,
+}
+
+/// Splits `time` into its fields, as a clock `offset` seconds ahead of UTC shows it. A time
+/// before 1970 counts as 1970.
+fn broken_down(time: SystemTime, offset: i64) -> Fields {
     let seconds = time
         .duration_since(SystemTime::UNIX_EPOCH)
         .map_or(0, |since| since.as_secs());
-    let seconds = libc::time_t::try_from(seconds).expect("the time fits in a time_t");
-    let mut fields = MaybeUninit::<libc::tm>::uninit();
-    // SAFETY: `seconds` is valid for reads, and `fields` is valid for writes.
-    let result = unsafe { convert(&seconds, fields.as_mut_ptr()) };
-    assert!(!result.is_null(), "a time since 1970 can be split up");
-    // SAFETY: the conversion succeeded, so it has filled in `fields`.
-    unsafe { fields.assume_init() }
+    let seconds = i64::try_from(seconds).expect("the time fits in an i64") + offset;
+    let day_seconds = SECONDS_PER_DAY as i64;
+    let (year, month, day) = civil_from_days(seconds.div_euclid(day_seconds));
+    let in_day = seconds.rem_euclid(day_seconds);
+    Fields {
+        year,
+        month,
+        day,
+        hour: in_day / 3600,
+        minute: in_day % 3600 / 60,
+        second: in_day % 60,
+    }
 }
 
 /// A time in UTC, for the name of an older version: `YYYY-MM-DD_HHMMSS`.
@@ -32,15 +46,10 @@ fn broken_down(
 /// This must not be local time, which can go backwards, because pruning relies on the order of
 /// these names.
 pub fn version_timestamp(time: SystemTime) -> String {
-    let fields = broken_down(time, libc::gmtime_r);
+    let fields = broken_down(time, 0);
     format!(
         "{:04}-{:02}-{:02}_{:02}{:02}{:02}",
-        fields.tm_year + 1900,
-        fields.tm_mon + 1,
-        fields.tm_mday,
-        fields.tm_hour,
-        fields.tm_min,
-        fields.tm_sec
+        fields.year, fields.month, fields.day, fields.hour, fields.minute, fields.second
     )
 }
 
@@ -55,13 +64,14 @@ pub struct ClockTime {
 }
 
 impl ClockTime {
-    fn of(fields: &libc::tm) -> Self {
+    fn of(fields: &Fields) -> Self {
+        let field = |value: i64| i32::try_from(value).expect("a field of a date fits in an i32");
         Self {
-            year: fields.tm_year + 1900,
-            month: fields.tm_mon + 1,
-            day: fields.tm_mday,
-            hour: fields.tm_hour,
-            minute: fields.tm_min,
+            year: field(fields.year),
+            month: field(fields.month),
+            day: field(fields.day),
+            hour: field(fields.hour),
+            minute: field(fields.minute),
         }
     }
 
@@ -75,26 +85,21 @@ impl ClockTime {
 
 /// `time` in local time, for the user to read.
 pub fn local_clock(time: SystemTime) -> ClockTime {
-    ClockTime::of(&broken_down(time, libc::localtime_r))
+    ClockTime::of(&broken_down(time, platform::utc_offset(time)))
 }
 
 /// `time` in UTC. The tests use this in place of [`local_clock`], so that they don't depend on
 /// the time zone.
 pub fn utc_clock(time: SystemTime) -> ClockTime {
-    ClockTime::of(&broken_down(time, libc::gmtime_r))
+    ClockTime::of(&broken_down(time, 0))
 }
 
 /// A time in UTC, as the configuration notes when it was written: `YYYY-MM-DD HH:MM:SS UTC`.
 pub fn utc_timestamp(time: SystemTime) -> String {
-    let fields = broken_down(time, libc::gmtime_r);
+    let fields = broken_down(time, 0);
     format!(
         "{:04}-{:02}-{:02} {:02}:{:02}:{:02} UTC",
-        fields.tm_year + 1900,
-        fields.tm_mon + 1,
-        fields.tm_mday,
-        fields.tm_hour,
-        fields.tm_min,
-        fields.tm_sec
+        fields.year, fields.month, fields.day, fields.hour, fields.minute, fields.second
     )
 }
 
@@ -105,15 +110,16 @@ pub fn parse_utc_timestamp(text: &str) -> Option<SystemTime> {
 
 /// A time in local time with the UTC offset, for the log.
 pub fn log_timestamp(time: SystemTime) -> String {
-    let fields = broken_down(time, libc::localtime_r);
-    let date = (fields.tm_year + 1900, fields.tm_mon + 1, fields.tm_mday);
-    let clock = (fields.tm_hour, fields.tm_min, fields.tm_sec);
-    format_timestamp(date, clock, fields.tm_gmtoff)
+    let offset = platform::utc_offset(time);
+    let fields = broken_down(time, offset);
+    let date = (fields.year, fields.month, fields.day);
+    let clock = (fields.hour, fields.minute, fields.second);
+    format_timestamp(date, clock, offset)
 }
 
 fn format_timestamp(
-    (year, month, day): (i32, i32, i32),
-    (hour, minute, second): (i32, i32, i32),
+    (year, month, day): (i64, i64, i64),
+    (hour, minute, second): (i64, i64, i64),
     offset_seconds: i64,
 ) -> String {
     let sign = if offset_seconds < 0 { '-' } else { '+' };
@@ -135,6 +141,27 @@ fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
     let day_of_year = (153 * shifted_month + 2) / 5 + day - 1;
     let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
     era * 146_097 + day_of_era - 719_468
+}
+
+/// The date in the Gregorian calendar of a number of days since 1970-01-01, the inverse of
+/// [`days_from_civil`].
+fn civil_from_days(days: i64) -> (i64, i64, i64) {
+    // Counting from March puts the leap day at the end of the year.
+    let days = days + 719_468;
+    let era = days.div_euclid(146_097);
+    let day_of_era = days.rem_euclid(146_097);
+    let year_of_era =
+        (day_of_era - day_of_era / 1460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let shifted_month = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * shifted_month + 2) / 5 + 1;
+    let month = if shifted_month < 10 {
+        shifted_month + 3
+    } else {
+        shifted_month - 9
+    };
+    let year = era * 400 + year_of_era;
+    (if month <= 2 { year + 1 } else { year }, month, day)
 }
 
 /// Reads a timestamp from the log. Returns `None` for anything else, which is how a garbled line
@@ -327,6 +354,39 @@ mod tests {
         ] {
             assert_eq!(parse_log_timestamp(text), None, "{text}");
         }
+    }
+
+    #[test]
+    fn days_and_dates_convert_both_ways() {
+        assert_eq!(civil_from_days(0), (1970, 1, 1));
+        assert_eq!(civil_from_days(-1), (1969, 12, 31));
+        assert_eq!(civil_from_days(11_016), (2000, 2, 29));
+        assert_eq!(civil_from_days(20_760), (2026, 11, 3));
+        for days in -800_000..800_000 {
+            let (year, month, day) = civil_from_days(days);
+            assert_eq!(
+                days_from_civil(year, month, day),
+                days,
+                "{year}-{month}-{day}"
+            );
+        }
+    }
+
+    #[test]
+    fn utc_times_are_split_into_date_and_clock() {
+        assert_eq!(utc_timestamp(at(0)), "1970-01-01 00:00:00 UTC");
+        assert_eq!(utc_timestamp(at(951_782_399)), "2000-02-28 23:59:59 UTC");
+        assert_eq!(utc_timestamp(at(951_868_800)), "2000-03-01 00:00:00 UTC");
+        assert_eq!(
+            utc_clock(at(1_793_814_840)),
+            ClockTime {
+                year: 2026,
+                month: 11,
+                day: 4,
+                hour: 17,
+                minute: 54
+            }
+        );
     }
 
     #[test]

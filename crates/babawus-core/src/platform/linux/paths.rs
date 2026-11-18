@@ -3,7 +3,8 @@
 //! files. See "Platform layer" in Requirements.md.
 
 use std::env;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
+use std::os::unix::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 
 const SETTINGS_FILE: &str = "babawus/settings.toml";
@@ -41,6 +42,11 @@ pub fn computer_lock_file() -> PathBuf {
 /// Where an installed Babawus finds its language files.
 pub fn installed_languages_folder() -> PathBuf {
     PathBuf::from(INSTALLED_LANGUAGES_FOLDER)
+}
+
+/// The file name made of `bytes`. On Linux a name is any bytes.
+pub fn name_from_bytes(bytes: Vec<u8>) -> OsString {
+    OsString::from_vec(bytes)
 }
 
 /// An XDG base folder: `set`, the value of its variable, if that is an absolute path, and

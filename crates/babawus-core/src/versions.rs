@@ -3,11 +3,11 @@
 //! These are plain functions on names. File names on Linux are bytes, so they work on bytes.
 
 use std::ffi::{OsStr, OsString};
-use std::os::unix::ffi::{OsStrExt, OsStringExt};
 
 use std::time::SystemTime;
 
 use crate::names::fold;
+use crate::platform;
 use crate::time::parse_log_timestamp;
 
 /// The file system on a medium.
@@ -25,7 +25,7 @@ const TIMESTAMP_FORM: &[u8] = b"dddd-dd-dd_dddddd";
 /// Splits a name at its last dot. A name with no dot, or with only a leading dot, has no
 /// extension.
 fn split(name: &OsStr) -> (&[u8], Option<&[u8]>) {
-    let bytes = name.as_bytes();
+    let bytes = name.as_encoded_bytes();
     match bytes.iter().rposition(|&byte| byte == b'.') {
         Some(dot) if dot > 0 => (&bytes[..dot], Some(&bytes[dot + 1..])),
         _ => (bytes, None),
@@ -35,7 +35,7 @@ fn split(name: &OsStr) -> (&[u8], Option<&[u8]>) {
 /// Whether a source file or folder has a name in the form of a version folder, so that it can't
 /// be backed up.
 pub fn has_version_folder_form(name: &OsStr) -> bool {
-    name.as_bytes().windows(2).any(|pair| pair == b"[]")
+    name.as_encoded_bytes().windows(2).any(|pair| pair == b"[]")
 }
 
 /// The name of the version folder of the file `name`: `report[]pdf` for `report.pdf`.
@@ -44,7 +44,7 @@ pub fn version_folder(name: &OsStr) -> OsString {
     let mut folder = base.to_vec();
     folder.extend_from_slice(b"[]");
     folder.extend_from_slice(extension.unwrap_or_default());
-    OsString::from_vec(folder)
+    platform::name_from_bytes(folder)
 }
 
 /// The name of an older version of the file `name`: `report[2026-11-03_175400].pdf`, or with
@@ -62,7 +62,7 @@ pub fn older_version(name: &OsStr, timestamp: &str, suffix: u32) -> OsString {
         version.push(b'.');
         version.extend_from_slice(extension);
     }
-    OsString::from_vec(version)
+    platform::name_from_bytes(version)
 }
 
 /// Whether a single name fits on the medium: 255 bytes on Ext4, 255 characters on exFAT, which
@@ -93,7 +93,10 @@ fn is_timestamp(bytes: &[u8]) -> bool {
 /// each must only count its own versions.
 fn parse_version(version: &OsStr, name: &OsStr) -> Option<(Vec<u8>, u32)> {
     let (base, extension) = split(name);
-    let rest = version.as_bytes().strip_prefix(base)?.strip_prefix(b"[")?;
+    let rest = version
+        .as_encoded_bytes()
+        .strip_prefix(base)?
+        .strip_prefix(b"[")?;
     let rest = match extension {
         Some(extension) => rest.strip_suffix(extension)?.strip_suffix(b".")?,
         None => rest,
@@ -154,7 +157,7 @@ pub fn versions_to_remove(
 /// `archive[]` gives `archive`, although `archive.` shares it; [`older_versions`] only counts a
 /// file's own versions.
 pub fn file_of_version_folder(folder: &OsStr) -> Option<OsString> {
-    let bytes = folder.as_bytes();
+    let bytes = folder.as_encoded_bytes();
     let at = bytes.windows(2).position(|pair| pair == b"[]")?;
     let (base, extension) = (&bytes[..at], &bytes[at + 2..]);
     // A file with `[]` in its name is never backed up, so only one `[]` can be the mark.
@@ -166,7 +169,7 @@ pub fn file_of_version_folder(folder: &OsStr) -> Option<OsString> {
         name.push(b'.');
         name.extend_from_slice(extension);
     }
-    Some(OsString::from_vec(name))
+    Some(platform::name_from_bytes(name))
 }
 
 /// The older versions of the file `name` among `entries`, the names in its version folder, with
@@ -250,11 +253,11 @@ mod tests {
 
     #[test]
     fn names_that_are_not_utf8_work() {
-        let name = OsString::from_vec(b"caf\xe9.txt".to_vec());
+        let name = platform::name_from_bytes(b"caf\xe9.txt".to_vec());
 
         let folder = version_folder(&name);
 
-        assert_eq!(folder.as_bytes(), b"caf\xe9[]txt");
+        assert_eq!(folder.as_encoded_bytes(), b"caf\xe9[]txt");
     }
 
     #[test]
@@ -286,7 +289,7 @@ mod tests {
 
     #[test]
     fn a_name_that_is_not_utf8_does_not_fit_on_exfat() {
-        let name = OsString::from_vec(b"caf\xe9".to_vec());
+        let name = platform::name_from_bytes(b"caf\xe9".to_vec());
 
         assert!(!fits_on(&name, Format::ExFat));
         assert!(fits_on(&name, Format::Ext4));

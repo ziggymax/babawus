@@ -89,7 +89,7 @@ struct State {
 }
 
 fn medium_gone() -> io::Error {
-    io::Error::from_raw_os_error(libc::EIO)
+    crate::platform::medium_gone_error()
 }
 
 impl State {

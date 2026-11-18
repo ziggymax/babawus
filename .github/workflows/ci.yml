@@ -60,7 +60,8 @@ jobs:
 
       - name: Install Rust
         run: |
-          rustup toolchain install stable --profile minimal --component clippy,rustfmt
+          rustup toolchain install stable --profile minimal --component clippy,rustfmt \
+            --target x86_64-pc-windows-gnu
           rustup default stable
 
       # Keyed on the compiler version and Cargo.lock, so it needs no attention when they change.
@@ -72,6 +73,11 @@ jobs:
 
       - name: Run clippy
         run: cargo clippy --locked --all-targets -- -D warnings
+
+      # Only babawus-core, whose platform layer has a Windows placeholder, so that Linux-only code
+      # can't slip back into the shared parts. Clippy rather than check, so warnings count too.
+      - name: Check that babawus-core builds for Windows
+        run: cargo clippy --locked -p babawus-core --target x86_64-pc-windows-gnu -- -D warnings
 
       - name: Run all tests, including those on real file systems
         run: cargo test --locked -- --include-ignored

@@ -110,7 +110,7 @@ impl Setup {
 }
 
 fn os_path(bytes: &[u8]) -> PathBuf {
-    PathBuf::from(OsString::from_vec(bytes.to_vec()))
+    PathBuf::from(platform::name_from_bytes(bytes.to_vec()))
 }
 
 #[test]
