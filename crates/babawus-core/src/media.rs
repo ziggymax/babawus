@@ -1,8 +1,8 @@
 //! The media list: which USB media are attached, and what each one is ready for.
 //!
 //! See "Start Babawus and see status" and "Formatting a medium" in Requirements.md. This module
-//! only works on what udisks2 has reported, so it can be tested without it. [`crate::udisks`]
-//! fills in a [`Snapshot`] and reports changes.
+//! only works on what udisks2 has reported, so it can be tested without it.
+//! [`crate::platform::Sticks`] fills in a [`Snapshot`] and reports changes.
 
 use std::io::ErrorKind;
 use std::path::PathBuf;

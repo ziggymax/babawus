@@ -1,11 +1,15 @@
-//! udisks2, over D-Bus on the system bus. See "Technology" in Requirements.md.
+//! Sticks on Linux: listing, mounting, ejecting and formatting them through udisks2, over D-Bus
+//! on the system bus, and setting their permissions. See "Technology" and "Platform layer" in
+//! Requirements.md.
 //!
 //! Babawus contains no code that runs as root: everything that needs administrator rights goes
 //! through udisks2. This module only turns what udisks2 reports into a [`Snapshot`], so the rules
-//! about it live in [`crate::media`], where they can be tested without udisks2.
+//! about it live in [`crate::media`] and [`crate::format`], where they can be tested without
+//! udisks2.
 
 use std::cell::Cell;
 use std::ffi::CString;
+use std::io::{self, ErrorKind};
 use std::os::unix::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -18,11 +22,10 @@ use gio::{
     DBusProxy,
 };
 
-use crate::format::{
-    Refusal, Target, file_system_type, label_is_valid, mkfs_args, prepare, set_default_acl,
-};
+use crate::format::{Table, Target, label_is_valid, prepare};
 use crate::fs::RealFs;
 use crate::media::{Block, Drive, Snapshot, Volume};
+use crate::platform::{EjectError, Ejected, FormatError, Step};
 use crate::versions::Format;
 
 const SERVICE: &str = "org.freedesktop.UDisks2";
@@ -35,6 +38,9 @@ const PARTITION_TABLE: &str = "org.freedesktop.UDisks2.PartitionTable";
 const SWAPSPACE: &str = "org.freedesktop.UDisks2.Swapspace";
 const PROPERTIES: &str = "org.freedesktop.DBus.Properties";
 
+/// The extended attribute that holds a folder's default ACL.
+const DEFAULT_ACL: &str = "system.posix_acl_default";
+
 /// No timeout: formatting Ext4 took up to a minute on a 16 GB stick, and the default is 25
 /// seconds. Unmounting can take long too, while it writes out what is still in memory.
 const NO_TIMEOUT: i32 = i32::MAX;
@@ -42,23 +48,25 @@ const NO_TIMEOUT: i32 = i32::MAX;
 /// How long to gather a burst of changes. This is short enough to look immediate.
 const GATHER_CHANGES: Duration = Duration::from_millis(100);
 
-/// A connection to udisks2. It keeps an up-to-date copy of what udisks2 reports, and hears
-/// about changes on the main context that was the thread default when it was created.
-pub struct Udisks {
+/// The sticks attached to this computer, through a connection to udisks2. It keeps an
+/// up-to-date copy of what udisks2 reports, and hears about changes on the main context that was
+/// the thread default when it was created.
+pub struct Sticks {
     manager: DBusObjectManagerClient,
 }
 
-impl Udisks {
+impl Sticks {
     /// Connects to udisks2. This waits for udisks2's first answer, which is quick, and starts
     /// udisks2 if it isn't running yet.
-    pub fn connect() -> Result<Self, glib::Error> {
+    pub fn connect() -> io::Result<Self> {
         let manager = DBusObjectManagerClient::for_bus_sync(
             BusType::System,
             DBusObjectManagerClientFlags::NONE,
             SERVICE,
             MANAGER_PATH,
             gio::Cancellable::NONE,
-        )?;
+        )
+        .map_err(|error| io::Error::other(format!("udisks2: {}", error.message())))?;
         Ok(Self { manager })
     }
 
@@ -142,38 +150,6 @@ impl Udisks {
     }
 }
 
-/// A step of formatting. Everything before [`Step::Partition`] leaves the data on the drive.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Step {
-    Unmount,
-    Partition,
-    Format,
-    Mount,
-    /// Setting permissions, and creating the folders and the configuration.
-    Prepare,
-}
-
-/// Why formatting failed.
-#[derive(Debug)]
-pub enum FormatError {
-    /// The label is not allowed. Nothing was changed.
-    InvalidLabel,
-    /// The drive may not be formatted, or has gone. Nothing was changed.
-    Refused(Refusal),
-    /// A step failed, for example because udisks2 or the administrator said no.
-    Failed { step: Step, message: String },
-}
-
-impl FormatError {
-    /// Whether the drive still holds what it held before.
-    pub fn nothing_erased(&self) -> bool {
-        match self {
-            Self::InvalidLabel | Self::Refused(_) => true,
-            Self::Failed { step, .. } => *step == Step::Unmount,
-        }
-    }
-}
-
 fn failed(step: Step) -> impl FnOnce(glib::Error) -> FormatError {
     move |error| FormatError::Failed {
         step,
@@ -181,7 +157,7 @@ fn failed(step: Step) -> impl FnOnce(glib::Error) -> FormatError {
     }
 }
 
-impl Udisks {
+impl Sticks {
     /// Formats the drive with the udisks2 drive ID `id` as a Babawus medium, and returns where
     /// the new file system is mounted. See "Formatting a medium" in Requirements.md.
     ///
@@ -231,7 +207,7 @@ impl Udisks {
             &target.disk,
             BLOCK,
             "Format",
-            &[table.udisks_type().to_variant(), options(&[])],
+            &[table_type(table).to_variant(), options(&[])],
         )
         .await
         .map_err(failed(Step::Partition))?;
@@ -356,31 +332,10 @@ impl Udisks {
     }
 }
 
-/// How far ejecting got.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Ejected {
-    /// The medium was unmounted and powered off, so it can be pulled out.
-    PoweredOff,
-    /// The medium was unmounted, but powering it off was not possible, so its light may stay
-    /// on. It can still be pulled out safely. `reason` is for the details, if udisks2 gave one.
-    UnmountedOnly { reason: Option<String> },
-}
-
-/// Why ejecting failed. The medium is still mounted, at least in part.
-#[derive(Debug, PartialEq, Eq)]
-pub enum EjectError {
-    /// The drive has gone, or isn't a USB medium.
-    Gone,
-    /// A program is still using a file system on it, such as an open file or a file manager
-    /// window.
-    Busy,
-    Failed(String),
-}
-
 /// udisks2's error for a file system that is in use.
 const DEVICE_BUSY: &str = "org.freedesktop.UDisks2.Error.DeviceBusy";
 
-impl Udisks {
+impl Sticks {
     /// Ejects the drive with the udisks2 drive ID `id`, like "Safely remove" in the file
     /// manager: every file system on it is unmounted, and then it is powered off, if possible.
     /// See "Offer to eject" in Requirements.md.
@@ -417,6 +372,74 @@ impl Udisks {
         }
         Ok(())
     }
+}
+
+/// The type of partition table that udisks2's `Format` takes.
+fn table_type(table: Table) -> &'static str {
+    match table {
+        Table::Mbr => "dos",
+        Table::Gpt => "gpt",
+    }
+}
+
+/// The name that udisks2 and `mkfs` use for `format`.
+fn file_system_type(format: Format) -> &'static str {
+    match format {
+        Format::ExFat => "exfat",
+        Format::Ext4 => "ext4",
+    }
+}
+
+/// The extra arguments for `mkfs`: on Ext4, no reserved blocks, and full initialisation, so
+/// that the medium is finished when formatting is.
+fn mkfs_args(format: Format) -> &'static [&'static str] {
+    match format {
+        Format::ExFat => &[],
+        Format::Ext4 => &["-m", "0", "-E", "lazy_itable_init=0,lazy_journal_init=0"],
+    }
+}
+
+/// Sets a default ACL on the folder `path`, the equivalent of
+/// `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`, so that what other programs create in it can be
+/// read and written by everyone too.
+fn set_default_acl(path: &Path) -> io::Result<()> {
+    let path = CString::new(path.as_os_str().as_encoded_bytes())
+        .map_err(|error| io::Error::new(ErrorKind::InvalidInput, error))?;
+    let name = CString::new(DEFAULT_ACL).expect("the name has no zero byte");
+    let value = default_acl();
+    // SAFETY: both strings are valid C strings, and `value` is valid for reads of its length.
+    let result = unsafe {
+        libc::setxattr(
+            path.as_ptr(),
+            name.as_ptr(),
+            value.as_ptr().cast(),
+            value.len(),
+            0,
+        )
+    };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(io::Error::last_os_error())
+    }
+}
+
+/// A POSIX ACL as the kernel stores it: a version, then one entry each for the owner, the group
+/// and everyone else, in that order, each with read, write and execute.
+fn default_acl() -> Vec<u8> {
+    const VERSION: u32 = 2;
+    const USER_OBJ: u16 = 0x01;
+    const GROUP_OBJ: u16 = 0x04;
+    const OTHER: u16 = 0x20;
+    const RWX: u16 = 0o7;
+    const NO_ID: u32 = u32::MAX;
+    let mut value = VERSION.to_le_bytes().to_vec();
+    for tag in [USER_OBJ, GROUP_OBJ, OTHER] {
+        value.extend_from_slice(&tag.to_le_bytes());
+        value.extend_from_slice(&RWX.to_le_bytes());
+        value.extend_from_slice(&NO_ID.to_le_bytes());
+    }
+    value
 }
 
 /// udisks2's options for a call, an `a{sv}`.
@@ -547,6 +570,33 @@ mod tests {
         let path = path_from_bytes(b"/media/usera/BACKUP-A\0".to_vec());
         assert_eq!(path, Path::new("/media/usera/BACKUP-A"));
         assert_eq!(path_from_bytes(b"/mnt".to_vec()), Path::new("/mnt"));
+    }
+
+    #[test]
+    fn the_table_types_are_udisks2_s_names() {
+        assert_eq!(table_type(Table::Mbr), "dos");
+        assert_eq!(table_type(Table::Gpt), "gpt");
+    }
+
+    #[test]
+    fn only_ext4_gets_extra_mkfs_arguments() {
+        assert!(mkfs_args(Format::ExFat).is_empty());
+        assert_eq!(
+            mkfs_args(Format::Ext4),
+            ["-m", "0", "-E", "lazy_itable_init=0,lazy_journal_init=0"]
+        );
+    }
+
+    #[test]
+    fn the_default_acl_gives_everyone_everything() {
+        let acl = default_acl();
+
+        assert_eq!(acl.len(), 4 + 3 * 8);
+        assert_eq!(&acl[..4], &[2, 0, 0, 0]);
+        let entries: Vec<_> = acl[4..].chunks(8).map(|entry| entry.to_vec()).collect();
+        assert_eq!(entries[0], [0x01, 0, 7, 0, 0xff, 0xff, 0xff, 0xff]);
+        assert_eq!(entries[1], [0x04, 0, 7, 0, 0xff, 0xff, 0xff, 0xff]);
+        assert_eq!(entries[2], [0x20, 0, 7, 0, 0xff, 0xff, 0xff, 0xff]);
     }
 
     #[test]

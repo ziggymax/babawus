@@ -1,11 +1,10 @@
 //! Formatting a medium: which drives may be formatted, the label, the partition table, and
 //! preparing the new file system.
 //!
-//! See "Format USB media" and "Formatting a medium" in Requirements.md. The udisks2 calls are in
-//! [`crate::udisks`], which follows the plan worked out here.
+//! See "Format USB media" and "Formatting a medium" in Requirements.md. The calls that format are in
+//! [`crate::platform::Sticks`], which follows the plan worked out here.
 
-use std::ffi::CString;
-use std::io::{self, ErrorKind};
+use std::io;
 use std::path::{Path, PathBuf};
 
 use crate::config::{self, Config, EntryError};
@@ -29,10 +28,7 @@ const MEDIA_FOLDERS: [&str; 2] = ["/media/", "/run/media/"];
 /// The `.babawus` folder.
 const BABAWUS_FOLDER: &str = ".babawus";
 
-/// The extended attribute that holds a folder's default ACL.
-const DEFAULT_ACL: &str = "system.posix_acl_default";
-
-/// The partition table that udisks2 writes.
+/// The partition table that formatting writes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Table {
     Mbr,
@@ -49,14 +45,6 @@ impl Table {
         }
     }
 
-    /// The type that udisks2's `Format` takes.
-    pub fn udisks_type(self) -> &'static str {
-        match self {
-            Self::Mbr => "dos",
-            Self::Gpt => "gpt",
-        }
-    }
-
     /// The partition type for a file system in `format`.
     pub fn partition_type(self, format: Format) -> &'static str {
         match (self, format) {
@@ -67,23 +55,6 @@ impl Table {
             // Linux file system.
             (Self::Gpt, Format::Ext4) => "0fc63daf-8483-4772-8e79-3d69d8477de4",
         }
-    }
-}
-
-/// The name that udisks2 and `mkfs` use for `format`.
-pub fn file_system_type(format: Format) -> &'static str {
-    match format {
-        Format::ExFat => "exfat",
-        Format::Ext4 => "ext4",
-    }
-}
-
-/// The extra arguments for `mkfs`: on Ext4, no reserved blocks, and full initialisation, so
-/// that the medium is finished when formatting is.
-pub fn mkfs_args(format: Format) -> &'static [&'static str] {
-    match format {
-        Format::ExFat => &[],
-        Format::Ext4 => &["-m", "0", "-E", "lazy_itable_init=0,lazy_journal_init=0"],
     }
 }
 
@@ -206,7 +177,7 @@ impl Snapshot {
 /// Prepares a newly formatted, mounted file system at `root` for Babawus: on Ext4, everyone may
 /// read and write it, and then the folders and a new configuration are created.
 ///
-/// The default ACL is set separately, by [`set_default_acl`], because only a real file system
+/// The default ACL is set separately, by the platform layer, because only a real file system
 /// has one.
 pub fn prepare(medium: &dyn FileSystem, root: &Path, format: Format) -> io::Result<()> {
     if format == Format::Ext4 {
@@ -223,49 +194,6 @@ pub fn prepare(medium: &dyn FileSystem, root: &Path, format: Format) -> io::Resu
         EntryError::Io(error) => error,
         other => io::Error::other(format!("the new configuration is not valid: {other:?}")),
     })
-}
-
-/// Sets a default ACL on the folder `path`, the equivalent of
-/// `setfacl -m d:u::rwx,d:g::rwx,d:o::rwx`, so that what other programs create in it can be
-/// read and written by everyone too.
-pub fn set_default_acl(path: &Path) -> io::Result<()> {
-    let path = CString::new(path.as_os_str().as_encoded_bytes())
-        .map_err(|error| io::Error::new(ErrorKind::InvalidInput, error))?;
-    let name = CString::new(DEFAULT_ACL).expect("the name has no zero byte");
-    let value = default_acl();
-    // SAFETY: both strings are valid C strings, and `value` is valid for reads of its length.
-    let result = unsafe {
-        libc::setxattr(
-            path.as_ptr(),
-            name.as_ptr(),
-            value.as_ptr().cast(),
-            value.len(),
-            0,
-        )
-    };
-    if result == 0 {
-        Ok(())
-    } else {
-        Err(io::Error::last_os_error())
-    }
-}
-
-/// A POSIX ACL as the kernel stores it: a version, then one entry each for the owner, the group
-/// and everyone else, in that order, each with read, write and execute.
-fn default_acl() -> Vec<u8> {
-    const VERSION: u32 = 2;
-    const USER_OBJ: u16 = 0x01;
-    const GROUP_OBJ: u16 = 0x04;
-    const OTHER: u16 = 0x20;
-    const RWX: u16 = 0o7;
-    const NO_ID: u32 = u32::MAX;
-    let mut value = VERSION.to_le_bytes().to_vec();
-    for tag in [USER_OBJ, GROUP_OBJ, OTHER] {
-        value.extend_from_slice(&tag.to_le_bytes());
-        value.extend_from_slice(&RWX.to_le_bytes());
-        value.extend_from_slice(&NO_ID.to_le_bytes());
-    }
-    value
 }
 
 #[cfg(test)]

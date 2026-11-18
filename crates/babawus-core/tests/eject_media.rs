@@ -1,7 +1,7 @@
 //! Ejecting through udisks2, on loop devices that the tests create themselves.
 //!
 //! A loop device has no drive, so it can't be powered off: these tests check unmounting with
-//! [`Udisks::unmount_all`], and powering off is on the manual checklist.
+//! [`Sticks::unmount_all`], and powering off is on the manual checklist.
 
 #[allow(dead_code)]
 mod support;
@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 use babawus_core::format::{Table, Target};
 use babawus_core::media::{Drive, Snapshot};
-use babawus_core::udisks::{EjectError, Udisks};
+use babawus_core::platform::{EjectError, Sticks};
 use babawus_core::versions::Format;
 use gio::glib;
 use support::BlankLoop;
@@ -24,7 +24,7 @@ const WAIT: Duration = Duration::from_secs(20);
 /// object path of that file system.
 fn mounted_medium(
     context: &glib::MainContext,
-    udisks: &Udisks,
+    udisks: &Sticks,
     label: &str,
 ) -> (BlankLoop, String) {
     let blank = BlankLoop::new(32 * MIB);
@@ -54,7 +54,7 @@ fn mounted_medium(
     (blank, partition)
 }
 
-fn mount_points(udisks: &Udisks, block: &str) -> Vec<std::path::PathBuf> {
+fn mount_points(udisks: &Sticks, block: &str) -> Vec<std::path::PathBuf> {
     let snapshot: Snapshot = udisks.snapshot();
     snapshot
         .blocks
@@ -64,11 +64,11 @@ fn mount_points(udisks: &Udisks, block: &str) -> Vec<std::path::PathBuf> {
         .unwrap_or_default()
 }
 
-fn with_udisks(test: impl FnOnce(&glib::MainContext, &Udisks)) {
+fn with_udisks(test: impl FnOnce(&glib::MainContext, &Sticks)) {
     let context = glib::MainContext::new();
     context
         .with_thread_default(|| {
-            let udisks = Udisks::connect().expect("connect to udisks2");
+            let udisks = Sticks::connect().expect("connect to udisks2");
             test(&context, &udisks);
         })
         .expect("use the main context");

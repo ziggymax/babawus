@@ -7,8 +7,8 @@ use std::collections::HashSet;
 use crate::format::{Refusal, label_is_valid, suggest_label};
 use crate::language::Language;
 use crate::media::{Snapshot, Volume};
+use crate::platform::{FormatError, Step};
 use crate::text::{Text, size};
-use crate::udisks::{FormatError, Step};
 
 /// A drive that can be chosen to format.
 #[derive(Clone, Debug, PartialEq, Eq)]

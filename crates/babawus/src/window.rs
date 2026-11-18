@@ -27,6 +27,7 @@ use babawus_core::language::{Language, Languages};
 use babawus_core::lock::ThisProcess;
 use babawus_core::log::{LastBackup, Run, read_runs};
 use babawus_core::media::{Medium, Status, Viewer};
+use babawus_core::platform::{EjectError, Ejected, Sticks};
 use babawus_core::run::{Backup, Ended, Message, RunningBackup};
 use babawus_core::settings::{SETTINGS_FILE, Settings};
 use babawus_core::setup_screen::{
@@ -35,7 +36,6 @@ use babawus_core::setup_screen::{
 use babawus_core::start_screen::{self, Action, Checked, Shown, Unlisted};
 use babawus_core::text::{self, Text};
 use babawus_core::time::local_clock;
-use babawus_core::udisks::{EjectError, Ejected, Udisks};
 use babawus_core::verdict_screen::{Context, verdict_screen};
 use babawus_core::versions::Format;
 use gtk4::prelude::*;
@@ -306,7 +306,7 @@ struct Window {
     rows: RefCell<Vec<RowWidgets>>,
     details: DetailsWidgets,
 
-    udisks: Option<Udisks>,
+    sticks: Option<Sticks>,
     this: ThisProcess,
     username: String,
     settings_path: PathBuf,
@@ -346,8 +346,8 @@ pub fn show(app: &Application) {
     add_css();
     let settings_path = glib::user_config_dir().join(SETTINGS_FILE);
     let language = current_language(&settings_path);
-    let udisks = Udisks::connect()
-        .inspect_err(|error| eprintln!("Babawus could not connect to udisks2: {error}"))
+    let sticks = Sticks::connect()
+        .inspect_err(|error| eprintln!("Babawus could not list the sticks: {error}"))
         .ok();
     let computer_id = this_computer_id(&RealFs).ok().flatten().unwrap_or_default();
     // Without these, no lock on a medium can be checked, and every medium counts as unlocked.
@@ -454,7 +454,7 @@ pub fn show(app: &Application) {
         list,
         rows: RefCell::new(Vec::new()),
         details,
-        udisks,
+        sticks,
         this,
         username: glib::user_name().to_string_lossy().into_owned(),
         settings_path,
@@ -478,9 +478,9 @@ pub fn show(app: &Application) {
     this_window.add_actions();
     this_window.set_texts();
     this_window.media_changed();
-    if let Some(udisks) = &this_window.udisks {
+    if let Some(sticks) = &this_window.sticks {
         let weak = Rc::downgrade(&this_window);
-        udisks.connect_changed(move || {
+        sticks.connect_changed(move || {
             if let Some(window) = weak.upgrade() {
                 window.media_changed();
             }
@@ -1042,13 +1042,13 @@ impl Window {
         }
     }
 
-    /// udisks2 reported a change, or Babawus has just started: the list is read again, and each
+    /// The sticks changed, or Babawus has just started: the list is read again, and each
     /// medium is checked off the main thread.
     fn media_changed(self: &Rc<Self>) {
-        let Some(udisks) = &self.udisks else {
+        let Some(sticks) = &self.sticks else {
             return;
         };
-        let snapshot = udisks.snapshot();
+        let snapshot = sticks.snapshot();
         self.unlisted.set(start_screen::unlisted(&snapshot));
         *self.formattable.borrow_mut() = snapshot
             .formattable()
@@ -1236,7 +1236,7 @@ impl Window {
                 .find(|(medium, _)| &medium.volume.object_path == selected)
         }) else {
             let (text, advice) = start_screen::empty_text(
-                self.udisks.is_some(),
+                self.sticks.is_some(),
                 !media.is_empty(),
                 self.unlisted.get(),
             );
@@ -2210,7 +2210,7 @@ impl Window {
 
     /// Opens the format view, with the selected medium's drive chosen if it may be formatted.
     fn open_format(self: &Rc<Self>) {
-        if self.udisks.is_none() || self.format.borrow().is_some() {
+        if self.sticks.is_none() || self.format.borrow().is_some() {
             return;
         }
         let drive = self
@@ -2251,7 +2251,7 @@ impl Window {
             .borrow()
             .as_ref()
             .is_some_and(|format| matches!(format.stage, FormatStage::Choosing));
-        let Some(udisks) = &self.udisks else { return };
+        let Some(sticks) = &self.sticks else { return };
         if !choosing {
             return;
         }
@@ -2266,7 +2266,7 @@ impl Window {
             })
             .map(|(medium, _)| medium.volume.object_path.clone())
             .collect();
-        let choices = drive_choices(&udisks.snapshot(), &babawus, self.language.get());
+        let choices = drive_choices(&sticks.snapshot(), &babawus, self.language.get());
         self.format_updating.set(true);
         self.format_page.set_drives(&choices, selected);
         self.format_updating.set(false);
@@ -2289,9 +2289,9 @@ impl Window {
                 None
             } else {
                 format.drive = chosen.clone();
-                let suggestion = match (&self.udisks, &chosen) {
-                    (Some(udisks), Some(id)) if !format.label_edited => {
-                        Some(suggested_label(&udisks.snapshot(), id))
+                let suggestion = match (&self.sticks, &chosen) {
+                    (Some(sticks), Some(id)) if !format.label_edited => {
+                        Some(suggested_label(&sticks.snapshot(), id))
                     }
                     _ => None,
                 };
@@ -2341,8 +2341,8 @@ impl Window {
         let weak = Rc::downgrade(self);
         glib::spawn_future_local(async move {
             let Some(window) = weak.upgrade() else { return };
-            let Some(udisks) = &window.udisks else { return };
-            let result = udisks.format(&drive, file_system, &label).await;
+            let Some(sticks) = &window.sticks else { return };
+            let result = sticks.format(&drive, file_system, &label).await;
             let stage = match result {
                 Ok(root) => FormatStage::Done {
                     label,
@@ -2447,8 +2447,8 @@ impl Window {
         let weak = Rc::downgrade(self);
         glib::spawn_future_local(async move {
             let Some(window) = weak.upgrade() else { return };
-            let Some(udisks) = &window.udisks else { return };
-            let result = udisks.eject(&drive_id).await;
+            let Some(sticks) = &window.sticks else { return };
+            let result = sticks.eject(&drive_id).await;
             // The stick has left, so there is nothing more to do with it here.
             let gone = matches!(result, Ok(_) | Err(EjectError::Gone));
             let text = match result {

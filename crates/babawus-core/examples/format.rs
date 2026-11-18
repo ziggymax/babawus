@@ -7,7 +7,7 @@
 use std::time::Instant;
 
 use babawus_core::format::suggest_label;
-use babawus_core::udisks::Udisks;
+use babawus_core::platform::Sticks;
 use babawus_core::versions::Format;
 use gio::glib;
 
@@ -15,7 +15,7 @@ const CONFIRM: &str = "--erase-everything";
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let udisks = Udisks::connect().expect("connect to udisks2");
+    let udisks = Sticks::connect().expect("connect to udisks2");
     let snapshot = udisks.snapshot();
     let [id, format, label, confirm] = args.as_slice() else {
         println!("Drives that may be formatted:");

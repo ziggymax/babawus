@@ -15,7 +15,7 @@ use babawus_core::fs::RealFs;
 use babawus_core::identity::this_computer_id;
 use babawus_core::lock::ThisProcess;
 use babawus_core::media::{Drive, Medium, Snapshot, Status, Viewer, Volume};
-use babawus_core::udisks::Udisks;
+use babawus_core::platform::Sticks;
 use babawus_core::versions::Format;
 use gio::glib;
 use support::{LoopMedium, MediumFormat};
@@ -64,7 +64,7 @@ fn wait_for(
 }
 
 /// What udisks2 reports about the file system mounted at `root`, for a failure message.
-fn reported(udisks: &Udisks, root: &Path) -> String {
+fn reported(udisks: &Sticks, root: &Path) -> String {
     match volume_at(&udisks.snapshot(), root) {
         Some(volume) => format!("{volume:?}"),
         None => "no volume mounted there".to_owned(),
@@ -73,7 +73,7 @@ fn reported(udisks: &Udisks, root: &Path) -> String {
 
 fn reports_the_file_system(format: MediumFormat, name: &str) {
     with_context(|context| {
-        let udisks = Udisks::connect().expect("connect to udisks2");
+        let udisks = Sticks::connect().expect("connect to udisks2");
         let medium = LoopMedium::new(format, 32 * MIB);
 
         // udisks2 reads the mount table on its own schedule, and can list the mount before it
@@ -122,7 +122,7 @@ fn ext4_is_reported() {
 #[ignore = "needs sudo, loop devices and udisks2"]
 fn changes_are_reported() {
     with_context(|context| {
-        let udisks = Udisks::connect().expect("connect to udisks2");
+        let udisks = Sticks::connect().expect("connect to udisks2");
         let calls = std::rc::Rc::new(std::cell::Cell::new(0));
         let counter = calls.clone();
         udisks.connect_changed(move || counter.set(counter.get() + 1));
@@ -149,7 +149,7 @@ fn a_real_babawus_medium_is_ready() {
         (MediumFormat::Ext4, Format::Ext4),
     ] {
         with_context(|context| {
-            let udisks = Udisks::connect().expect("connect to udisks2");
+            let udisks = Sticks::connect().expect("connect to udisks2");
             let loop_medium = LoopMedium::new(format, 32 * MIB);
             let root = loop_medium.path();
             let computer_id = this_computer_id(&RealFs).unwrap().expect("a computer ID");

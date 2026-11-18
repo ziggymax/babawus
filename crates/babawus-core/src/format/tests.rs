@@ -1,3 +1,4 @@
+use std::io::ErrorKind;
 use std::time::SystemTime;
 
 use super::*;
@@ -178,17 +179,6 @@ fn partition_types_match_the_file_system() {
         Table::Gpt.partition_type(Format::Ext4),
         "0fc63daf-8483-4772-8e79-3d69d8477de4"
     );
-    assert_eq!(Table::Mbr.udisks_type(), "dos");
-    assert_eq!(Table::Gpt.udisks_type(), "gpt");
-}
-
-#[test]
-fn only_ext4_gets_extra_mkfs_arguments() {
-    assert!(mkfs_args(Format::ExFat).is_empty());
-    assert_eq!(
-        mkfs_args(Format::Ext4),
-        ["-m", "0", "-E", "lazy_itable_init=0,lazy_journal_init=0"]
-    );
 }
 
 #[test]
@@ -273,16 +263,4 @@ fn preparing_reports_a_failure() {
 
     assert_eq!(error.kind(), ErrorKind::AlreadyExists);
     assert!(medium.metadata(&root().join(CONFIG_FILE)).is_err());
-}
-
-#[test]
-fn the_default_acl_gives_everyone_everything() {
-    let acl = default_acl();
-
-    assert_eq!(acl.len(), 4 + 3 * 8);
-    assert_eq!(&acl[..4], &[2, 0, 0, 0]);
-    let entries: Vec<_> = acl[4..].chunks(8).map(|entry| entry.to_vec()).collect();
-    assert_eq!(entries[0], [0x01, 0, 7, 0, 0xff, 0xff, 0xff, 0xff]);
-    assert_eq!(entries[1], [0x04, 0, 7, 0, 0xff, 0xff, 0xff, 0xff]);
-    assert_eq!(entries[2], [0x20, 0, 7, 0, 0xff, 0xff, 0xff, 0xff]);
 }
