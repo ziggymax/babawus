@@ -4,6 +4,25 @@ This guide explains how to rebuild the Babawus development and test VM from noth
 
 The steps are split between **You** (things that need the VirtualBox host, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session on the VM). Claude can't see the host, so the host settings below are recommendations or were worked out from inside the VM.
 
+## Building and testing
+
+Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](Requirements.md) for what it must do. [Tasks-Open.md](Tasks-Open.md) lists all outstanding work, so add anything that is left for later there.
+
+To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands below. The rest of this guide explains how to rebuild the full development VM.
+
+| Task | Command |
+| --- | --- |
+| Run the application | `cargo run -p babawus` |
+| Run the unit tests | `cargo test` |
+| Also run the tests on real file systems (needs passwordless `sudo`) | `cargo test -- --include-ignored` |
+| List the USB media as Babawus sees them, and follow changes | `cargo run -p babawus-core --example media -- --follow` |
+| List the drives Babawus may format, or format one (this erases it) | `cargo run -p babawus-core --example format` |
+| List the USB media, or eject one | `cargo run -p babawus-core --example eject` |
+| Add this computer and account to a mounted Babawus medium, with what to back up, without the configuration editor | `cargo run -p babawus-core --example add_account -- <medium root> Documents` |
+| The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](ReleaseChecklist.md) |
+| Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
+| Build the `.deb` package | `cargo deb -p babawus` |
+
 ## The VM
 
 | Item | Value |
