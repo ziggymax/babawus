@@ -12,32 +12,21 @@ When work on a version begins, its items become tasks (T-entries) in the task li
 
 ## Latest release of Babawus
 
-The latest/current release is: 1.1.0 (tag `v1.1.0`), with a Restore window and leaving out single files. Babawus follows semantic versioning (major.minor.patch).
+The latest/current release is: 1.1.1 (tag `v1.1.1`), with the Linux-specific code behind a platform layer and no visible change. Babawus follows semantic versioning (major.minor.patch).
 
-The latest interim version is: none since 1.1.0. The last was 1.1.0-alpha.3 (tag `v1.1.0-alpha.3`).
+The latest interim version is: none since 1.1.0; 1.1.1 had none. The last was 1.1.0-alpha.3 (tag `v1.1.0-alpha.3`).
 
 ## Next release of Babawus
 
 This section always describes the next upcoming version/release of Babawus. Some of the ideas may be very specific, and some more speculative in nature. Task(s) created to deal with speculative ideas will be investigative rather than implementation-oriented.
 
-1.1.0's plan, its three interim versions and their reasons, are kept in the issues (159 to 165) and the tasks (T-089 to T-105).
+1.1.0's plan, its three interim versions and their reasons, are kept in the issues (159 to 165) and the tasks (T-089 to T-105). Step 0 of bringing Babawus to more platforms was released as 1.1.1; its plan and decisions are kept in issue 166 and the tasks T-106 to T-114, and the platform layer is described under "Platform layer" in [Requirements.md](Requirements.md).
 
-The next releases start bringing Babawus to more platforms: first other Linux distributions, then Windows. They are planned as three steps. Steps 0 and 1 are planned below; step 2, Windows, is under "Future releases".
+The next releases start bringing Babawus to more platforms: first other Linux distributions, then Windows. They are planned as three steps. Step 0, the platform layer, is done (1.1.1). Step 1 is planned below; step 2, Windows, is under "Future releases".
 
 **One codebase for all platforms.** Every platform, Windows included, is built from the same code on main. There are no long-lived branches per platform. What differs between platforms sits in a small platform layer, with one implementation per platform, chosen when Babawus is built (`#[cfg(target_os = ...)]`). Everything else, such as the backup logic, versioning, the log, the configuration and the language files, is shared. Between the Linux distributions, the differences are expected to be almost entirely in packaging and dependency names, not in the code.
 
 **Containers for building, VMs for the checklist.** Babawus is built and its unit tests run in a container for each supported distribution, locally and in GitHub Actions on every pull request. Containers can't test real sticks or a desktop, so the release checklist ([ReleaseChecklist.md](ReleaseChecklist.md)) is run on real sticks in one VM per distribution before each release.
-
-### Step 0: release 1.1.1, the platform layer
-
-1.1.1 moves the Linux-specific code behind the platform layer, without changing what Babawus does. It is released as a normal version for Linux Mint 22.x, so that the change is tested and in use before any new platform is added. The platform layer covers:
-
-- **Sticks:** listing, mounting, ejecting and formatting them, and setting their permissions. This is udisks2, `mkfs.exfat`, `mkfs.ext4` and `setfacl` today.
-- **Identity:** what identifies the computer and its boot (`/etc/machine-id`, `/proc`), and the computer's name.
-- **Flushing and locking:** `syncfs` and `fsync`, and how the lock checks whether its process is still running.
-- **Paths:** where the settings, the note of the last backup and the installed language files are.
-
-From 1.1.1 on, CI also checks that `babawus-core` compiles for Windows, with a placeholder Windows implementation of the platform layer. That way, Linux-only code can't slip back into the shared parts while the other platforms are still to come.
 
 ### Step 1: release 1.2.0, other Linux distributions
 
