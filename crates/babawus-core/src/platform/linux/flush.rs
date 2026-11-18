@@ -49,7 +49,7 @@ pub fn free_space(path: &Path) -> io::Result<u64> {
     }
     // SAFETY: `statvfs` succeeded, so it has filled in `stats`.
     let stats = unsafe { stats.assume_init() };
-    Ok(stats.f_bavail * stats.f_frsize)
+    Ok(stats.f_bavail.saturating_mul(stats.f_frsize))
 }
 
 /// Writes out everything that is still in memory for the file system that holds `path`.
@@ -68,6 +68,12 @@ pub fn is_medium_gone(error: &io::Error) -> bool {
         error.raw_os_error(),
         Some(libc::EIO | libc::ENODEV | libc::ENXIO)
     )
+}
+
+/// The error a read gives when its medium is pulled out, as the fake file system and tests make
+/// it.
+pub fn medium_gone_error() -> io::Error {
+    io::Error::from_raw_os_error(libc::EIO)
 }
 
 /// The name of this process's program, read from `system`, the computer's own file system.

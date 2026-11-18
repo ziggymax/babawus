@@ -5,16 +5,15 @@
 //! Every function that changes the medium expects the caller to hold the medium's lock.
 
 use std::collections::{HashMap, HashSet};
-use std::ffi::OsString;
 use std::fmt::Write;
 use std::io::{self, ErrorKind};
-use std::os::unix::ffi::{OsStrExt, OsStringExt};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use crate::fs::FileSystem;
 use crate::identity::hex;
 use crate::medium::{FILE_MODE, LOG_FILE, read_file, replace_file, set_mode};
+use crate::platform;
 use crate::time::parse_log_timestamp;
 use crate::verdict::{Reason, Verdict};
 use crate::versions::Format;
@@ -131,12 +130,7 @@ pub fn last_backup(runs: &[Run], account: &str) -> Option<LastBackup> {
 /// A new run ID: 16 random lower-case hexadecimal digits.
 pub fn new_run_id() -> String {
     let mut bytes = [0; RUN_ID_BYTES];
-    // SAFETY: `bytes` is valid for writes of its whole length.
-    let written = unsafe { libc::getrandom(bytes.as_mut_ptr().cast(), bytes.len(), 0) };
-    assert_eq!(
-        written, RUN_ID_BYTES as isize,
-        "the system gives a few random bytes without fail"
-    );
+    platform::random_bytes(&mut bytes);
     hex(&bytes, RUN_ID_BYTES)
 }
 
@@ -267,7 +261,7 @@ pub(crate) fn parse_line(line: &[u8]) -> Option<Line<'_>> {
         }
         ERROR => {
             let path = match pairs.get("path") {
-                Some(path) => Some(PathBuf::from(OsString::from_vec(unescape(path)?))),
+                Some(path) => Some(PathBuf::from(platform::name_from_bytes(unescape(path)?))),
                 None => None,
             };
             let files = match pairs.get("files") {
@@ -552,7 +546,7 @@ impl<'a> RunLog<'a> {
         }
         let mut pairs = vec![
             ("code", code.to_owned()),
-            ("path", escape(path.as_os_str().as_bytes())),
+            ("path", escape(path.as_os_str().as_encoded_bytes())),
         ];
         if files > 1 {
             pairs.push(("files", files.to_string()));
