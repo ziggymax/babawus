@@ -218,7 +218,7 @@ Started as `babawus --checklastbackup`, Babawus first looks at when this account
 
 - A backup counts as for "See when I last made a backup": "All good" or "Some files were skipped". Days are calendar days in local time, so with `run_check_days = 7` the reminder comes from the 8th day on. `run_check_days = 0` never reminds.
 - The stick is usually not plugged in at login, so each backup that counts notes when it finished, with the account's `run_check_days` from that stick, in `$XDG_STATE_HOME/babawus/last_backup` (by default `~/.local/state/babawus/last_backup`). It is a small TOML file, with the time in the log's form. The latest backup counts, whichever stick it went to. A file that can't be read counts as no file, and a backup that can't be noted is still a backup.
-- Babawus doesn't add itself to the startup programs. `babawus --checklastbackup` is added in "Startup Applications" for each account that wants the reminder (see the README).
+- Babawus doesn't add itself to the startup programs. `babawus --checklastbackup` is added in "Startup Applications" for each account that wants the reminder (see [UserGuide.md](UserGuide.md)).
 - If Babawus is already open for this account, `--checklastbackup` brings its window forward like any other start.
 
 ### View the history of a medium
@@ -700,7 +700,7 @@ Babawus is delivered as a `.deb` package, built with `cargo-deb`. It is installe
 - Its summary is "Basic backup with USB storage", and a longer description below it says in plain words what Babawus does, and that preparing a stick and choosing what is backed up are advanced functions, under Advanced in the menu (issues 111 and 153).
 - It installs the language files in `/usr/share/babawus/languages/`. An update replaces the files it installed, and keeps any language file added by hand.
 - It declares its dependencies: the GTK 4 libraries, `udisks2`, `exfatprogs`, `e2fsprogs` and `acl`.
-- Uninstalling never touches any medium. The small settings file in each user's home folder stays behind, and the uninstall notes in `README.md` mention it.
+- Uninstalling never touches any medium. The small settings file in each user's home folder stays behind, and the uninstall notes in `UserGuide.md` mention it.
 
 ### Supported platform
 
