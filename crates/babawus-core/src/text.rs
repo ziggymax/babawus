@@ -333,6 +333,8 @@ texts! {
     RestoreChooseTooltip,
     RestoreChooseTitle,
     RestoreSuggested,
+    RestoreFolderSuggested,
+    RestoreFolderChosen,
     RestoreButton,
     RestoreButtonTooltip,
     RestoreNothingTicked,

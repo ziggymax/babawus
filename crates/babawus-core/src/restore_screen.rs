@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use crate::backup_screen::number;
+use crate::choose_screen::{self, Totals};
 use crate::config::{self, Loaded};
 use crate::fs::FileSystem;
 use crate::language::Language;
@@ -77,6 +78,12 @@ pub fn version_text(
         what.fill(language, &[("when", &when)]),
         size(version.len, language)
     )
+}
+
+/// The count below the tree: "Chosen: 12 files (3.4 MB)", the text "Choose what to back up"
+/// shows without a stick, or "Counting…" while `totals` is `None` (issue 167).
+pub fn totals_text(totals: Option<Totals>, language: Language) -> String {
+    choose_screen::totals_text(totals, None, language).0
 }
 
 /// "Restoring… 3 of 12 files".

@@ -537,6 +537,52 @@ fn cancel_pressed_while_a_file_is_flushed_leaves_the_file_there_alone() {
 }
 
 #[test]
+fn the_count_follows_the_ticks_and_the_sizes_of_the_picked_versions() {
+    let setup = Setup::new(Format::Ext4);
+    let mut choice = ticked(&["Documents"]);
+    choice.left_out = vec![path("Documents/old")];
+    let cancel = AtomicBool::new(false);
+    let newest = setup.backup().count(&choice, &cancel).unwrap();
+
+    choice.pick(
+        Path::new("Documents/report.pdf"),
+        Copy::Older("report[2026-11-02_080000].pdf".into()),
+    );
+    let older = setup.backup().count(&choice, &cancel).unwrap();
+
+    // deleted.txt, lost.txt's older version, and report.pdf: "newest", then "older".
+    assert_eq!(
+        newest,
+        Totals {
+            files: 3,
+            bytes: 4 + 4 + 6
+        }
+    );
+    assert_eq!(
+        older,
+        Totals {
+            files: 3,
+            bytes: 4 + 4 + 5
+        }
+    );
+}
+
+#[test]
+fn nothing_ticked_counts_nothing_and_a_cancelled_count_gives_nothing() {
+    let setup = Setup::new(Format::Ext4);
+
+    let empty = setup
+        .backup()
+        .count(&Choice::default(), &AtomicBool::new(false));
+    let cancelled = setup
+        .backup()
+        .count(&ticked(&["Documents"]), &AtomicBool::new(true));
+
+    assert_eq!(empty, Some(Totals::default()));
+    assert_eq!(cancelled, None);
+}
+
+#[test]
 fn a_cancelled_plan_gives_nothing() {
     let setup = Setup::new(Format::Ext4);
 

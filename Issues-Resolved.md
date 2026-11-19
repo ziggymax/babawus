@@ -731,3 +731,16 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided when T-114 began (2026-11-18):** `time.rs` works out UTC dates and times of day in plain Rust (the inverse of `days_from_civil` is added, with tests). The platform layer only gives the UTC offset at a given time, `platform::utc_offset` (from `localtime_r` on Linux), and local time is UTC plus that offset, so the time zone rules stay with the system and the date arithmetic is written once.
     - **Decided when T-114 began (2026-11-18):** a fifth file per operating system, `platform/linux/system.rs`, holds what the system gives that isn't sticks, identity, flushing or paths: `platform::random_bytes` for run IDs (`getrandom` on Linux) and `platform::utc_offset`. No new dependency. With that, `libc` too becomes a Linux-only dependency, and the free space on the start screen uses `platform::free_space` instead of its own `statvfs`.
     - **Decided when T-112 began (2026-11-18):** the 1.1.1 run covers the whole of ReleaseChecklist.md, as 1.1.0's did (issue #118), because every area went through the platform layer. Since no texts changed, the German and Danish look-through can be brief.
+
+## Decisions on the Restore window's count (T-115)
+
+167. **A count of what is ticked in the Restore window (T-115).** After 1.1.1 the user found that the Restore window, unlike "Choose what to back up", shows no count of the files and bytes ticked while they are picked; the files are only counted once "Restore" is pressed.
+    - **Decided (2026-11-19):** the Restore window shows "Chosen: {files} ({size})", the text "Choose what to back up" shows without a stick, counted again at every change: a tick, or a version picked in the side pane. Each file counts with the size of the version that would be restored. With nothing ticked it says "Nothing is chosen yet."
+    - **Decided (2026-11-19):** count only, without the free space where the files go and without a warning. Going back in place, most files replace or skip ones that are there, so a comparison would often warn wrongly, and a full disk already stops the restore with message #60.
+    - **Decided (2026-11-19):** the count is a row right below the tree and the versions pane, above the line and "Decide where to place the restored files:", with a spinner and "Counting…" while it counts off the main thread, as in "Choose what to back up".
+
+## Decisions on the Restore window's other folder (T-117)
+
+168. **Making clear that the other folder is only a suggestion (T-117).** While T-115 was built, the user found that "Put them in this folder:" with a suggested folder and a button "Choose…" next to it reads as if the button were for choosing the suggested folder. It isn't clear that the folder is only a suggestion, nor that the button picks a folder of one's own.
+    - **Decided (2026-11-19):** the radio button says "Put them in another folder:", and the button "Choose another folder…" (German „Anderen Ordner auswählen…“, Danish »Vælg en anden mappe…«).
+    - **Decided (2026-11-19):** a grey line below the folder, in line with the radio button's label, says "This is a suggestion: a new folder that Babawus makes when it restores. To pick a folder yourself, click “Choose another folder…”.", and "You chose this folder yourself." once a folder has been chosen with the button.

@@ -5,7 +5,7 @@
 //! restoring itself is [`babawus_core::restore`].
 //!
 //! Folders are read when they are opened, on the main thread: one folder is quick to list. The
-//! plan and the copying run off the main thread.
+//! count of what is ticked (issue 167), the plan and the copying run off the main thread.
 
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
@@ -15,13 +15,16 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime};
 
+use babawus_core::choose_screen::Totals;
 use babawus_core::fs::{FileKind, RealFs};
 use babawus_core::language::Language;
 use babawus_core::platform;
 use babawus_core::restore::{
     Backup, Choice, Copy, Item, Outcome, Plan, Progress, Resolution, Version,
 };
-use babawus_core::restore_screen::{progress_text, question, result_text, row_note, version_text};
+use babawus_core::restore_screen::{
+    progress_text, question, result_text, row_note, totals_text, version_text,
+};
 use babawus_core::text::Text;
 use babawus_core::time::local_clock;
 use babawus_core::versions::Format;
@@ -29,8 +32,8 @@ use gtk4::prelude::*;
 use gtk4::{
     AlertDialog, Align, Box, Button, CheckButton, FileDialog, Image, Label, ListBox, ListItem,
     ListView, Orientation, Paned, PolicyType, ProgressBar, ScrolledWindow, SelectionMode,
-    Separator, SignalListItemFactory, SingleSelection, TreeExpander, TreeListModel, TreeListRow,
-    gio, glib,
+    Separator, SignalListItemFactory, SingleSelection, Spinner, TreeExpander, TreeListModel,
+    TreeListRow, gio, glib,
 };
 
 const WIDTH: i32 = 1000;
@@ -139,6 +142,16 @@ pub struct RestoreWindow {
     versions_heading: Label,
     versions_hint: Label,
     versions: ListBox,
+    counting: Spinner,
+    totals: Label,
+    /// The count shown, or `None` while counting.
+    shown_totals: Cell<Option<Totals>>,
+    /// The choice last counted, so that selecting a file doesn't count again.
+    counted: RefCell<Option<Choice>>,
+    /// Stops the count that is going on, if any.
+    count_cancel: RefCell<Arc<AtomicBool>>,
+    /// Counts the counts, so that an older one's result is dropped.
+    count_generation: Cell<u64>,
     /// Never shown: the versions are grouped with it, so that a file with only one version gets
     /// a round radio button too, not a square checkbox (T-102).
     version_group: CheckButton,
@@ -146,6 +159,8 @@ pub struct RestoreWindow {
     back_in_place: CheckButton,
     into_folder: CheckButton,
     folder: Label,
+    /// Says whether the folder is Babawus's suggestion or one the user chose (issue 168).
+    folder_note: Label,
     choose: Button,
     progress_row: Box,
     progress_text: Label,
@@ -225,6 +240,12 @@ impl RestoreWindow {
             .vexpand(true)
             .build();
 
+        let counting = Spinner::builder().spinning(true).build();
+        let totals = label(Some("babawus-next-step"));
+        let totals_row = Box::new(Orientation::Horizontal, 8);
+        totals_row.append(&counting);
+        totals_row.append(&totals);
+
         let where_heading = label(Some("babawus-next-step"));
         let back_in_place = CheckButton::new();
         let into_folder = CheckButton::new();
@@ -240,6 +261,9 @@ impl RestoreWindow {
         folder_row.append(&into_folder);
         folder_row.append(&folder);
         folder_row.append(&choose);
+        let folder_note = label(Some("dim-label"));
+        // In line with the radio button's label.
+        folder_note.set_margin_start(20);
 
         let progress_text = Label::builder().xalign(0.0).build();
         let progress = ProgressBar::builder()
@@ -280,10 +304,12 @@ impl RestoreWindow {
         page.append(&heading);
         page.append(&intro);
         page.append(&paned);
+        page.append(&totals_row);
         page.append(&Separator::new(Orientation::Horizontal));
         page.append(&where_heading);
         page.append(&back_in_place);
         page.append(&folder_row);
+        page.append(&folder_note);
         page.append(&progress_row);
         page.append(&result);
         page.append(&details_scroll);
@@ -313,11 +339,18 @@ impl RestoreWindow {
             versions_heading,
             versions_hint,
             versions,
+            counting,
+            totals,
+            shown_totals: Cell::new(None),
+            counted: RefCell::new(None),
+            count_cancel: RefCell::new(Arc::new(AtomicBool::new(false))),
+            count_generation: Cell::new(0),
             version_group: CheckButton::new(),
             where_heading,
             back_in_place,
             into_folder,
             folder,
+            folder_note,
             choose,
             progress_row,
             progress_text,
@@ -346,6 +379,7 @@ impl RestoreWindow {
         restore_window.suggest_folder();
         restore_window.connect_signals();
         restore_window.set_language(language);
+        restore_window.recount();
         restore_window.window.present();
         restore_window
     }
@@ -356,6 +390,7 @@ impl RestoreWindow {
             if let Some(window) = weak.upgrade() {
                 window.update_restore_button();
                 window.show_versions();
+                window.recount();
             }
         }));
         let weak = Rc::downgrade(self);
@@ -410,6 +445,7 @@ impl RestoreWindow {
                 return glib::Propagation::Proceed;
             };
             if window.running.borrow().is_none() {
+                window.stop_counting();
                 return glib::Propagation::Proceed;
             }
             window.ask_to_stop();
@@ -461,9 +497,11 @@ impl RestoreWindow {
         if self.running.borrow().is_none() && self.folder.label() == suggested {
             self.suggest_folder();
         }
+        self.show_folder_note();
         self.update_restore_button();
         self.build_tree();
         self.show_versions();
+        self.show_totals(self.shown_totals.get());
     }
 
     /// Suggests a new folder in the home folder, named after the stick and the time.
@@ -481,6 +519,20 @@ impl RestoreWindow {
         if self.into_folder.is_active() {
             *self.destination.borrow_mut() = Destination::Folder(folder);
         }
+        self.show_folder_note();
+    }
+
+    /// Says below the folder whether it is the suggestion or one the user chose.
+    fn show_folder_note(&self) {
+        let language = self.shared.language.get();
+        let suggested =
+            self.suggested.borrow().as_path() == Path::new(self.folder.label().as_str());
+        let note = if suggested {
+            Text::RestoreFolderSuggested
+        } else {
+            Text::RestoreFolderChosen
+        };
+        self.folder_note.set_label(note.get(language));
     }
 
     /// Lets the user pick or make another folder, in the system's folder dialog.
@@ -509,6 +561,7 @@ impl RestoreWindow {
                     .folder
                     .set_tooltip_text(Some(&path.to_string_lossy()));
                 *window.destination.borrow_mut() = Destination::Folder(path);
+                window.show_folder_note();
                 window.into_folder.set_active(true);
             },
         );
@@ -538,6 +591,52 @@ impl RestoreWindow {
             Text::RestoreButtonTooltip
         };
         self.restore.set_tooltip_text(Some(tooltip.get(language)));
+    }
+
+    /// Counts what is ticked again off the main thread, stopping a count that is going on. A
+    /// choice that is counted already isn't counted again.
+    fn recount(self: &Rc<Self>) {
+        let choice = self.shared.choice.borrow().clone();
+        if self.counted.borrow().as_ref() == Some(&choice) {
+            return;
+        }
+        *self.counted.borrow_mut() = Some(choice.clone());
+        self.stop_counting();
+        let cancel = Arc::new(AtomicBool::new(false));
+        *self.count_cancel.borrow_mut() = cancel.clone();
+        let generation = self.count_generation.get() + 1;
+        self.count_generation.set(generation);
+        if choice.is_empty() {
+            self.show_totals(Some(Totals::default()));
+            return;
+        }
+        self.show_totals(None);
+        let root = self.shared.backup.root.clone();
+        let format = self.shared.backup.format;
+        let counting = gio::spawn_blocking(move || backup_at(root, format).count(&choice, &cancel));
+        let weak = Rc::downgrade(self);
+        glib::spawn_future_local(async move {
+            // Cancelled, or failed by panicking, which has been reported already.
+            let Ok(Some(counted)) = counting.await else {
+                return;
+            };
+            if let Some(window) = weak.upgrade()
+                && window.count_generation.get() == generation
+            {
+                window.show_totals(Some(counted));
+            }
+        });
+    }
+
+    fn stop_counting(&self) {
+        self.count_cancel.borrow().store(true, Ordering::Relaxed);
+    }
+
+    fn show_totals(&self, totals: Option<Totals>) {
+        self.shown_totals.set(totals);
+        self.counting.set_visible(totals.is_none());
+        self.totals
+            .set_label(&totals_text(totals, self.shared.language.get()));
     }
 
     /// Builds the tree again from the top of the backup, with the home folder open.
@@ -895,6 +994,7 @@ impl RestoreWindow {
         self.back_in_place.set_sensitive(!busy);
         self.into_folder.set_sensitive(!busy);
         self.choose.set_sensitive(!busy);
+        self.folder_note.set_sensitive(!busy);
         if busy {
             self.result.set_visible(false);
             self.details.set_visible(false);
@@ -932,6 +1032,7 @@ impl RestoreWindow {
         self.build_tree();
         self.show_versions();
         self.update_restore_button();
+        self.recount();
     }
 
     /// Asks whether to stop the restore when the window is closed during one.
@@ -968,6 +1069,7 @@ impl RestoreWindow {
 
     /// Stops a restore that is going on, when the stick has gone or Babawus closes.
     pub fn stop(&self) {
+        self.stop_counting();
         if let Some(cancel) = self.running.borrow_mut().take() {
             cancel.store(true, Ordering::Relaxed);
             (self.on_busy)(false);
