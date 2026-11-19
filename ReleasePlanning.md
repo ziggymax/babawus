@@ -44,7 +44,18 @@ Ubuntu 24.04 is close to free: Linux Mint 22 is built on it, with the same packa
 - **The reminder at login.** GNOME has no "Startup Applications". `babawus --checklastbackup` stays as it is, and under Advanced, Babawus can also add its own entry in `~/.config/autostart/`, which works on every desktop. Whether to use that, or a desktop's own way, is the advanced user's choice.
 - **Starting Babawus.** GNOME shows no icons on the desktop by default, so the user guide says to pin Babawus to the dock instead.
 
-Interim versions (1.2.0-alpha.N) are added as needed. Their tasks are created when work on 1.2.0 begins.
+**Where the work happens.** From 1.2.0, Babawus is developed on the host, the computer that runs the VMs, with Ubuntu 24.04 or newer. It builds and tests Babawus in a podman container for each distribution, as CI does. The VMs, the Mint one included, are kept for tests on real sticks and desktops, and for the release checklists (issue 169).
+
+**Packages.** One `.deb`, built on Ubuntu 24.04, the oldest of the distributions, serves Mint, both Ubuntus and Debian, as today. Fedora gets one `.rpm`. Both are attached to the GitHub release.
+
+**Checklists.** The release checklist runs on a VM for each distribution, with real sticks. Ubuntu, Debian and Fedora start GNOME on Wayland, where Claude can't drive the window, so there the user does the steps in the window and Claude checks the rest over SSH. On Mint, Claude drives the window as before.
+
+1.2.0 is reached in two interim versions:
+
+1. **1.2.0-alpha.1: building everywhere.** Development moves to the host. Every distribution gets a container that builds Babawus and runs its tests, locally with podman and in CI on every pull request. Fedora gets an `.rpm`, with its own package names, and its `wheel` group counts as administrator, as `sudo` does on the others. The `.deb` is checked to install on each `.deb` distribution. The tasks are T-118 to T-123.
+2. **1.2.0-alpha.2: GNOME.** Under Advanced, Babawus can add the reminder at login in `~/.config/autostart/`, which works on every desktop, Mint's "Startup Applications" included. The user guide says to pin Babawus to the dock on GNOME, and how to add the reminder there. ReleaseChecklist.md gets what differs per distribution. Its tasks are created when work on it begins.
+
+Then the release: a VM for each distribution, set up by the user on the host, the checklist run on each, and the release with both packages.
 
 ## Future releases
 
