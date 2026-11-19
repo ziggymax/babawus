@@ -1,20 +1,20 @@
 # Babawus development environment setup
 
-This guide explains how to rebuild the Babawus development and test VM from nothing, and records what was learned while building and testing Babawus on it. It describes the VM as it is on 2026-11-15, with Babawus 0.2.1.
+This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The VM**, with Linux Mint, is a test machine for real sticks, the desktop and the release checklist. The host is described as it is on 2026-11-19, and the VM as it is on 2026-11-15, with Babawus 0.2.1.
 
-The steps are split between **You** (things that need the VirtualBox host, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session on the VM). Claude can't see the host, so the host settings below are recommendations or were worked out from inside the VM.
+The steps are split between **You** (things that need `sudo` on the host, the VirtualBox host settings, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session without a password).
 
 ## Building and testing
 
 Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](Requirements.md) for what it must do. [Tasks-Open.md](Tasks-Open.md) lists all outstanding work, so add anything that is left for later there.
 
-To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands below. The rest of this guide explains how to rebuild the full development VM.
+To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands below. The rest of this guide explains how to set up the host and rebuild the test VM.
 
 | Task | Command |
 | --- | --- |
 | Run the application | `cargo run -p babawus` |
 | Run the unit tests | `cargo test` |
-| Also run the tests on real file systems (needs passwordless `sudo`) | `cargo test -- --include-ignored` |
+| Also run the tests on real file systems (needs passwordless `sudo`, so only on the VM and in CI) | `cargo test -- --include-ignored` |
 | List the USB media as Babawus sees them, and follow changes | `cargo run -p babawus-core --example media -- --follow` |
 | List the drives Babawus may format, or format one (this erases it) | `cargo run -p babawus-core --example format` |
 | List the USB media, or eject one | `cargo run -p babawus-core --example eject` |
@@ -22,6 +22,81 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 | The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](ReleaseChecklist.md) |
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Build the `.deb` package | `cargo deb -p babawus` |
+
+## The host
+
+| Item | Value |
+| --- | --- |
+| Name | `bigdog`, which also runs the Claude desktop app and VirtualBox |
+| Operating system | Ubuntu 26.04.1 LTS, GNOME on Wayland |
+| CPUs and memory | 32 CPUs, 62 GB |
+| GTK | 4.22.4, newer than on Mint, so the `gtk4` crate's `v4_14` feature still sets what Babawus may use |
+| Containers | podman 5.7.0, rootless |
+| Claude access | Sessions run directly on the host |
+
+The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
+
+### 1. Install packages (You)
+
+Ubuntu's desktop install already has most of what is needed. Install what is missing:
+
+```bash
+sudo apt-get install -y build-essential pkg-config libgtk-4-dev exfatprogs e2fsprogs acl udisks2 podman git gh
+```
+
+### 2. Sign in to GitHub (You)
+
+Run `gh auth login` and sign in as `ziggymax`, as in step 4 of the VM below.
+
+### 3. Install Rust and cargo-deb (Claude)
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+```
+
+```bash
+"$HOME/.cargo/bin/cargo" install --locked cargo-deb
+```
+
+### 4. Connect to the VM (You)
+
+Claude reaches the VM through an entry in `~/.ssh/config`, using the host's key, which is in the VM's `~/.ssh/authorized_keys`. VirtualBox forwards the host's port 2222 to the VM's port 22:
+
+```
+Host babawus-vm
+  HostName 127.0.0.1
+  Port 2222
+  User steen
+  IdentityFile ~/.ssh/id_ed25519
+```
+
+`ssh babawus-vm hostname` should print `steen-VirtualBox` without asking anything. Copy Claude's memory folder from the VM, `~/.claude/projects/-home-steen-Projects-babawus/`, to the same place on the host.
+
+### 5. Verify the setup (Claude)
+
+Clone the repository as in step 7 of the VM, then run these from `~/Projects/babawus`. All of them should succeed:
+
+```bash
+cargo fmt --check
+```
+
+```bash
+cargo clippy --all-targets --locked -- -D warnings
+```
+
+```bash
+cargo test --locked
+```
+
+```bash
+cargo deb -p babawus
+```
+
+```bash
+podman run --rm docker.io/library/ubuntu:24.04 cat /etc/os-release
+```
+
+A `.deb` built on the host depends on the host's newer libraries, so it is for trying out only. The `.deb` that is released is built on Ubuntu 24.04 (issue 169). Finally, run `cargo run -p babawus` and check that the window opens.
 
 ## The VM
 
@@ -36,9 +111,9 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 | Firmware and graphics | EFI, VMSVGA |
 | Network | NAT (guest address `10.0.2.15`) |
 | USB | USB 3 (xHCI) |
-| Claude access | Over SSH from the Claude desktop app on the host |
+| Claude access | Over SSH from a session on the host (`ssh babawus-vm`), or a session of its own on the VM |
 
-## Overview
+## The VM: overview
 
 | Step | Who | What |
 | --- | --- | --- |
@@ -53,7 +128,7 @@ To build on Linux Mint 22.x, install Rust, `cargo-deb`, and `libgtk-4-dev`, then
 | 9 | You | Take a snapshot |
 | 10 | You | Set up USB for manual testing |
 
-## Step by step
+## The VM: step by step
 
 ### 1. Create the VM and install Mint (You)
 
@@ -316,5 +391,5 @@ These settings are fine for a disposable test VM, and wrong for a computer that 
 
 If the VM is lost, these are gone unless they are backed up:
 
-- Claude's memory, in `~/.claude/projects/`. This guide covers everything that matters from it.
+- Claude's memory, in `~/.claude/projects/` on the host (until 2026-11-19, on the VM). This guide covers everything that matters from it.
 - Work that hasn't been pushed to GitHub.
