@@ -20,12 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.0 is released (T-101). Next is release 1.1.1, step 0 of bringing Babawus to more platforms: the Linux-specific code moves behind a platform layer, without changing what Babawus does (see "Step 0" in [ReleasePlanning.md](ReleasePlanning.md)). The tasks for 1.2.0, other Linux distributions, are created when work on it begins.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-112 | Run the whole release checklist on the 1.1.1 build on Linux Mint 22.x. Nothing a user sees should have changed | Todo | ReleasePlanning.md: "Step 0" |
-| T-113 | Release 1.1.1: tag `v1.1.1` on main, and a GitHub release with the `.deb` and notes. ReleasePlanning.md names 1.1.1 as the latest release | Todo | ReleasePlanning.md: "Step 0" |
+Babawus 1.1.1 is released (T-113), with the Linux-specific code behind a platform layer. Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)); its tasks are created when work on it begins.
 
 ## Needs a decision
 
