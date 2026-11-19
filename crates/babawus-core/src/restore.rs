@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::SystemTime;
 
+use crate::choose_screen::Totals;
 use crate::copy::CHUNK_SIZE;
 use crate::fs::{FileKind, FileSystem};
 use crate::platform;
@@ -421,6 +422,17 @@ impl Backup<'_> {
             self.plan_path(choice, root, &mut plan, cancel)?;
         }
         Some(plan)
+    }
+
+    /// How many files restoring `choice` gives back, and how many bytes, each file counted in
+    /// the version that would be restored (issue 167). Something that can't be read on the stick
+    /// isn't counted. Returns `None` if `cancel` was set meanwhile.
+    pub fn count(&self, choice: &Choice, cancel: &AtomicBool) -> Option<Totals> {
+        let plan = self.plan(choice, &self.home, cancel)?;
+        Some(Totals {
+            files: plan.files.len() as u64,
+            bytes: plan.bytes(),
+        })
     }
 
     fn plan_path(

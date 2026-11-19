@@ -147,6 +147,17 @@ fn the_question_and_the_progress_count_files() {
 }
 
 #[test]
+fn the_count_says_what_is_chosen() {
+    let totals = |files, bytes| Some(Totals { files, bytes });
+
+    assert_eq!(totals_text(None, en()), "Counting…");
+    assert_eq!(totals_text(totals(0, 0), en()), "Nothing is chosen yet.");
+    assert!(totals_text(totals(1, 10), en()).starts_with("Chosen: "));
+    assert!(totals_text(totals(1234, 10), en()).contains("1,234"));
+    assert!(!totals_text(totals(2, 10), en()).contains("free"));
+}
+
+#[test]
 fn the_result_says_how_many_were_restored_and_why_others_werent() {
     let all = Outcome {
         restored: 12,
