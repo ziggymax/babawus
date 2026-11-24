@@ -11,9 +11,11 @@ pub(crate) const MACHINE_ID_FILE: &str = "/etc/machine-id";
 const HOSTNAME_FILE: &str = "/proc/sys/kernel/hostname";
 pub(crate) const BOOT_ID_FILE: &str = "/proc/sys/kernel/random/boot_id";
 
-/// The groups whose members polkit asks for an administrator's password on Mint and Ubuntu, in
-/// `/usr/share/polkit-1/rules.d/49-ubuntu-admin.rules`.
-const ADMINISTRATOR_GROUPS: [&str; 2] = ["sudo", "admin"];
+/// The groups whose members polkit asks for an administrator's password: `sudo` and `admin` on
+/// Mint and Ubuntu (`/usr/share/polkit-1/rules.d/49-ubuntu-admin.rules`), `sudo` on Debian and
+/// `wheel` on Fedora (`50-default.rules`). Each exists only where it means administrator, so the
+/// list is the same everywhere (issue 108).
+const ADMINISTRATOR_GROUPS: [&str; 3] = ["sudo", "admin", "wheel"];
 
 /// The contents of `/etc/machine-id`, read from `system`, the computer's own file system.
 /// [`crate::identity::computer_id`] checks them and turns them into the computer ID.
@@ -128,16 +130,17 @@ mod tests {
     }
 
     #[test]
-    fn members_of_sudo_or_admin_are_administrators() {
+    fn members_of_sudo_admin_or_wheel_are_administrators() {
         assert!(has_administrator_group(["steen", "adm", "sudo", "plugdev"]));
         assert!(has_administrator_group(["admin"]));
+        assert!(has_administrator_group(["steen", "wheel"]));
     }
 
     #[test]
     fn a_standard_account_is_not_an_administrator() {
         assert!(!has_administrator_group(["testuser"]));
         assert!(!has_administrator_group([
-            "adm", "plugdev", "users", "sudoers"
+            "adm", "plugdev", "users", "sudoers", "empower"
         ]));
         assert!(!has_administrator_group([]));
     }
