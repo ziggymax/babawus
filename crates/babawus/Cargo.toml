@@ -4,6 +4,7 @@ description = "Basic backup with USB storage"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+license.workspace = true
 
 [dependencies]
 babawus-core.workspace = true
@@ -20,6 +21,9 @@ It copies only what has changed, keeps older versions of each file, and says in 
 
 Preparing a stick and choosing what is backed up are advanced functions, under Advanced in the menu. Sticks are formatted as exFAT, which also works on Windows and Mac, or Ext4."""
 depends = "$auto, udisks2, exfatprogs, e2fsprogs, acl"
+# Installed as /usr/share/doc/babawus/copyright (issue 171).
+copyright = "2026 Steen Kroeyer"
+license-file = ["../../LICENSE", "0"]
 assets = [
     ["target/release/babawus", "usr/bin/", "755"],
     ["assets/io.github.ziggymax.Babawus.desktop", "usr/share/applications/", "644"],
@@ -27,3 +31,25 @@ assets = [
     # The language files, read at start (issue 147).
     ["../../languages/*.toml", "usr/share/babawus/languages/", "644"],
 ]
+
+# The .rpm for Fedora, built with cargo-generate-rpm in the Fedora container (T-121,
+# containers/package.sh). The same files as the .deb, and the same dependencies with Fedora's
+# names, which happen to be the same; the libraries, such as GTK 4, are found by Fedora's own
+# find-requires. An
+# .rpm has only the summary, not the longer description.
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/babawus", dest = "/usr/bin/babawus", mode = "755" },
+    { source = "assets/io.github.ziggymax.Babawus.desktop", dest = "/usr/share/applications/io.github.ziggymax.Babawus.desktop", mode = "644" },
+    { source = "assets/io.github.ziggymax.Babawus.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg", mode = "644" },
+    # The language files, read at start (issue 147).
+    { source = "../../languages/*.toml", dest = "/usr/share/babawus/languages/", mode = "644" },
+    # Fedora keeps licences here (issue 171).
+    { source = "../../LICENSE", dest = "/usr/share/licenses/babawus/LICENSE", mode = "644", doc = true },
+]
+
+[package.metadata.generate-rpm.requires]
+udisks2 = "*"
+exfatprogs = "*"
+e2fsprogs = "*"
+acl = "*"

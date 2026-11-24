@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-130.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-131.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -20,12 +20,12 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. The host is set up for development (T-118), each distribution has a container (T-119), and Fedora's `wheel` group counts as administrator (T-120). These tasks make 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution (issue 169).
+Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. The host is set up for development (T-118), each distribution has a container (T-119), Fedora's `wheel` group counts as administrator (T-120), and Fedora gets an `.rpm` (T-121). These tasks make 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution (issue 169).
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-121 | Build an `.rpm` for Fedora, with Fedora's package names for its dependencies (udisks2, exfatprogs, e2fsprogs, acl), and check in the Fedora container that it installs, with all its dependencies, and that `ldd` finds every library `/usr/bin/babawus` needs | Todo | Issue 169 |
 | T-122 | Check in the containers that the `.deb` built on Ubuntu 24.04 installs on Ubuntu 26.04 and Debian stable, with all its dependencies, and that `ldd` finds every library `/usr/bin/babawus` needs | Todo | Issue 169 |
+| T-130 | Generate a file of the licences of the crates compiled into Babawus (for example with `cargo-about`), and install it with both packages under `/usr/share/doc/babawus/`, as their MIT and Apache licences ask | Todo | Issue 171 |
 | T-123 | Raise the version to 1.2.0-alpha.1 and tag `v1.2.0-alpha.1` on main, without a GitHub release | Todo | Issue 169 |
 
 ## Needs a decision

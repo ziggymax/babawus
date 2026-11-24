@@ -762,6 +762,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided (2026-11-24, T-119):** CI builds the same Containerfiles as the script on the host, with podman on the runner, so that each distribution's packages are listed in one place, and a pass on the host means a pass in CI.
     - **Decided (2026-11-24, T-119):** CI has no Ubuntu 24.04 container job, because the existing job already runs on an Ubuntu 24.04 runner and does more: formatting, the Windows check and the tests on real file systems. The 24.04 container is kept for the script on the host.
     - **Decided (2026-11-24, T-119):** the containers install Rust with rustup, stable, as on the host and in CI, so that only the distribution's libraries differ. Debian 13's own Rust, 1.85, is likely too old for Babawus's dependencies.
+    - **Decided (2026-11-24, T-121):** the `.rpm` is built with `cargo-generate-rpm`, from settings in `crates/babawus/Cargo.toml` next to `cargo-deb`'s, with the same files and dependencies, in the Fedora 45 container.
+    - **Decided (2026-11-24, T-121):** CI's Fedora 45 job also builds the `.rpm`, installs it with dnf in a clean Fedora 45 image, and checks that `ldd` finds every library, so that a broken dependency shows on the pull request that causes it.
 
 ## Decisions on the test set-up for all platforms (1.2.0 and later)
 
@@ -774,3 +776,9 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided (2026-11-24):** the VMs run in libvirt's user session (`qemu:///session`), not the system one, so that nothing about them runs as root and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters (issue 169). The user is already in the `kvm` group. What the user session can't do as easily is checked on the first guest (T-126): the network is QEMU's own, with a forwarded port for SSH, and passing a real stick through needs the user to have access to its device, likely through one udev rule.
     - **Decided (2026-11-24):** the research paper and its `research/` folder are not kept in the repository. Babawus gets its own description of the set-up, as a document in the project (T-125).
     - **Decided (2026-11-24):** the guests are installed by hand first and described in DevEnvSetup.md. Building them from scripts (Packer or similar), an automated test suite for the window and accessible names for its widgets are ideas for later, in ReleasePlanning.md.
+
+## Decisions on Babawus's licence (T-121)
+
+171. **Babawus's licence.** Babawus had none: no LICENSE file, and none in Cargo.toml. An `.rpm` must name one, unlike a `.deb`. Nothing Babawus uses forces one on it: the 72 crates compiled into it are MIT, Apache-2.0 or both; GTK 4, GLib, Pango and cairo are LGPL system libraries, linked dynamically and installed by the distribution; and udisks2, exfatprogs, e2fsprogs and acl are GPL programs that Babawus uses through D-Bus or not at all, as separate works.
+    - **Decided (2026-11-24):** Babawus is under the MIT licence, "Copyright (c) 2026 Steen Kroeyer", in a LICENSE file at the top of the repository, named in Cargo.toml, and installed with both packages.
+    - **Decided (2026-11-24):** the MIT and Apache licences of the crates ask for their notices to go with the binary, which neither package does yet. Before 1.2.0 is released, a file of third-party licences is generated and installed with both packages (T-130).

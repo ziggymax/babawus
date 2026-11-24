@@ -1,6 +1,6 @@
 # Builds Babawus and runs its unit tests on a distribution with apt: Ubuntu or Debian (T-119).
 # The image is given when building, for example --build-arg IMAGE=docker.io/library/debian:13.
-# check.sh lists the distributions and their images.
+# common.sh lists the distributions and their images.
 ARG IMAGE
 FROM ${IMAGE}
 
