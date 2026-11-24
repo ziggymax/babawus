@@ -21,6 +21,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | Add this computer and account to a mounted Babawus medium, with what to back up, without the configuration editor | `cargo run -p babawus-core --example add_account -- <medium root> Documents` |
 | The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](ReleaseChecklist.md) |
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
+| Run clippy and the unit tests on every supported distribution, in podman containers (`--list` names them; give names to run only those) | `containers/check.sh` |
 | Build the `.deb` package | `cargo deb -p babawus` |
 
 ## The host
@@ -34,7 +35,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | Containers | podman 5.7.0, rootless |
 | Claude access | Sessions run directly on the host |
 
-The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
+The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
 
 ### 1. Install packages (You)
 
