@@ -23,7 +23,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Run clippy and the unit tests on every supported distribution, in podman containers (`--list` names them; give names to run only those) | `containers/check.sh` |
 | Build the `.deb` package | `cargo deb -p babawus` |
-| Build the `.rpm` for Fedora in its container, and check that it installs in a clean Fedora | `containers/package.sh` |
+| Build the `.deb` in the Ubuntu 24.04 container and the `.rpm` in the Fedora one, and check that each installs in clean images of the distributions it is for (give `deb` or `rpm` to build only that one) | `containers/package.sh` |
 
 ## The host
 
@@ -36,7 +36,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | Containers | podman 5.7.0, rootless |
 | Claude access | Sessions run directly on the host |
 
-The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. `containers/package.sh` builds the `.rpm` with `cargo-generate-rpm` in the Fedora container, installs it with dnf in a clean Fedora image and checks it with `ldd`, and leaves it in `target/containers/packages/`; CI does the same in its Fedora job. Both scripts take the distributions from `containers/common.sh`. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
+The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. `containers/package.sh` builds the `.deb` with `cargo-deb` in the Ubuntu 24.04 container and installs it with apt in clean images of Ubuntu 24.04 and 26.04 and Debian 13, and builds the `.rpm` with `cargo-generate-rpm` in the Fedora container and installs it with dnf in a clean Fedora image. It checks each install with `ldd`, and leaves the packages in `target/containers/packages/`. CI does the same, the `.deb` in a job of its own and the `.rpm` in its Fedora job. Both scripts take the distributions from `containers/common.sh`. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
 
 ### 1. Install packages (You)
 
@@ -98,7 +98,7 @@ cargo deb -p babawus
 podman run --rm docker.io/library/ubuntu:24.04 cat /etc/os-release
 ```
 
-A `.deb` built on the host depends on the host's newer libraries, so it is for trying out only. The `.deb` that is released is built on Ubuntu 24.04 (issue 169). Finally, run `cargo run -p babawus` and check that the window opens.
+A `.deb` built on the host depends on the host's newer libraries, so it is for trying out only. The `.deb` that is released is built on Ubuntu 24.04 (issue 169), with `containers/package.sh deb`. Finally, run `cargo run -p babawus` and check that the window opens.
 
 ## The VM
 

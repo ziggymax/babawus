@@ -710,7 +710,7 @@ CI runs the formatting and lint checks and all automated tests, including the in
 
 ### Packaging
 
-Babawus is delivered as a `.deb` package, built with `cargo-deb`, and for Fedora as an `.rpm`, built with `cargo-generate-rpm` in the Fedora container (`containers/package.sh`). Both install the MIT licence (issue 171). It is installed by double-clicking it, updated by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
+Babawus is delivered as a `.deb` package, built with `cargo-deb` in the Ubuntu 24.04 container for Mint, Ubuntu 24.04 and 26.04 and Debian 13, and for Fedora as an `.rpm`, built with `cargo-generate-rpm` in the Fedora container (`containers/package.sh`). Both install the MIT licence (issue 171). It is installed by double-clicking it, updated by installing a newer package, and uninstalls through the normal system tools. An APT repository, so that updates arrive through the Update Manager, may be added later.
 
 - The package adds a desktop entry titled "Backup", with the Babawus elephant as its icon, to the application menu. The application ID is `io.github.ziggymax.Babawus`. The desktop entry names the icon file by its full path, so that the menu shows it straight after installing (issue 101). The icon has the same margin as the theme's app icons, so that it is no larger than theirs in the menu and the panel (issue 139).
 - Its summary is "Basic backup with USB storage", and a longer description below it says in plain words what Babawus does, and that preparing a stick and choosing what is backed up are advanced functions, under Advanced in the menu (issues 111 and 153).
