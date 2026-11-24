@@ -20,11 +20,10 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. The host is set up for development (T-118). These tasks make 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution (issue 169).
+Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. The host is set up for development (T-118), and each distribution has a container (T-119). These tasks make 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution (issue 169).
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-119 | A container for each distribution (Ubuntu 24.04 and 26.04, Debian stable, the newest Fedora) that builds Babawus and runs clippy and its unit tests: a script for podman on the host, and a CI job for each on every pull request. The tests on real file systems, which need udisks2 and loop devices, stay in the existing job on the runner | Todo | Issue 169 |
 | T-120 | Count Fedora's `wheel` group as administrator, as `sudo` and `admin` are on Mint and Ubuntu, checked against the polkit rules of Debian and Fedora (issue 108) | Todo | Issue 169 |
 | T-121 | Build an `.rpm` for Fedora, with Fedora's package names for its dependencies (udisks2, exfatprogs, e2fsprogs, acl), and check in the Fedora container that it installs, with all its dependencies, and that `ldd` finds every library `/usr/bin/babawus` needs | Todo | Issue 169 |
 | T-122 | Check in the containers that the `.deb` built on Ubuntu 24.04 installs on Ubuntu 26.04 and Debian stable, with all its dependencies, and that `ldd` finds every library `/usr/bin/babawus` needs | Todo | Issue 169 |

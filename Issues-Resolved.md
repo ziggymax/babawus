@@ -756,6 +756,10 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided (2026-11-19, T-118):** the host has no passwordless `sudo` and no polkit rule for udisks2, because it is a computer that matters. On the host Claude runs `cargo test`, clippy and the containers. The tests on real file systems (`cargo test -- --include-ignored`) run in CI and, when needed, on the Mint VM over SSH.
     - **Decided (2026-11-19, T-118):** Rust is installed on the host with rustup in the user's home, as on the VM and in CI, with `cargo-deb` from `cargo install`.
     - **Decided (2026-11-19, T-118):** T-118 sets up the host and its SSH connection to the Mint VM. The Ubuntu, Debian and Fedora VMs for the 1.2.0 checklists are made in a task of their own, T-124, before the checklists run.
+    - **Decided (2026-11-24, T-119):** the containers use pinned image tags: `ubuntu:24.04`, `ubuntu:26.04`, `debian:13` and `fedora:45`, the newest Fedora released. A new Debian or Fedora is taken up deliberately, in a task of its own, so that CI never starts failing without a change in Babawus.
+    - **Decided (2026-11-24, T-119):** CI builds the same Containerfiles as the script on the host, with podman on the runner, so that each distribution's packages are listed in one place, and a pass on the host means a pass in CI.
+    - **Decided (2026-11-24, T-119):** CI has no Ubuntu 24.04 container job, because the existing job already runs on an Ubuntu 24.04 runner and does more: formatting, the Windows check and the tests on real file systems. The 24.04 container is kept for the script on the host.
+    - **Decided (2026-11-24, T-119):** the containers install Rust with rustup, stable, as on the host and in CI, so that only the distribution's libraries differ. Debian 13's own Rust, 1.85, is likely too old for Babawus's dependencies.
 
 ## Decisions on the test set-up for all platforms (1.2.0 and later)
 

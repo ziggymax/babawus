@@ -81,3 +81,33 @@ jobs:
 
       - name: Run all tests, including those on real file systems
         run: cargo test --locked -- --include-ignored
+
+  # Clippy and the unit tests on the other distributions, in the same containers as on the host
+  # (T-119). Ubuntu 24.04 is covered by the job above, on its own runner (issue 169).
+  distribution:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # The names in containers/check.sh.
+        name: [ubuntu-26.04, debian-13, fedora-45]
+    name: check (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Work out the cache week
+        id: cache-week
+        run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      # Downloaded crates and compiled dependencies, as the script keeps them on the host. The week
+      # starts afresh now and then, so that the cache doesn't grow with old builds.
+      - name: Restore build output
+        uses: actions/cache@v6
+        with:
+          path: target/containers/${{ matrix.name }}
+          key: containers-${{ matrix.name }}-${{ steps.cache-week.outputs.week }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: containers-${{ matrix.name }}-${{ steps.cache-week.outputs.week }}-
+
+      - name: Clippy and unit tests
+        run: containers/check.sh ${{ matrix.name }}
