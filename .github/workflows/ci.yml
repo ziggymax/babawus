@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The names in containers/check.sh.
+        # The names in containers/common.sh.
         name: [ubuntu-26.04, debian-13, fedora-45]
     name: check (${{ matrix.name }})
     steps:
@@ -111,3 +111,8 @@ jobs:
 
       - name: Clippy and unit tests
         run: containers/check.sh ${{ matrix.name }}
+
+      # The .rpm, installed in a clean Fedora as a user would (T-121, issue 169).
+      - name: Build the .rpm and check that it installs
+        if: matrix.name == 'fedora-45'
+        run: containers/package.sh rpm
