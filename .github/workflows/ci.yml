@@ -116,3 +116,27 @@ jobs:
       - name: Build the .rpm and check that it installs
         if: matrix.name == 'fedora-45'
         run: containers/package.sh rpm
+
+  # The .deb, built in the Ubuntu 24.04 container and installed in clean images of Ubuntu 24.04
+  # and 26.04 and Debian 13, as a user would (T-122, issue 169).
+  package-deb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    name: package (deb)
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Work out the cache week
+        id: cache-week
+        run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      # Downloaded crates, compiled dependencies and cargo-deb, as the script keeps them on the host.
+      - name: Restore build output
+        uses: actions/cache@v6
+        with:
+          path: target/containers/ubuntu-24.04
+          key: containers-ubuntu-24.04-${{ steps.cache-week.outputs.week }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: containers-ubuntu-24.04-${{ steps.cache-week.outputs.week }}-
+
+      - name: Build the .deb and check that it installs
+        run: containers/package.sh deb

@@ -764,6 +764,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided (2026-11-24, T-119):** the containers install Rust with rustup, stable, as on the host and in CI, so that only the distribution's libraries differ. Debian 13's own Rust, 1.85, is likely too old for Babawus's dependencies.
     - **Decided (2026-11-24, T-121):** the `.rpm` is built with `cargo-generate-rpm`, from settings in `crates/babawus/Cargo.toml` next to `cargo-deb`'s, with the same files and dependencies, in the Fedora 45 container.
     - **Decided (2026-11-24, T-121):** CI's Fedora 45 job also builds the `.rpm`, installs it with dnf in a clean Fedora 45 image, and checks that `ldd` finds every library, so that a broken dependency shows on the pull request that causes it.
+    - **Decided (2026-11-24, T-122):** the `.deb` built in the Ubuntu 24.04 container is installed with apt in clean images of Ubuntu 24.04, Ubuntu 26.04 and Debian 13. Ubuntu 24.04 is included because Mint 22 is built on it.
+    - **Decided (2026-11-24, T-122):** CI checks the `.deb` on every pull request in a job of its own, "package (deb)", which runs the same script as the host, because no other CI job has an Ubuntu 24.04 container.
 
 ## Decisions on the test set-up for all platforms (1.2.0 and later)
 

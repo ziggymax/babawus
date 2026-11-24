@@ -1,17 +1,19 @@
 #!/bin/sh
 # Builds Babawus's packages in the containers, and checks that each one installs, with all its
 # dependencies, in a clean image of each distribution it is for, as a user would install it, and
-# that every library /usr/bin/babawus needs is found (T-121).
+# that every library /usr/bin/babawus needs is found (T-121, T-122).
 #
 #   containers/package.sh          every package
-#   containers/package.sh rpm      only this one
+#   containers/package.sh deb      only this one
 #
 # The packages are left in target/containers/packages/.
 set -eu
 . "$(dirname "$0")/common.sh"
 
-# Each package: its format, the distribution it is built on, and those it is installed on.
+# Each package: its format, the distribution it is built on, and those it is installed on. The
+# .deb is built on the oldest, so that it works on the newer ones too (issue 169).
 PACKAGES="
+deb ubuntu-24.04 ubuntu-24.04 ubuntu-26.04 debian-13
 rpm fedora-45 fedora-45
 "
 
@@ -27,6 +29,17 @@ build_package() {
     rm -f "$out"/*."$format"
     mkdir -p "$out"
     case $format in
+        deb)
+            # cargo-deb is kept with the build output, which CI caches, rather than in the image,
+            # which every apt distribution's job would then have to build it for.
+            run_in_build_image "$name" "$tag" '
+                tools="$CARGO_TARGET_DIR/../tools"
+                if [ ! -x "$tools/bin/cargo-deb" ]; then
+                    cargo install --locked --root "$tools" cargo-deb
+                fi
+                PATH="$tools/bin:$PATH" cargo deb --locked -p babawus \
+                    -o /src/target/containers/packages/'
+            ;;
         rpm)
             run_in_build_image "$name" "$tag" '
                 cargo build --locked --release -p babawus \
@@ -46,6 +59,10 @@ install_package() {
     name=$2
     image=$(distribution_image "$name")
     case $file in
+        *.deb)
+            install='apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /packages/*.deb > /dev/null'
+            query='dpkg -L babawus | while read -r f; do [ -d "$f" ] || echo "$f"; done'
+            ;;
         *.rpm) install='dnf install -y -q /packages/*.rpm' query='rpm -ql babawus' ;;
         *) echo "Unknown package: $file" >&2; exit 2 ;;
     esac
