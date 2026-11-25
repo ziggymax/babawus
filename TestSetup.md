@@ -20,7 +20,7 @@ Babawus is built and unit-tested in one place, the containers, and the finished 
 
 The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). Claude builds, runs the tests and the containers, and will drive the VMs, without a password. The user does the few steps that need `sudo` or hands.
 
-The tests on real file systems format loop devices through udisks2, which needs those rights, so they don't run on the host: they run in CI and on the VMs.
+The tests on real file systems format loop devices through udisks2, which needs those rights, so they don't run on the host: they run in CI and on the VMs. In a VM they need a polkit rule for udisks2, as CI and the old Mint VM have *(not tried yet, T-128)*.
 
 ## The containers
 
@@ -59,7 +59,7 @@ For a release, GitHub builds both packages, and the smoke test and the checklist
 
 ## The VMs
 
-There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint is installed anew *(not tried yet, T-127)*, since VirtualBox and its Mint VM were removed from the host on 2026-11-25, and the others follow *(not tried yet, T-124)*.
+There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint 22.3 followed, installed anew, since VirtualBox and its Mint VM were removed from the host on 2026-11-25 (T-127); the driver drives it unchanged, on Cinnamon on X11. The others follow *(not tried yet, T-124)*.
 
 **libvirt in the user session.** The VMs run under KVM, managed by libvirt in the user's own session (`qemu:///session`), not the system one. Nothing about them runs as root, and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters. The user is in the `kvm` group, which is all KVM needs. The user session has two limits:
 

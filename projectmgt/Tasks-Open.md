@@ -24,7 +24,6 @@ Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributi
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-127 | Install Linux Mint anew as a libvirt guest, set up as the Ubuntu 26.04 one of T-126, and drive it with the same driver. The VirtualBox Mint VM and VirtualBox itself were removed on 2026-11-25 | Todo | Issue 170 |
 | T-124 | Make a test VM each for Ubuntu 24.04, Debian stable and the newest Fedora in libvirt, as the Ubuntu 26.04 one of T-126: the desktop each ships, automatic login, SSH from the host, and a clean snapshot. Describe them in DevEnvSetup.md. Needed before the release checklists of 1.2.0 run | Todo | Issues 169, 170 |
 | T-128 | A smoke test that runs on every guest without Claude: revert to the clean snapshot, install the package as a user would, start Babawus, plug in an emulated stick and check that it shows up, and run the tests on real file systems, built in that distribution's container | Todo | Issue 170 |
 | T-129 | Let GitHub build the `.deb` and the `.rpm` of a release, so that the checklists run on the very files that are released | Todo | Issue 170 |

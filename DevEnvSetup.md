@@ -1,6 +1,6 @@
 # Babawus development environment setup
 
-This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The test VMs**, one per distribution, run on the host under libvirt and are for sticks, the desktop and the release checklist; the first, Ubuntu 26.04, was made on 2026-11-25 (T-126). [TestSetup.md](TestSetup.md) explains what each part of the set-up is for and how they fit together; this guide has the steps. The host is described as it is on 2026-11-19. **The VM**, the Linux Mint VM in VirtualBox described further down, was removed on 2026-11-25; its section stays until T-127 makes a Mint guest in libvirt, for its steps and discoveries.
+This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The test VMs**, one per distribution, run on the host under libvirt and are for sticks, the desktop and the release checklist; Ubuntu 26.04 and Linux Mint 22.3 were made on 2026-11-25 (T-126, T-127). [TestSetup.md](TestSetup.md) explains what each part of the set-up is for and how they fit together; this guide has the steps. The host is described as it is on 2026-11-19. Until 2026-11-25 the test machine was a Linux Mint VM in VirtualBox; what was learned on it is under "Discoveries".
 
 The steps are split between **You** (things that need `sudo` on the host, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session without a password).
 
@@ -14,7 +14,7 @@ To build, install Rust, `cargo-deb`, `cargo-about` and `libgtk-4-dev`, then use 
 | --- | --- |
 | Run the application | `cargo run -p babawus` |
 | Run the unit tests | `cargo test` |
-| Also run the tests on real file systems (needs passwordless `sudo`, so only on the VM and in CI) | `cargo test -- --include-ignored` |
+| Also run the tests on real file systems (needs passwordless `sudo`, so only in a test VM and in CI) | `cargo test -- --include-ignored` |
 | List the USB media as Babawus sees them, and follow changes | `cargo run -p babawus-core --example media -- --follow` |
 | List the drives Babawus may format, or format one (this erases it) | `cargo run -p babawus-core --example format` |
 | List the USB media, or eject one | `cargo run -p babawus-core --example eject` |
@@ -29,14 +29,14 @@ To build, install Rust, `cargo-deb`, `cargo-about` and `libgtk-4-dev`, then use 
 
 | Item | Value |
 | --- | --- |
-| Name | `bigdog`, which also runs the Claude desktop app and VirtualBox |
+| Name | `bigdog`, which also runs the Claude desktop app and the test VMs |
 | Operating system | Ubuntu 26.04.1 LTS, GNOME on Wayland |
 | CPUs and memory | 32 CPUs, 62 GB |
 | GTK | 4.22.4, newer than on Mint, so the `gtk4` crate's `v4_14` feature still sets what Babawus may use |
 | Containers | podman 5.7.0, rootless |
 | Claude access | Sessions run directly on the host |
 
-The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. `containers/package.sh` builds the `.deb` with `cargo-deb` in the Ubuntu 24.04 container and installs it with apt in clean images of Ubuntu 24.04 and 26.04 and Debian 13, and builds the `.rpm` with `cargo-generate-rpm` in the Fedora container and installs it with dnf in a clean Fedora image. It puts the licences of the crates into each package as `THIRD-PARTY-LICENSES`, made by `containers/licences.sh` with `cargo-about`, checks each install with `ldd`, and leaves the packages in `target/containers/packages/`. CI does the same, the `.deb` in a job of its own and the `.rpm` in its Fedora job. Both scripts take the distributions from `containers/common.sh`. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
+The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. `containers/package.sh` builds the `.deb` with `cargo-deb` in the Ubuntu 24.04 container and installs it with apt in clean images of Ubuntu 24.04 and 26.04 and Debian 13, and builds the `.rpm` with `cargo-generate-rpm` in the Fedora container and installs it with dnf in a clean Fedora image. It puts the licences of the crates into each package as `THIRD-PARTY-LICENSES`, made by `containers/licences.sh` with `cargo-about`, checks each install with `ldd`, and leaves the packages in `target/containers/packages/`. CI does the same, the `.deb` in a job of its own and the `.rpm` in its Fedora job. Both scripts take the distributions from `containers/common.sh`. The tests on real file systems need both, so they run in CI and, when needed, in a test VM over SSH. Claude can't click or take screenshots on the host's own Wayland desktop, so you try the window on the host yourself; Claude drives the window in the test VMs with `vms/driver.py`, which works on Wayland there.
 
 ### 1. Install packages (You)
 
@@ -48,7 +48,7 @@ sudo apt-get install -y build-essential pkg-config libgtk-4-dev exfatprogs e2fsp
 
 ### 2. Sign in to GitHub (You)
 
-Run `gh auth login` and sign in as `ziggymax`, as in step 4 of the VM below.
+Run `gh auth login` and sign in as `ziggymax`. Choose GitHub.com, HTTPS and "Login with a web browser". Open the address it shows, enter the code, and approve the request: a request that isn't approved ends with `access_denied`. `gh` then signs Git in too, and keeps its token in the keyring. The token's scopes include `repo` and `workflow`: without `workflow`, GitHub rejects pushes that change `.github/workflows/`. `gh auth status` shows who is signed in.
 
 ### 3. Install Rust, cargo-deb and cargo-about (Claude)
 
@@ -64,23 +64,23 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 "$HOME/.cargo/bin/cargo" install --locked --features cli cargo-about
 ```
 
-### 4. Connect to the VM (You)
+### 4. Verify the setup (Claude)
 
-This step was for the VirtualBox Mint VM, removed on 2026-11-25; the test VMs below are reached with `vms/driver.py run` instead. Claude reached the VM through an entry in `~/.ssh/config`, using the host's key, which is in the VM's `~/.ssh/authorized_keys`. VirtualBox forwards the host's port 2222 to the VM's port 22:
+Configure Git and clone the repository:
 
-```
-Host babawus-vm
-  HostName 127.0.0.1
-  Port 2222
-  User steen
-  IdentityFile ~/.ssh/id_ed25519
+```bash
+git config --global user.name 'Steen K'
 ```
 
-`ssh babawus-vm hostname` should print `steen-VirtualBox` without asking anything. Copy Claude's memory folder from the VM, `~/.claude/projects/-home-steen-Projects-babawus/`, to the same place on the host.
+```bash
+git config --global user.email 'steen@kroeyer.net'
+```
 
-### 5. Verify the setup (Claude)
+```bash
+gh repo clone ziggymax/babawus ~/Projects/babawus
+```
 
-Clone the repository as in step 7 of the VM, then run these from `~/Projects/babawus`. All of them should succeed:
+Then run these from `~/Projects/babawus`. All of them should succeed:
 
 ```bash
 cargo fmt --check
@@ -108,40 +108,55 @@ A `.deb` built on the host depends on the host's newer libraries, so it is for t
 
 Each test VM is a guest in libvirt's user session on the host, defined by its file in `vms/` and driven by `vms/driver.py` (TestSetup.md, "The VMs" and "The driver"). `vms/driver.py --help` lists the commands, and `vms/driver.py list` shows the guests.
 
-| Item | Ubuntu 26.04 |
-| --- | --- |
-| Guest | `babawus-ubuntu-26.04`, from `vms/ubuntu-26.04.xml` |
-| Operating system | Ubuntu 26.04.1 LTS, GNOME on Wayland, updated on 2026-11-25 |
-| CPUs, memory, disk | 4 CPUs, 4 GB, 25 GB (`~/.local/share/libvirt/images/babawus-ubuntu-26.04.qcow2`) |
-| Firmware and screen | BIOS, 1280×800 |
-| User | `tester`, logged in automatically, passwordless `sudo`, US keyboard layout, screen never blanks or locks |
-| SSH | `127.0.0.1:2601` on the host, with the host's key |
-| VNC | `127.0.0.1:5961`, or `virt-manager --connect qemu:///session --show-domain-console babawus-ubuntu-26.04` |
-| Snapshot | `clean`: running, logged in, nothing open |
+| Item | Ubuntu 26.04 | Linux Mint 22.3 |
+| --- | --- | --- |
+| Name for the driver | `ubuntu-26.04` (`vms/ubuntu-26.04.xml`) | `mint-22.3` (`vms/mint-22.3.xml`) |
+| Operating system | Ubuntu 26.04.1 LTS, GNOME on Wayland | Linux Mint 22.3, Cinnamon on X11 |
+| Updated | 2026-11-25 | 2026-11-25 |
+| SSH on the host | `127.0.0.1:2601` | `127.0.0.1:2602` |
+| VNC on the host | `127.0.0.1:5961` | `127.0.0.1:5962` |
+
+Both have 4 CPUs, 4 GB of memory and a 25 GB disk (`~/.local/share/libvirt/images/babawus-<name>.qcow2`), BIOS, and a 1280×800 screen. Their user is `tester`, logged in automatically, with passwordless `sudo`, the host's SSH key and a US keyboard layout. The screen never blanks, locks or sleeps, and a stick that is plugged in is mounted without a file manager window opening. Their `clean` snapshot is running, logged in, with nothing open. To watch one, or type a password into it:
+
+```bash
+virt-manager --connect qemu:///session --show-domain-console babawus-<name>
+```
 
 ### Making a guest
 
-Ubuntu 26.04 was made this way; the other guests follow it (T-124, T-127).
+Ubuntu 26.04 and Mint 22.3 were made this way; the other guests follow it (T-124). Each guest gets the next SSH and VNC ports in its file in `vms/`.
 
-1. **Install libvirt (You).** On Ubuntu 26.04 the host already had libvirt, QEMU and `python3-libvirt`; otherwise install `qemu-system-x86 libvirt-daemon-system virt-manager python3-libvirt`. Nothing more is needed for the user session, apart from membership of the `kvm` group.
+1. **Install libvirt (You, once).** On Ubuntu 26.04 the host already had libvirt, QEMU and `python3-libvirt`; otherwise install `qemu-system-x86 libvirt-daemon-system virt-manager python3-libvirt`. Nothing more is needed for the user session, apart from membership of the `kvm` group.
 2. **Download the installer (Claude).** The ISO goes into `~/.local/share/libvirt/images/`, checked against the distribution's SHA-256 list.
 3. **Define and start the guest (Claude).** `vms/driver.py define ubuntu-26.04`, then `vms/driver.py start ubuntu-26.04`. The guest boots the installer from the ISO, since its disk is empty.
-4. **Install (Claude, and You for the password).** Claude clicks and types through the installer with the driver: English, US keyboard, wired network, default apps, no proprietary software, erase the (virtual) disk, no encryption, name "Tester", user `tester`, "Require my password to log in" off. You type the password in virt-manager. Restart, `vms/driver.py eject ubuntu-26.04`, and press Enter when asked to remove the medium. Claude goes through the welcome screens, skipping Ubuntu Pro and leaving location and reports off.
+4. **Install (Claude, and You for the password).** Claude clicks and types through the installer with the driver: English, US keyboard, no extra codecs or proprietary software, erase the (virtual) disk, no encryption or LVM, name "Tester", user `tester`, logging in automatically. You type the password in virt-manager. Restart, `vms/driver.py eject <name>`, and press Enter when asked to remove the medium. Claude goes through the welcome screens: on Ubuntu it skips Ubuntu Pro and leaves location and reports off; on Mint it unticks "Show this dialog at startup". On Mint the installer takes about ten seconds to appear after its icon is double-clicked.
 5. **SSH and sudo (Claude, and You for the password).** In a terminal in the guest, Claude puts the host's public key into `~/.ssh/authorized_keys` and runs `sudo apt-get install -y openssh-server`, and you type the password. Then Claude runs, in the same terminal:
 
 ```bash
 echo 'tester ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/tester && sudo chmod 440 /etc/sudoers.d/tester && sudo visudo -c
 ```
 
-6. **Updates and settings (Claude).** Over SSH: `sudo apt-get update && sudo apt-get -y full-upgrade`, reboot, and stop the screen from blanking and locking, so that screenshots stay readable and the driver isn't locked out:
+6. **Updates and settings (Claude).** Over SSH: `sudo apt-get update && sudo apt-get -y full-upgrade`, and reboot. Then stop the screen from blanking, locking and sleeping, so that screenshots stay readable and the driver isn't locked out, and stop the file manager from opening a window for every stick, which can keep a stick busy (see "Discoveries"). On GNOME:
 
 ```bash
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
 gsettings set org.gnome.desktop.session idle-delay 0
 gsettings set org.gnome.desktop.screensaver lock-enabled false
+gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type nothing
+gsettings set org.gnome.desktop.media-handling automount-open false
 ```
 
-7. **Snapshot (Claude).** With the desktop logged in and nothing open: `vms/driver.py snapshot ubuntu-26.04 clean`.
+On Cinnamon:
+
+```bash
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
+gsettings set org.cinnamon.desktop.session idle-delay 0
+gsettings set org.cinnamon.desktop.screensaver lock-enabled false
+gsettings set org.cinnamon.settings-daemon.plugins.power sleep-display-ac 0
+gsettings set org.cinnamon.desktop.media-handling automount-open false
+```
+
+7. **Snapshot (Claude).** With the desktop logged in and nothing open: `vms/driver.py snapshot <name> clean`.
 
 ### Real sticks (You, once)
 
@@ -155,7 +170,7 @@ sudo install -m 644 vms/70-babawus-usb-storage.rules /etc/udev/rules.d/
 sudo udevadm control --reload && sudo udevadm trigger --subsystem-match=usb
 ```
 
-Then `vms/driver.py sticks` lists the sticks on the host, `vms/driver.py pass ubuntu-26.04 <serial>` passes one through, and `vms/driver.py unpass ubuntu-26.04` gives it back. The test sticks A and B are both Kingston DataTraveler 3.0; A is serial `08606E694BE4E320B7282A6C`.
+Then `vms/driver.py sticks` lists the sticks on the host, `vms/driver.py pass <name> <serial>` passes one through, and `vms/driver.py unpass <name>` gives it back. The test sticks A and B are both Kingston DataTraveler 3.0; A is serial `08606E694BE4E320B7282A6C`.
 
 ### What was learned
 
@@ -164,184 +179,9 @@ Then `vms/driver.py sticks` lists the sticks on the host, `vms/driver.py pass ub
 - **The guest draws a moment behind** what the driver sends: take a screenshot a second after typing.
 - **A notification can cover the top of the screen**, such as "Connection failed" or "Updates Available", over a window's buttons; close it with its × first.
 
-## The VM
-
-Removed on 2026-11-25, with VirtualBox; T-127 makes a Mint guest in libvirt instead. Kept for its steps and the discoveries below.
-
-| Item | Value |
-| --- | --- |
-| Host | `bigdog`, which also runs the Claude desktop app |
-| Hypervisor | VirtualBox |
-| Guest name | `steen-VirtualBox` |
-| Operating system | Linux Mint 22.3 Cinnamon on X11, the supported platform |
-| CPUs and memory | 16 CPUs, about 20 GB |
-| Disk | 32 GB, of which 31 GB is the root partition |
-| Firmware and graphics | EFI, VMSVGA |
-| Network | NAT (guest address `10.0.2.15`) |
-| USB | USB 3 (xHCI) |
-| Claude access | Over SSH from a session on the host (`ssh babawus-vm`), or a session of its own on the VM |
-
-## The VM: overview
-
-| Step | Who | What |
-| --- | --- | --- |
-| 1 | You | Create the VM and install Mint |
-| 2 | You | Enable SSH and passwordless `sudo` |
-| 3 | You | Connect Claude to the VM |
-| 4 | You | Sign in to GitHub |
-| 5 | Claude | Install packages and updates |
-| 6 | Claude | Install Rust, `cargo-deb` and `cargo-about` |
-| 7 | Claude | Configure Git and clone the repository |
-| 8 | Claude | Verify the setup |
-| 9 | You | Take a snapshot |
-| 10 | You | Set up USB for manual testing |
-
-## The VM: step by step
-
-### 1. Create the VM and install Mint (You)
-
-1. Create a VirtualBox VM with EFI enabled, VMSVGA graphics, and NAT networking.
-2. Give it at least the CPUs and memory listed above. Use a disk of 40 GB or more: with 32 GB, only about 4 GB is left, because `target/` alone grows to several GB.
-3. Enable USB 3 (xHCI) now, so that step 10 is simpler.
-4. Install Linux Mint 22.x Cinnamon, create your user account and install the updates that are offered.
-5. Add a NAT port forward to guest port 22, so that the host can reach the VM over SSH.
-
-### 2. Enable SSH and passwordless sudo (You)
-
-Run these in a terminal on the VM. The first command installs the SSH server:
-
-```bash
-sudo apt install -y openssh-server
-```
-
-The integration tests and Claude's sessions can't type a password, so `sudo` must work without one:
-
-```bash
-echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/babawus-dev
-```
-
-```bash
-sudo chmod 440 /etc/sudoers.d/babawus-dev
-```
-
-Then add the host's public key to `~/.ssh/authorized_keys` on the VM, and check that you can log in from the host without a password. Only do this on a VM that holds nothing important: see "Security notes".
-
-### 3. Connect Claude to the VM (You)
-
-Add the VM as an SSH connection in the Claude desktop app on the host, and start a session on it. Claude Code itself is managed by the app, so `claude` isn't on the `PATH` on the VM.
-
-### 4. Sign in to GitHub (You)
-
-Run this on the VM, and sign in as `ziggymax`:
-
-```bash
-sudo apt install -y git gh
-```
-
-```bash
-gh auth login
-```
-
-Choose GitHub.com, HTTPS and "Login with a web browser". Open the address it shows, enter the code, and approve the request: a request that isn't approved ends with `access_denied`. `gh` then signs Git in too, and keeps its token in the keyring. The token's scopes include `repo` and `workflow`: without `workflow`, GitHub rejects pushes that change `.github/workflows/`. `gh auth status` shows who is signed in.
-
-### 5. Install packages and updates (Claude)
-
-```bash
-sudo apt-get update
-```
-
-```bash
-sudo apt-get install -y build-essential pkg-config libgtk-4-dev curl exfatprogs e2fsprogs acl udisks2 xdotool scrot
-```
-
-```bash
-sudo apt-get dist-upgrade -y
-```
-
-`xdotool` and `scrot` are for driving and capturing the GUI from a session. Everything else is needed to build or test Babawus. `xvfb` isn't needed, because GUI testing is manual. `lintian` is optional, for extra checks on the `.deb` package.
-
-### 6. Install Rust, cargo-deb and cargo-about (Claude)
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-```
-
-```bash
-"$HOME/.cargo/bin/cargo" install cargo-deb
-```
-
-```bash
-"$HOME/.cargo/bin/cargo" install --locked --features cli cargo-about
-```
-
-The installer adds Cargo to `~/.bashrc` and `~/.profile`, so new shells find it. The stable toolchain already includes `clippy` and `rustfmt`.
-
-### 7. Configure Git and clone the repository (Claude)
-
-```bash
-git config --global user.name 'Steen K'
-```
-
-```bash
-git config --global user.email 'steen@kroeyer.net'
-```
-
-```bash
-gh repo clone ziggymax/babawus ~/Projects/babawus
-```
-
-### 8. Verify the setup (Claude)
-
-Run these from `~/Projects/babawus`. All of them should succeed:
-
-```bash
-cargo fmt --check
-```
-
-```bash
-cargo clippy --all-targets -- -D warnings
-```
-
-```bash
-cargo test -- --include-ignored
-```
-
-```bash
-containers/licences.sh && cargo deb -p babawus
-```
-
-Then check that nothing was left behind. This should print nothing:
-
-```bash
-losetup -a; findmnt -rn -o TARGET | grep -E 'medium-|/media/'
-```
-
-Finally, check the GUI. Sessions run over SSH, so they have to name the display:
-
-```bash
-DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority cargo run -p babawus
-```
-
-A window titled "Backup" should appear on the VM's desktop. Close it to finish the command.
-
-### 9. Take a snapshot (You)
-
-Take a VirtualBox snapshot of the working VM, and take a new one before testing formatting on real devices.
-
-### 10. Set up USB for manual testing (You)
-
-The manual checklist needs two real sticks, A and B, that may be wiped. The VM uses two Kingston DataTraveler 3.0 sticks, of 16 and 32 GB, which run at USB 3 speed passed through this way (5000M in `lsusb -t`).
-
-1. If you skipped it in step 1, shut the VM down and enable USB 3 (xHCI). Without it, sticks run at USB 2.0 speed at best, and measurements of `fsync` won't reflect real use.
-2. Add a USB filter for each stick.
-3. Attach the sticks and tell Claude, who can check that they appear as removable with `lsblk -o NAME,SIZE,TRAN,RM`.
-4. In a terminal on the VM, stop the file manager from opening a window for every stick that is plugged in. Sticks are still mounted, which Babawus needs:
-
-```bash
-gsettings set org.cinnamon.desktop.media-handling automount-open false
-```
-
 ## Discoveries
+
+Most of these were found on the Linux Mint VM in VirtualBox that was the test machine until 2026-11-25, as user `steen`; they hold for Mint and its sticks, wherever it runs.
 
 ### Cinnamon and loop devices
 
@@ -455,13 +295,14 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 
 These settings are fine for a disposable test VM, and wrong for a computer that matters:
 
-- Your account can run anything as root without a password, and so can any process or Claude session running as you.
-- SSH still accepts passwords. Set `PasswordAuthentication no` if the VM ever becomes reachable from outside the host.
-- The GitHub token is stored in the keyring on the VM, and reaches every repository of your account, so revoke it (in GitHub's settings, under Applications) if you discard the VM.
+- `tester` can run anything as root without a password, and so can anything the driver runs in the guest.
+- SSH still accepts passwords. It listens only on the host's `127.0.0.1`, through QEMU's forward; set `PasswordAuthentication no` if a guest ever becomes reachable from outside the host.
+- The guests hold no GitHub token or other secret; keep it that way.
 
 ## Not kept in the repository
 
-If the VM is lost, these are gone unless they are backed up:
+If the host is lost, these are gone unless they are backed up:
 
-- Claude's memory, in `~/.claude/projects/` on the host (until 2026-11-19, on the VM). This guide covers everything that matters from it.
+- Claude's memory, in `~/.claude/projects/` on the host. This guide covers everything that matters from it.
+- The test VMs, in `~/.local/share/libvirt/images/`. They can be made again as above.
 - Work that hasn't been pushed to GitHub.
