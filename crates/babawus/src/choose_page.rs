@@ -34,7 +34,7 @@ use crate::icons;
 const MARGIN: i32 = 32;
 const SPACING: i32 = 12;
 /// The tree's least height. It grows to fill whatever height the window has, and is the only
-/// part of the page that scrolls (`ui-review/UiReview.md` T01).
+/// part of the page that scrolls (`ui-review/UiReview.md` T01 at ccbfb96).
 const TREE_HEIGHT: i32 = 120;
 /// How tall the name patterns grow before they scroll, so that opening them never makes the
 /// window taller.
@@ -210,8 +210,8 @@ impl ChoosePage {
         patterns_box.append(&patterns_scroll);
         patterns_box.append(&add_row);
         patterns_box.append(&pattern_problem);
-        // Closed at first, so that the tree gets the room (`ui-review/UiReview.md` T01). Its
-        // title says what the heading inside it used to.
+        // Closed at first, so that the tree gets the room (`ui-review/UiReview.md` T01 at ccbfb96).
+        // Its title says what the heading inside it used to.
         let patterns_section = Expander::builder()
             .label_widget(&patterns_heading)
             .child(&patterns_box)

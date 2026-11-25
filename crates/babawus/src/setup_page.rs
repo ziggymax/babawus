@@ -118,7 +118,8 @@ impl SetupPage {
         let loading = Box::new(Orientation::Horizontal, 8);
         loading.append(&spinner);
         loading.append(&loading_text);
-        // In the normal style, like the rest of the page's text (`ui-review/UiReview.md` C06).
+        // In the normal style, like the rest of the page's text (`ui-review/UiReview.md` C06 at
+        // ccbfb96).
         let message = label(None);
         let start_new = Button::builder().halign(Align::Start).build();
 

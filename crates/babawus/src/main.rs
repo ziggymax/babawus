@@ -139,7 +139,7 @@ fn show_reminder(app: &Application, days: i64, lock: &Rc<RefCell<Option<Computer
 }
 
 /// Says that Babawus is open for another account already, as a message with an OK button that
-/// closes it (`ui-review/UiReview.md` W06).
+/// closes it (`ui-review/UiReview.md` W06 at ccbfb96).
 fn show_already_open(app: &Application, user: &str) {
     let language = window::current_language(&platform::settings_file());
     let message = Text::AlreadyOpen.fill(language, &[("user", user)]);

@@ -6,7 +6,7 @@ The steps are split between **You** (things that need `sudo` on the host, the Vi
 
 ## Building and testing
 
-Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](Requirements.md) for what it must do. [Tasks-Open.md](Tasks-Open.md) lists all outstanding work, so add anything that is left for later there.
+Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](projectmgt/Requirements.md) for what it must do. [Tasks-Open.md](projectmgt/Tasks-Open.md) lists all outstanding work, so add anything that is left for later there.
 
 To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands below. The rest of this guide explains how to set up the host and rebuild the test VM.
 
@@ -19,7 +19,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | List the drives Babawus may format, or format one (this erases it) | `cargo run -p babawus-core --example format` |
 | List the USB media, or eject one | `cargo run -p babawus-core --example eject` |
 | Add this computer and account to a mounted Babawus medium, with what to back up, without the configuration editor | `cargo run -p babawus-core --example add_account -- <medium root> Documents` |
-| The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](ReleaseChecklist.md) |
+| The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](projectmgt/ReleaseChecklist.md) |
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Run clippy and the unit tests on every supported distribution, in podman containers (`--list` names them; give names to run only those) | `containers/check.sh` |
 | Build the `.deb` package | `cargo deb -p babawus` |

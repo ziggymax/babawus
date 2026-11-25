@@ -91,7 +91,7 @@ The first issues came from the survey below; later ones were added as they came 
 
 ## Follow-ups
 
-These decisions left three things to check on real hardware. The measurements are in [DevEnvSetup.md](DevEnvSetup.md).
+These decisions left three things to check on real hardware. The measurements are in [DevEnvSetup.md](../DevEnvSetup.md).
 
 - **udisks2 and `mkfs` options:** verify that Mint 22's udisks2 passes on `-m 0` and the initialisation options to `mkfs.ext4`.
     - **Checked (2026-11-05):** It does, through the `mkfs-args` option of `Format`.
@@ -103,7 +103,7 @@ These decisions left three things to check on real hardware. The measurements ar
 
 ## Findings from testing on real hardware
 
-Testing on the development VM and a real USB stick turned up these issues. All are now covered in Requirements.md, and Concept.md needed no changes. The measurements are in [DevEnvSetup.md](DevEnvSetup.md).
+Testing on the development VM and a real USB stick turned up these issues. All are now covered in Requirements.md, and Concept.md needed no changes. The measurements are in [DevEnvSetup.md](../DevEnvSetup.md).
 
 31. **The verdict could appear before the data was on the medium.** After every file had its own `fsync`, Ext4 still needed 8.6 seconds to finish flushing.
     - **Decided (2026-11-05):** A run ends by flushing the whole medium, then writing and flushing the log's end entry, and only then showing the verdict.
@@ -328,31 +328,32 @@ Comparing the requirements with what the configuration and log have to do turned
 
 112. **How the user interface is reviewed.**
     - **Decided (2026-11-10):** In four steps, each a pull request of its own:
-        1. `ui-review/UiReview.md` numbers every screen, state, dialog and menu a user can see.
+        1. `ui-review/UiReview.md` at ccbfb96 numbers every screen, state, dialog and menu a user can see.
         2. Babawus is run on the VM, and each item is screenshotted as `ui-review/<number>-<name>.png`. Claude drives the window, and the user does what needs hands: the stick, and the second account.
         3. The items are gone through one by one, and each one's comments and decision are written next to it in `UiReview.md`.
         4. The user interface is changed accordingly, in one or more pull requests, with new screenshots to compare.
     - **Done (2026-11-10):** Steps 1 to 3 are done. Step 4 is carried by tasks T-035 to T-041, and the review's outcome is summed up at the top of `UiReview.md`.
+    - **Removed (2026-11-25, T-131):** `ui-review/UiReview.md` was deleted once the review was done. It is in git history, at commit ccbfb96 for example, which every reference to it names.
 113. **Where the review keeps its decisions.**
-    - **Decided (2026-11-10):** In `ui-review/UiReview.md`, next to each item, rather than one by one in this file. This item points there. Changes still to make become tasks in Tasks.md.
+    - **Decided (2026-11-10):** In `ui-review/UiReview.md` at ccbfb96, next to each item, rather than one by one in this file. This item points there. Changes still to make become tasks in Tasks.md.
 114. **Whether the screenshots are committed.**
     - **Decided (2026-11-10):** No. `UiReview.md` is committed, and the screenshots stay on the VM (`ui-review/*.png` is in `.gitignore`). The document refers to each screenshot by its number, and says enough in words that a decision can be understood without the picture.
 115. **Which languages are screenshotted.**
     - **Decided (2026-11-10):** Every item in English. German too for the screens with the longest texts, where cut-off text or wrapping is likeliest.
 116. **Which window size the screenshots use.**
     - **Decided (2026-11-10):** The size Babawus opens with. A few key screens are also taken with the window as small as it goes, to check the 1366 × 768 limit.
-117. **Whether users copy diagnostic details for the poweruser.** The verdict screen had "Details for your poweruser" with a Copy button, which largely repeats what the log on the stick records. Found while reviewing the look (T-032, `ui-review/UiReview.md` item V04).
+117. **Whether users copy diagnostic details for the poweruser.** The verdict screen had "Details for your poweruser" with a Copy button, which largely repeats what the log on the stick records. Found while reviewing the look (T-032, `ui-review/UiReview.md` item V04 at ccbfb96).
     - **Decided (2026-11-10):** No. The details and Copy are removed from the verdict screen. The log is the single place for diagnosing: it is always there, and doesn't depend on a user doing anything. So the log must be enough on its own: each run's start also records Babawus's version and the computer's hostname, and every skipped file and error is logged, instead of the first 20 and then only a count. (Issue 124 changed this to the first 100.) The log is already trimmed by size, so it can't grow without limit. The README says where the log is and that it is plain text.
-118. **The window's size.** Requirements.md said the window fits on a 1366 × 768 screen with room to spare. At the size it opened with, 848 × 635, "Prepare a stick" had to be scrolled to reach the warning and the button. Found while reviewing the look (T-032, `ui-review/UiReview.md` items F01 and G03).
+118. **The window's size.** Requirements.md said the window fits on a 1366 × 768 screen with room to spare. At the size it opened with, 848 × 635, "Prepare a stick" had to be scrolled to reach the warning and the button. Found while reviewing the look (T-032, `ui-review/UiReview.md` items F01 and G03 at ccbfb96).
     - **Decided (2026-11-10):** Babawus opens at 1024 × 768, assuming that no screen smaller than Full HD (1920 × 1080) is used. Having to scroll to find buttons or read text is avoided at that size. The window can still be made smaller, down to what each screen needs.
-119. **What the screen calls an entry.** Names of entries such as "laptop" can be read as ordinary words: "Link this computer to laptop?" reads as "link this computer to this computer" for someone at a laptop. Found while reviewing the look (T-032, `ui-review/UiReview.md` item C10).
+119. **What the screen calls an entry.** Names of entries such as "laptop" can be read as ordinary words: "Link this computer to laptop?" reads as "link this computer to this computer" for someone at a laptop. Found while reviewing the look (T-032, `ui-review/UiReview.md` item C10 at ccbfb96).
     - **Decided (2026-11-10):** The screen calls an entry a **backup profile**, and always marks its name as a name: "Link this computer to the backup profile called “laptop”?". The term becomes official where the screen starts using it, in T-040: the glossary in Requirements.md gets "Backup profile" next to "Entry", and Concept.md says what it is, so that the code, the documents and the texts use the same words. T-040 also settles whether both computer and account entries are called that on screen, and uses the same words on the setup page as in its questions.
 
 ## Decisions on the start screen (T-038)
 
-120. **How large the list's stick pictures, their labels and the logo are.** The review asked for larger pictures, a smaller label taking the same width, and a slightly larger logo (`ui-review/UiReview.md` G01 and S06).
+120. **How large the list's stick pictures, their labels and the logo are.** The review asked for larger pictures, a smaller label taking the same width, and a slightly larger logo (`ui-review/UiReview.md` G01 at ccbfb96 and S06).
     - **Decided (2026-11-10):** The stick picture grows from 32 to 48 pixels. The label shrinks from 15 pt to the normal text size, still bold. The logo grows from 64 to 80 pixels.
-121. **What the empty page says while a stick is plugged in but not listed.** `ui-review/UiReview.md` S02 decided on "The stick isn't opened. Pull it out and plug it back in." for a stick that may be formatted but isn't opened. A blank stick, with no file system on it, isn't listed either, and plugging it back in doesn't help.
+121. **What the empty page says while a stick is plugged in but not listed.** `ui-review/UiReview.md` S02 at ccbfb96 decided on "The stick isn't opened. Pull it out and plug it back in." for a stick that may be formatted but isn't opened. A blank stick, with no file system on it, isn't listed either, and plugging it back in doesn't help.
     - **Decided (2026-11-10):** A stick that has a file system that isn't opened gets the S02 text. A stick with no file system Babawus can open gets its own text: "The stick that is plugged in can't be used yet. Your poweruser can prepare it." Both show whether Advanced is on or off; "Prepare…" still shows only with Advanced on. On the screen, the first sentence is the large heading and the second, what to do, sits below it in the normal text style, so that a word isn't left alone on a line of the large text.
 
 ## Decisions on the setup texts (T-040)
@@ -367,7 +368,7 @@ Comparing the requirements with what the configuration and log have to do turned
 
 ## Decisions on choosing what to back up (T-041)
 
-123. **When a folder's tick box is partly ticked.** `ui-review/UiReview.md` T02 decided that a ticked folder with something left out inside it shows a partly ticked box.
+123. **When a folder's tick box is partly ticked.** `ui-review/UiReview.md` T02 at ccbfb96 decided that a ticked folder with something left out inside it shows a partly ticked box.
     - **Decided (2026-11-10):** A folder's box is partly ticked when the folder is backed up but a file or folder inside it has been unticked by hand, or when it isn't backed up but a file or folder inside it has been ticked. What a name pattern leaves out doesn't count, or almost every folder would look partly ticked. Clicking the box does what it did before: it ticks or unticks the folder.
 
 ## Decisions on the log (T-036)
@@ -419,7 +420,7 @@ The user tried the package built from pull request 59 on the VM: formatting as E
     - **Decided (2026-11-12):**
         - The status mark in each row (the tick, "!" or cross) is dropped: Eject takes its place. The selected stick's status and mark are in the details, as before. A spinner still shows in a row while its stick is being checked.
         - "Start backup" shows only under the selected stick, and only once it is known to be a Babawus stick. If no backup can start, for example while another account is backing up to it or when it isn't set up for this account, the button is greyed out, and its tooltip says why, as before.
-        - The poweruser's buttons, "Prepare…" and "Change setup…", go on the same row as the user's, after them, wrapping like words in a narrow window. They no longer have a row and a line of their own; this replaces part of `ui-review/UiReview.md`'s start screen decision (T-038).
+        - The poweruser's buttons, "Prepare…" and "Change setup…", go on the same row as the user's, after them, wrapping like words in a narrow window. They no longer have a row and a line of their own; this replaces part of the start screen in `ui-review/UiReview.md` at ccbfb96 decision (T-038).
         - The Eject button of a stick that isn't selected ejects that stick at once, and the selection stays where it was. While a stick is being ejected, every Eject button is greyed out.
         - If the selected stick has none of the remaining buttons, the line below the texts isn't shown either.
 
@@ -784,3 +785,9 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 171. **Babawus's licence.** Babawus had none: no LICENSE file, and none in Cargo.toml. An `.rpm` must name one, unlike a `.deb`. Nothing Babawus uses forces one on it: the 72 crates compiled into it are MIT, Apache-2.0 or both; GTK 4, GLib, Pango and cairo are LGPL system libraries, linked dynamically and installed by the distribution; and udisks2, exfatprogs, e2fsprogs and acl are GPL programs that Babawus uses through D-Bus or not at all, as separate works.
     - **Decided (2026-11-24):** Babawus is under the MIT licence, "Copyright (c) 2026 Steen Kroeyer", in a LICENSE file at the top of the repository, named in Cargo.toml, and installed with both packages.
     - **Decided (2026-11-24):** the MIT and Apache licences of the crates ask for their notices to go with the binary, which neither package does yet. Before 1.2.0 is released, a file of third-party licences is generated and installed with both packages (T-130).
+
+## Decisions on tidying the repository (T-131)
+
+172. **What happens to obsolete files, and where the project's own documents live.** The user asked to delete `ui-review/`, `research/` and two unused PNG logos in `assets/`, and to move the documents that manage the project into a folder of their own, `projectmgt/`: Concept.md, Issues-Resolved.md, Issues-Unsettled.md, ReleaseChecklist.md, ReleasePlanning.md, Requirements.md, Tasks-Done.md and Tasks-Open.md. README.md, UserGuide.md, DevEnvSetup.md and AddingALanguage.md stay at the top.
+    - **Decided (2026-11-25):** the references to `ui-review/UiReview.md`, in code comments and in these documents, name the commit that still has it, ccbfb96, so that the reasons they point to stay findable.
+    - **Decided (2026-11-25):** code comments keep naming the documents without their folder, as in "See "Platform layer" in Requirements.md", the same way issues and tasks are referred to. Links in Markdown files follow the move.
