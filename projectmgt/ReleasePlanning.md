@@ -14,7 +14,7 @@ When work on a version begins, its items become tasks (T-entries) in the task li
 
 The latest/current release is: 1.1.1 (tag `v1.1.1`), with the Linux-specific code behind a platform layer and no visible change. Babawus follows semantic versioning (major.minor.patch).
 
-The latest interim version is: none since 1.1.0; 1.1.1 had none. The last was 1.1.0-alpha.3 (tag `v1.1.0-alpha.3`).
+The latest interim version is: 1.2.0-alpha.1 (tag `v1.2.0-alpha.1`).
 
 ## Next release of Babawus
 
@@ -54,7 +54,7 @@ Ubuntu 24.04 is close to free: Linux Mint 22 is built on it, with the same packa
 
 1.2.0 is reached in two interim versions, with the test VMs made between them:
 
-1. **1.2.0-alpha.1: building everywhere.** Development moves to the host. Every distribution gets a container that builds Babawus and runs its tests, locally with podman and in CI on every pull request. Fedora gets an `.rpm`, with its own package names, and its `wheel` group counts as administrator, as `sudo` does on the others. The `.deb` is checked to install on each `.deb` distribution. The tasks are T-118 to T-123.
+1. **1.2.0-alpha.1: building everywhere.** Development moves to the host. Every distribution gets a container that builds Babawus and runs its tests, locally with podman and in CI on every pull request. Fedora gets an `.rpm`, with its own package names, and its `wheel` group counts as administrator, as `sudo` does on the others. The `.deb` is checked to install on each `.deb` distribution, and both packages carry the licences of the crates Babawus is built from. Done in T-118 to T-123, T-130 and T-131.
 2. **The test VMs.** Not a version of Babawus, since nothing in it changes. libvirt and the driver are proved on one guest, Ubuntu 26.04 on Wayland. Then the Mint VM moves over from VirtualBox, the other guests are made, and the smoke test is added. They come before alpha.2 so that its GNOME parts can be tried on a GNOME desktop. The tasks are T-124 to T-129.
 3. **1.2.0-alpha.2: GNOME.** Under Advanced, Babawus can add the reminder at login in `~/.config/autostart/`, which works on every desktop, Mint's "Startup Applications" included. The user guide says to pin Babawus to the dock on GNOME, and how to add the reminder there. ReleaseChecklist.md gets what differs per distribution. Its tasks are created when work on it begins.
 

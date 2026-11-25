@@ -54,10 +54,15 @@ build_package() {
                 cargo deb --locked -p babawus -o /src/target/containers/packages/"
             ;;
         rpm)
+            # An rpm version can't have a "-", so a pre-release such as 1.2.0-alpha.1 becomes
+            # 1.2.0~alpha.1, which sorts before 1.2.0, as Fedora numbers them and cargo-deb does
+            # for the .deb on its own (T-123).
+            version=$(sed -n 's/^version = "\(.*\)"$/\1/p' "$repo/Cargo.toml" | sed 's/-/~/')
             run_in_build_image "$name" "$tag" "$TOOLS
                 $LICENCES
                 cargo build --locked --release -p babawus
                 cargo generate-rpm -p crates/babawus --auto-req find-requires \\
+                    -s 'version = \"$version\"' \\
                     --target-dir \"\$CARGO_TARGET_DIR\" -o /src/target/containers/packages/"
             ;;
         *)
