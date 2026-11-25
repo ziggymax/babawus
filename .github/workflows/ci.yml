@@ -130,7 +130,8 @@ jobs:
         id: cache-week
         run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
 
-      # Downloaded crates, compiled dependencies and cargo-deb, as the script keeps them on the host.
+      # Downloaded crates, compiled dependencies, cargo-deb and cargo-about, as the script keeps them
+      # on the host.
       - name: Restore build output
         uses: actions/cache@v6
         with:

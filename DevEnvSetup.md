@@ -8,7 +8,7 @@ The steps are split between **You** (things that need `sudo` on the host, the Vi
 
 Babawus is a Cargo workspace: `crates/babawus-core` holds all logic and no UI code, and `crates/babawus` is the thin GTK 4 UI on top. See [Requirements.md](projectmgt/Requirements.md) for what it must do. [Tasks-Open.md](projectmgt/Tasks-Open.md) lists all outstanding work, so add anything that is left for later there.
 
-To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands below. The rest of this guide explains how to set up the host and rebuild the test VM.
+To build, install Rust, `cargo-deb`, `cargo-about` and `libgtk-4-dev`, then use the commands below. The rest of this guide explains how to set up the host and rebuild the test VM.
 
 | Task | Command |
 | --- | --- |
@@ -22,7 +22,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | The manual checklist to run on real sticks before each release | [ReleaseChecklist.md](projectmgt/ReleaseChecklist.md) |
 | Check formatting and lints | `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` |
 | Run clippy and the unit tests on every supported distribution, in podman containers (`--list` names them; give names to run only those) | `containers/check.sh` |
-| Build the `.deb` package | `cargo deb -p babawus` |
+| Build the `.deb` package, with the licences of the crates it is built from in `THIRD-PARTY-LICENSES` | `containers/licences.sh && cargo deb -p babawus` |
 | Build the `.deb` in the Ubuntu 24.04 container and the `.rpm` in the Fedora one, and check that each installs in clean images of the distributions it is for (give `deb` or `rpm` to build only that one) | `containers/package.sh` |
 
 ## The host
@@ -36,7 +36,7 @@ To build, install Rust, `cargo-deb`, and `libgtk-4-dev`, then use the commands b
 | Containers | podman 5.7.0, rootless |
 | Claude access | Sessions run directly on the host |
 
-The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. `containers/package.sh` builds the `.deb` with `cargo-deb` in the Ubuntu 24.04 container and installs it with apt in clean images of Ubuntu 24.04 and 26.04 and Debian 13, and builds the `.rpm` with `cargo-generate-rpm` in the Fedora container and installs it with dnf in a clean Fedora image. It checks each install with `ldd`, and leaves the packages in `target/containers/packages/`. CI does the same, the `.deb` in a job of its own and the `.rpm` in its Fedora job. Both scripts take the distributions from `containers/common.sh`. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
+The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). On the host, Claude builds, runs `cargo test`, clippy and the containers. `containers/check.sh` builds an image for each distribution, from `containers/apt.Containerfile` or `dnf.Containerfile`, and keeps each one's build output in `target/containers/`; CI runs the same script, one distribution per job. `containers/package.sh` builds the `.deb` with `cargo-deb` in the Ubuntu 24.04 container and installs it with apt in clean images of Ubuntu 24.04 and 26.04 and Debian 13, and builds the `.rpm` with `cargo-generate-rpm` in the Fedora container and installs it with dnf in a clean Fedora image. It puts the licences of the crates into each package as `THIRD-PARTY-LICENSES`, made by `containers/licences.sh` with `cargo-about`, checks each install with `ldd`, and leaves the packages in `target/containers/packages/`. CI does the same, the `.deb` in a job of its own and the `.rpm` in its Fedora job. Both scripts take the distributions from `containers/common.sh`. The tests on real file systems need both, so they run in CI and, when needed, on the VM over SSH. Claude can't click or take screenshots on Wayland, so you try the window on the host yourself; Claude drives the window on the VM.
 
 ### 1. Install packages (You)
 
@@ -50,7 +50,7 @@ sudo apt-get install -y build-essential pkg-config libgtk-4-dev exfatprogs e2fsp
 
 Run `gh auth login` and sign in as `ziggymax`, as in step 4 of the VM below.
 
-### 3. Install Rust and cargo-deb (Claude)
+### 3. Install Rust, cargo-deb and cargo-about (Claude)
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -58,6 +58,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 ```bash
 "$HOME/.cargo/bin/cargo" install --locked cargo-deb
+```
+
+```bash
+"$HOME/.cargo/bin/cargo" install --locked --features cli cargo-about
 ```
 
 ### 4. Connect to the VM (You)
@@ -91,7 +95,7 @@ cargo test --locked
 ```
 
 ```bash
-cargo deb -p babawus
+containers/licences.sh && cargo deb -p babawus
 ```
 
 ```bash
@@ -124,7 +128,7 @@ A `.deb` built on the host depends on the host's newer libraries, so it is for t
 | 3 | You | Connect Claude to the VM |
 | 4 | You | Sign in to GitHub |
 | 5 | Claude | Install packages and updates |
-| 6 | Claude | Install Rust and `cargo-deb` |
+| 6 | Claude | Install Rust, `cargo-deb` and `cargo-about` |
 | 7 | Claude | Configure Git and clone the repository |
 | 8 | Claude | Verify the setup |
 | 9 | You | Take a snapshot |
@@ -194,7 +198,7 @@ sudo apt-get dist-upgrade -y
 
 `xdotool` and `scrot` are for driving and capturing the GUI from a session. Everything else is needed to build or test Babawus. `xvfb` isn't needed, because GUI testing is manual. `lintian` is optional, for extra checks on the `.deb` package.
 
-### 6. Install Rust and cargo-deb (Claude)
+### 6. Install Rust, cargo-deb and cargo-about (Claude)
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -202,6 +206,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 ```bash
 "$HOME/.cargo/bin/cargo" install cargo-deb
+```
+
+```bash
+"$HOME/.cargo/bin/cargo" install --locked --features cli cargo-about
 ```
 
 The installer adds Cargo to `~/.bashrc` and `~/.profile`, so new shells find it. The stable toolchain already includes `clippy` and `rustfmt`.
@@ -237,7 +245,7 @@ cargo test -- --include-ignored
 ```
 
 ```bash
-cargo deb -p babawus
+containers/licences.sh && cargo deb -p babawus
 ```
 
 Then check that nothing was left behind. This should print nothing:
@@ -357,7 +365,7 @@ Flushing in chunks costs nothing measurable. Copying 256 MiB to exFAT, twice for
 - **GTK:** Mint 22.3 has GTK 4.14.5, so the `gtk4` crate uses the `v4_14` feature. Don't raise it above the supported platform.
 - **Build times:** about 45 seconds for a first debug build and about a minute for a release build.
 - **Disk use:** `target/` grows to several GB (7.2 GB on 2026-11-15). `cargo clean` gives the space back.
-- **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace.
+- **Packaging:** `cargo deb` must be given `-p babawus`, because the project is a workspace, and `containers/licences.sh` must run first, or `THIRD-PARTY-LICENSES` is missing.
 - **Test images:** these go in the system's temporary folder, as `babawus-medium-*`, so that the desktop ignores them (see "Cinnamon and loop devices").
 
 ### System quirks

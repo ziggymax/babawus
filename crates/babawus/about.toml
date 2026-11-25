@@ -1,0 +1,10 @@
+# What cargo-about lists in THIRD-PARTY-LICENSES, the licences of the crates compiled into
+# Babawus, installed with both packages (T-130, issue 171). containers/licences.sh generates it.
+
+# A crate under any other licence stops the build, so that a new licence is looked at first.
+accepted = ["MIT", "Apache-2.0", "Unicode-3.0", "Unlicense"]
+targets = ["x86_64-unknown-linux-gnu"]
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+# Babawus's own crates, which are not published; their licence is LICENSE.
+private = { ignore = true }
