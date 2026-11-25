@@ -1,0 +1,9 @@
+# Lets the user logged in at the host pass a real USB stick through to a test VM in libvirt's user
+# session, where QEMU runs as that user and must open the stick's USB device node (T-126,
+# TestSetup.md, "Sticks"). It covers every USB storage device (interface class 08, subclass 06),
+# and gives access only to the user at the computer, for as long as they are logged in (uaccess).
+#
+# Installed on the host by the user, as DevEnvSetup.md describes:
+#   sudo install -m 644 vms/70-babawus-usb-storage.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload && sudo udevadm trigger --subsystem-match=usb
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{ID_USB_INTERFACES}=="*:0806??:*", TAG+="uaccess"
