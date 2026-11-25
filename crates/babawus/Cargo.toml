@@ -30,6 +30,8 @@ assets = [
     ["assets/io.github.ziggymax.Babawus.svg", "usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg", "644"],
     # The language files, read at start (issue 147).
     ["../../languages/*.toml", "usr/share/babawus/languages/", "644"],
+    # The licences of the crates compiled into Babawus, made by containers/licences.sh (T-130).
+    ["target/release/THIRD-PARTY-LICENSES", "usr/share/doc/babawus/", "644"],
 ]
 
 # The .rpm for Fedora, built with cargo-generate-rpm in the Fedora container (T-121,
@@ -46,6 +48,8 @@ assets = [
     { source = "../../languages/*.toml", dest = "/usr/share/babawus/languages/", mode = "644" },
     # Fedora keeps licences here (issue 171).
     { source = "../../LICENSE", dest = "/usr/share/licenses/babawus/LICENSE", mode = "644", doc = true },
+    # The licences of the crates compiled into Babawus, made by containers/licences.sh (T-130).
+    { source = "target/release/THIRD-PARTY-LICENSES", dest = "/usr/share/licenses/babawus/THIRD-PARTY-LICENSES", mode = "644", doc = true },
 ]
 
 [package.metadata.generate-rpm.requires]

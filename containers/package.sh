@@ -19,6 +19,24 @@ rpm fedora-45 fedora-45
 
 out="$repo/target/containers/packages"
 
+# Run first in the container: the tools the packages are built with are kept with the build
+# output, which CI caches, rather than in the image, which would then have to build them for
+# every job that uses it.
+TOOLS='
+    set -e
+    tools="$CARGO_TARGET_DIR/../tools"
+    export PATH="$tools/bin:$PATH"
+    install_tool() {
+        [ -x "$tools/bin/$1" ] || cargo install --locked --root "$tools" "$@"
+    }
+'
+
+# THIRD-PARTY-LICENSES, which both packages install (T-130).
+LICENCES='
+    install_tool cargo-about --features cli
+    containers/licences.sh
+'
+
 # Builds the package of the given format on the distribution, and leaves it in $out.
 build_package() {
     format=$1
@@ -30,21 +48,17 @@ build_package() {
     mkdir -p "$out"
     case $format in
         deb)
-            # cargo-deb is kept with the build output, which CI caches, rather than in the image,
-            # which every apt distribution's job would then have to build it for.
-            run_in_build_image "$name" "$tag" '
-                tools="$CARGO_TARGET_DIR/../tools"
-                if [ ! -x "$tools/bin/cargo-deb" ]; then
-                    cargo install --locked --root "$tools" cargo-deb
-                fi
-                PATH="$tools/bin:$PATH" cargo deb --locked -p babawus \
-                    -o /src/target/containers/packages/'
+            run_in_build_image "$name" "$tag" "$TOOLS
+                install_tool cargo-deb
+                $LICENCES
+                cargo deb --locked -p babawus -o /src/target/containers/packages/"
             ;;
         rpm)
-            run_in_build_image "$name" "$tag" '
-                cargo build --locked --release -p babawus \
-                && cargo generate-rpm -p crates/babawus --auto-req find-requires \
-                    --target-dir "$CARGO_TARGET_DIR" -o /src/target/containers/packages/'
+            run_in_build_image "$name" "$tag" "$TOOLS
+                $LICENCES
+                cargo build --locked --release -p babawus
+                cargo generate-rpm -p crates/babawus --auto-req find-requires \\
+                    --target-dir \"\$CARGO_TARGET_DIR\" -o /src/target/containers/packages/"
             ;;
         *)
             echo "Unknown package format: $format" >&2
@@ -72,7 +86,8 @@ install_package() {
             set -e
             $install
             echo '--- Installed files:'
-            $query
+            $query | tee /tmp/files
+            grep -q /THIRD-PARTY-LICENSES /tmp/files || { echo 'THIRD-PARTY-LICENSES is missing'; exit 1; }
             echo '--- Libraries:'
             if ldd /usr/bin/babawus | grep 'not found'; then
                 echo 'A library of /usr/bin/babawus is missing'

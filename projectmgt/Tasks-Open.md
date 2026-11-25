@@ -20,11 +20,10 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. The host is set up for development (T-118), each distribution has a container (T-119), Fedora's `wheel` group counts as administrator (T-120), Fedora gets an `.rpm` (T-121), and the `.deb` is checked on every `.deb` distribution (T-122). These tasks make 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution (issue 169).
+Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. The host is set up for development (T-118), each distribution has a container (T-119), Fedora's `wheel` group counts as administrator (T-120), Fedora gets an `.rpm` (T-121), the `.deb` is checked on every `.deb` distribution (T-122), and both packages carry the licences of the crates Babawus is built from (T-130). These tasks make 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution (issue 169).
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-130 | Generate a file of the licences of the crates compiled into Babawus (for example with `cargo-about`), and install it with both packages under `/usr/share/doc/babawus/`, as their MIT and Apache licences ask | Todo | Issue 171 |
 | T-123 | Raise the version to 1.2.0-alpha.1 and tag `v1.2.0-alpha.1` on main, without a GitHub release | Todo | Issue 169 |
 
 ## Needs a decision

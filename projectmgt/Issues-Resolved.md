@@ -785,6 +785,10 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 171. **Babawus's licence.** Babawus had none: no LICENSE file, and none in Cargo.toml. An `.rpm` must name one, unlike a `.deb`. Nothing Babawus uses forces one on it: the 72 crates compiled into it are MIT, Apache-2.0 or both; GTK 4, GLib, Pango and cairo are LGPL system libraries, linked dynamically and installed by the distribution; and udisks2, exfatprogs, e2fsprogs and acl are GPL programs that Babawus uses through D-Bus or not at all, as separate works.
     - **Decided (2026-11-24):** Babawus is under the MIT licence, "Copyright (c) 2026 Steen Kroeyer", in a LICENSE file at the top of the repository, named in Cargo.toml, and installed with both packages.
     - **Decided (2026-11-24):** the MIT and Apache licences of the crates ask for their notices to go with the binary, which neither package does yet. Before 1.2.0 is released, a file of third-party licences is generated and installed with both packages (T-130).
+    - **Decided (2026-11-25):** the file is made with `cargo-about`, which also refuses a licence that is not on the accepted list in `about.toml` (T-130).
+    - **Decided (2026-11-25):** it is generated each time a package is built, in the container by `containers/package.sh`, so that it always matches Cargo.lock; it is not kept in the repository (T-130).
+    - **Decided (2026-11-25):** it is one plain-text file, `THIRD-PARTY-LICENSES`, each licence text once with the crates under it (T-130).
+    - **Decided (2026-11-25):** the `.deb` installs it in `/usr/share/doc/babawus/`, and the `.rpm` in `/usr/share/licenses/babawus/`, beside Babawus's own LICENSE, as each distribution does (T-130).
 
 ## Decisions on tidying the repository (T-131)
 
