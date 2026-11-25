@@ -24,8 +24,7 @@ Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributi
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-126 | Install libvirt on the host, in the user's session, and prove the driver on one guest, Ubuntu 26.04 with GNOME on Wayland: a small command-line driver that reverts the guest to a clean snapshot, takes a screenshot, clicks, types, runs a command over SSH, and plugs in and unplugs an emulated stick. Find out whether VirtualBox and KVM can run at the same time, and what passing a real stick through needs in the user session. The user does the steps that need sudo | Todo | Issue 170 |
-| T-127 | Move the Linux Mint VM from VirtualBox to libvirt, by converting its disk or installing it anew, and drive it with the same driver. VirtualBox is removed when nothing needs it any more | Todo | Issue 170 |
+| T-127 | Install Linux Mint anew as a libvirt guest, set up as the Ubuntu 26.04 one of T-126, and drive it with the same driver. The VirtualBox Mint VM and VirtualBox itself were removed on 2026-11-25 | Todo | Issue 170 |
 | T-124 | Make a test VM each for Ubuntu 24.04, Debian stable and the newest Fedora in libvirt, as the Ubuntu 26.04 one of T-126: the desktop each ships, automatic login, SSH from the host, and a clean snapshot. Describe them in DevEnvSetup.md. Needed before the release checklists of 1.2.0 run | Todo | Issues 169, 170 |
 | T-128 | A smoke test that runs on every guest without Claude: revert to the clean snapshot, install the package as a user would, start Babawus, plug in an emulated stick and check that it shows up, and run the tests on real file systems, built in that distribution's container | Todo | Issue 170 |
 | T-129 | Let GitHub build the `.deb` and the `.rpm` of a release, so that the checklists run on the very files that are released | Todo | Issue 170 |

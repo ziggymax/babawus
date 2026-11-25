@@ -1,8 +1,8 @@
 # Babawus development environment setup
 
-This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The VM**, with Linux Mint, is a test machine for real sticks, the desktop and the release checklist. [TestSetup.md](TestSetup.md) explains what each part of the set-up is for and how they fit together; this guide has the steps. The host is described as it is on 2026-11-19, and the VM as it is on 2026-11-15, with Babawus 0.2.1.
+This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The test VMs**, one per distribution, run on the host under libvirt and are for sticks, the desktop and the release checklist; the first, Ubuntu 26.04, was made on 2026-11-25 (T-126). [TestSetup.md](TestSetup.md) explains what each part of the set-up is for and how they fit together; this guide has the steps. The host is described as it is on 2026-11-19. **The VM**, the Linux Mint VM in VirtualBox described further down, was removed on 2026-11-25; its section stays until T-127 makes a Mint guest in libvirt, for its steps and discoveries.
 
-The steps are split between **You** (things that need `sudo` on the host, the VirtualBox host settings, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session without a password).
+The steps are split between **You** (things that need `sudo` on the host, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session without a password).
 
 ## Building and testing
 
@@ -66,7 +66,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 ### 4. Connect to the VM (You)
 
-Claude reaches the VM through an entry in `~/.ssh/config`, using the host's key, which is in the VM's `~/.ssh/authorized_keys`. VirtualBox forwards the host's port 2222 to the VM's port 22:
+This step was for the VirtualBox Mint VM, removed on 2026-11-25; the test VMs below are reached with `vms/driver.py run` instead. Claude reached the VM through an entry in `~/.ssh/config`, using the host's key, which is in the VM's `~/.ssh/authorized_keys`. VirtualBox forwards the host's port 2222 to the VM's port 22:
 
 ```
 Host babawus-vm
@@ -104,7 +104,69 @@ podman run --rm docker.io/library/ubuntu:24.04 cat /etc/os-release
 
 A `.deb` built on the host depends on the host's newer libraries, so it is for trying out only. The `.deb` that is released is built on Ubuntu 24.04 (issue 169), with `containers/package.sh deb`. Finally, run `cargo run -p babawus` and check that the window opens.
 
+## The test VMs
+
+Each test VM is a guest in libvirt's user session on the host, defined by its file in `vms/` and driven by `vms/driver.py` (TestSetup.md, "The VMs" and "The driver"). `vms/driver.py --help` lists the commands, and `vms/driver.py list` shows the guests.
+
+| Item | Ubuntu 26.04 |
+| --- | --- |
+| Guest | `babawus-ubuntu-26.04`, from `vms/ubuntu-26.04.xml` |
+| Operating system | Ubuntu 26.04.1 LTS, GNOME on Wayland, updated on 2026-11-25 |
+| CPUs, memory, disk | 4 CPUs, 4 GB, 25 GB (`~/.local/share/libvirt/images/babawus-ubuntu-26.04.qcow2`) |
+| Firmware and screen | BIOS, 1280×800 |
+| User | `tester`, logged in automatically, passwordless `sudo`, US keyboard layout, screen never blanks or locks |
+| SSH | `127.0.0.1:2601` on the host, with the host's key |
+| VNC | `127.0.0.1:5961`, or `virt-manager --connect qemu:///session --show-domain-console babawus-ubuntu-26.04` |
+| Snapshot | `clean`: running, logged in, nothing open |
+
+### Making a guest
+
+Ubuntu 26.04 was made this way; the other guests follow it (T-124, T-127).
+
+1. **Install libvirt (You).** On Ubuntu 26.04 the host already had libvirt, QEMU and `python3-libvirt`; otherwise install `qemu-system-x86 libvirt-daemon-system virt-manager python3-libvirt`. Nothing more is needed for the user session, apart from membership of the `kvm` group.
+2. **Download the installer (Claude).** The ISO goes into `~/.local/share/libvirt/images/`, checked against the distribution's SHA-256 list.
+3. **Define and start the guest (Claude).** `vms/driver.py define ubuntu-26.04`, then `vms/driver.py start ubuntu-26.04`. The guest boots the installer from the ISO, since its disk is empty.
+4. **Install (Claude, and You for the password).** Claude clicks and types through the installer with the driver: English, US keyboard, wired network, default apps, no proprietary software, erase the (virtual) disk, no encryption, name "Tester", user `tester`, "Require my password to log in" off. You type the password in virt-manager. Restart, `vms/driver.py eject ubuntu-26.04`, and press Enter when asked to remove the medium. Claude goes through the welcome screens, skipping Ubuntu Pro and leaving location and reports off.
+5. **SSH and sudo (Claude, and You for the password).** In a terminal in the guest, Claude puts the host's public key into `~/.ssh/authorized_keys` and runs `sudo apt-get install -y openssh-server`, and you type the password. Then Claude runs, in the same terminal:
+
+```bash
+echo 'tester ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/tester && sudo chmod 440 /etc/sudoers.d/tester && sudo visudo -c
+```
+
+6. **Updates and settings (Claude).** Over SSH: `sudo apt-get update && sudo apt-get -y full-upgrade`, reboot, and stop the screen from blanking and locking, so that screenshots stay readable and the driver isn't locked out:
+
+```bash
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
+gsettings set org.gnome.desktop.session idle-delay 0
+gsettings set org.gnome.desktop.screensaver lock-enabled false
+```
+
+7. **Snapshot (Claude).** With the desktop logged in and nothing open: `vms/driver.py snapshot ubuntu-26.04 clean`.
+
+### Real sticks (You, once)
+
+Passing a real stick through needs the udev rule in `vms/`, installed on the host:
+
+```bash
+sudo install -m 644 vms/70-babawus-usb-storage.rules /etc/udev/rules.d/
+```
+
+```bash
+sudo udevadm control --reload && sudo udevadm trigger --subsystem-match=usb
+```
+
+Then `vms/driver.py sticks` lists the sticks on the host, `vms/driver.py pass ubuntu-26.04 <serial>` passes one through, and `vms/driver.py unpass ubuntu-26.04` gives it back. The test sticks A and B are both Kingston DataTraveler 3.0; A is serial `08606E694BE4E320B7282A6C`.
+
+### What was learned
+
+- **passt doesn't work in the user session on Ubuntu 26.04.** Its AppArmor profile lets neither libvirt nor the user signal it, so it outlived its guest and kept port 2601 until `sudo kill`, and the guest got no DHCP answer from it. The guests use QEMU's own network, and the driver forwards SSH itself (issue 170).
+- **BIOS, not UEFI**, because libvirt can't take an internal snapshot of a guest with UEFI firmware.
+- **The guest draws a moment behind** what the driver sends: take a screenshot a second after typing.
+- **A notification can cover the top of the screen**, such as "Connection failed" or "Updates Available", over a window's buttons; close it with its × first.
+
 ## The VM
+
+Removed on 2026-11-25, with VirtualBox; T-127 makes a Mint guest in libvirt instead. Kept for its steps and the discoveries below.
 
 | Item | Value |
 | --- | --- |

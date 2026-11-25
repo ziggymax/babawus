@@ -2,7 +2,7 @@
 
 This document explains how Babawus is built, tested and released on every distribution it supports, and how the parts fit together. [DevEnvSetup.md](DevEnvSetup.md) has the steps for setting up each machine; this document says what each one is for and why. The decisions are in issues 169 and 170 in [Issues-Resolved.md](projectmgt/Issues-Resolved.md).
 
-The set-up is described as planned. A part that has not been tried yet is marked with the task that proves it, such as *(not tried yet, T-126)*. The mark goes when the task makes the part work, and this document changes if the task finds that something works differently.
+The set-up is described as planned. A part that has not been tried yet is marked with the task that proves it, such as *(not tried yet, T-128)*. The mark goes when the task makes the part work, and this document changes if the task finds that something works differently.
 
 ## The parts
 
@@ -11,8 +11,8 @@ The set-up is described as planned. A part that has not been tried yet is marked
 | The host | Writing code, building, unit tests, the containers, and running the VMs | Ubuntu 26.04 with GNOME on Wayland |
 | The containers | Building Babawus and running its unit tests on each distribution, and building and installing its packages | podman on the host, and the same scripts in CI |
 | CI | The same as the containers, plus the tests on real file systems, on every pull request | GitHub Actions |
-| The VMs | Installing the package as a user would, sticks, the desktop, and the release checklist | KVM under libvirt on the host *(not tried yet, T-126)* |
-| The driver | Doing the same things to every VM: snapshots, screenshots, clicks and keys, commands, sticks | A small command-line program on the host *(not tried yet, T-126)* |
+| The VMs | Installing the package as a user would, sticks, the desktop, and the release checklist | KVM under libvirt on the host |
+| The driver | Doing the same things to every VM: snapshots, screenshots, clicks and keys, commands, sticks | `vms/driver.py` on the host |
 
 Babawus is built and unit-tested in one place, the containers, and the finished package is then tried in clean VMs. A VM never gets a build tree, only the package, so that a missing dependency or file shows up as a failure there.
 
@@ -59,44 +59,45 @@ For a release, GitHub builds both packages, and the smoke test and the checklist
 
 ## The VMs
 
-There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 comes first, to prove the set-up *(not tried yet, T-126)*. The Mint VM moves over from VirtualBox *(not tried yet, T-127)*, and the others follow *(not tried yet, T-124)*. Until T-127, the Mint VM is still the VirtualBox one that DevEnvSetup.md describes.
+There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint is installed anew *(not tried yet, T-127)*, since VirtualBox and its Mint VM were removed from the host on 2026-11-25, and the others follow *(not tried yet, T-124)*.
 
-**libvirt in the user session.** The VMs run under KVM, managed by libvirt in the user's own session (`qemu:///session`), not the system one. Nothing about them runs as root, and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters. The user is in the `kvm` group, which is all KVM needs. The user session has two limits, which T-126 settles:
+**libvirt in the user session.** The VMs run under KVM, managed by libvirt in the user's own session (`qemu:///session`), not the system one. Nothing about them runs as root, and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters. The user is in the `kvm` group, which is all KVM needs. The user session has two limits:
 
-- The network is QEMU's own, with a port on the host forwarded to each guest's SSH.
-- Passing a real stick through needs the user to have access to its device on the host, likely through one udev rule.
+- **The network is QEMU's own** (slirp), which reaches the internet through the host. The driver forwards a port on the host, `127.0.0.1` only, to each guest's SSH when it starts the guest. libvirt forwards ports itself only for passt, its newer network for the user session, but passt can't be used there on Ubuntu 26.04: its AppArmor profile lets neither libvirt nor the user stop it, so it outlives its guest and keeps the port, and the guest got no address from it (T-126).
+- **Passing a real stick through** needs the user to have access to its USB device on the host, which root owns. `vms/70-babawus-usb-storage.rules`, installed on the host once, gives the user logged in at the computer access to every USB storage device (T-126).
 
-**Each guest has** the same settings, so that the driver needs nothing per guest but its name and the commands it runs:
+**Each guest is defined** by its file in `vms/`, such as `vms/ubuntu-26.04.xml`, which `vms/driver.py define` turns into a libvirt guest with an empty 25 GB disk. The disks, the installers' ISOs and the stick images are kept in `~/.local/share/libvirt/images/`. A guest uses BIOS rather than UEFI, because libvirt can't take an internal snapshot of a guest with UEFI firmware, and an internal snapshot of the running guest lets a revert return straight to a desktop that is logged in. **Each guest has** the same settings, so that the driver needs nothing per guest but its name and the commands it runs:
 
 - automatic login for the test user, so that the desktop is there after a revert;
 - OpenSSH, with the host's key;
-- VNC graphics, listening only on the host, at a fixed resolution, so that screenshots can be compared between runs;
+- VNC graphics, listening only on the host, so that the user can watch and type in virt-manager, at a fixed resolution of 1280×800, so that screenshots can be compared between runs;
 - a USB tablet as pointer, so that clicks land on exact coordinates;
 - a USB 3 (`qemu-xhci`) controller, for plugging in sticks;
 - a snapshot named `clean`, taken once the guest is set up.
 
-The guests are installed by hand, as DevEnvSetup.md will describe. Building them from scripts is an idea for later (issue 170).
+The guests are installed by hand, with the driver doing the clicking and typing, and the user typing the test user's password; DevEnvSetup.md describes it. Building them from scripts is an idea for later (issue 170).
 
 ## The driver
 
-Every VM is driven the same way, from the host, through three channels:
+Every VM is driven the same way, from the host, by `vms/driver.py`, through two channels:
 
 | Channel | Used for |
 | --- | --- |
-| libvirt | Reverting to the `clean` snapshot, taking screenshots, and plugging in and unplugging sticks |
-| VNC | Moving the mouse, clicking, typing and pressing keys |
+| libvirt | Starting and stopping, reverting to the `clean` snapshot, taking screenshots, moving the pointer, clicking, typing and pressing keys, and plugging in and unplugging sticks |
 | SSH | Running commands, copying the package in, and reading results |
 
-Because screenshots, clicks and keys are made below the guest, by the hypervisor, they work the same on Cinnamon and on GNOME on Wayland, where a program inside the guest can't take screenshots of other windows or move the mouse. Adding a distribution then means adding a VM, not changing the driver.
+Screenshots, clicks and keys go to QEMU through libvirt (its `screendump`, `input-send-event` and `send-key`), below the guest, so they work the same on Cinnamon and on GNOME on Wayland, where a program inside the guest can't take screenshots of other windows or move the mouse. This was proved by installing Ubuntu 26.04 through the driver (T-126). Adding a distribution then means adding a VM, not changing the driver. The driver uses only Python's standard library and the distribution's `python3-libvirt` (issue 170); `vms/driver.py --help` lists its commands.
 
-The driver is a small command-line program on the host, with commands such as revert, screenshot, click, type, key, run, plug and unplug *(not tried yet, T-126)*. Claude uses it to drive the window in every guest, and the smoke test uses it without Claude.
+Typing is for a US keyboard layout, which every guest is installed with. The guest draws a moment behind: a screenshot taken right after typing may show only part of the text, so wait a second first.
 
-**Starting Babawus from SSH.** A command run over SSH is not part of the desktop session, so a window started from it wouldn't appear. The driver starts Babawus in the logged-in user's session, by giving it that session's `WAYLAND_DISPLAY` or `DISPLAY` and `XDG_RUNTIME_DIR`, or through `systemd-run --user` *(not tried yet, T-126)*.
+Claude uses the driver to drive the window in every guest, and the smoke test uses it without Claude.
+
+**Starting Babawus from SSH.** A command run over SSH is not part of the desktop session, so a window started from it wouldn't appear. `vms/driver.py launch` starts it through `systemd-run --user`, in the user's own systemd, which the desktop has given its `WAYLAND_DISPLAY` and `DISPLAY`, so the window appears on the desktop (T-126).
 
 ## Sticks
 
-- **Emulated sticks** are image files on the host, formatted there or left blank for Babawus to format, which the driver plugs into a guest as a USB disk. The guest sees a real USB stick arrive and leave, and the same image gives the same result every time. They are used for the smoke test and for most checklist steps *(not tried yet, T-126)*.
-- **Real sticks** are passed through from the host for the steps that are about hardware, such as speed or pulling a stick out during a backup. While a VM has it, the stick disappears from the host, and only one VM can have it at a time. Two identical sticks are told apart by their USB port rather than by vendor and product *(not tried yet, T-126)*.
+- **Emulated sticks** are image files on the host, formatted there or left blank for Babawus to format, which the driver plugs into a guest as a USB disk. The guest sees a real USB stick arrive and leave, and the same image gives the same result every time. udisks2 in the guest reports them as removable USB sticks, as it does a real one. They are used for the smoke test and for most checklist steps (T-126).
+- **Real sticks** are passed through from the host for the steps that are about hardware, such as speed or pulling a stick out during a backup. The driver finds a stick by its serial number (`vms/driver.py sticks` lists them), so that two identical sticks are told apart wherever they are plugged in. While a VM has it, the stick disappears from the host, and only one VM can have it at a time (T-126).
 
 ## Testing
 
