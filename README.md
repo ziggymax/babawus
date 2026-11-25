@@ -15,7 +15,7 @@ That's it. The green elephant logo? Because it's cute and elephants never forget
 
 ![The Babawus main window](assets/screenshot-main.png)
 
-For the thinking behind Babawus, who it is for and why it works the way it does, see [Concept.md](Concept.md).
+For the thinking behind Babawus, who it is for and why it works the way it does, see [Concept.md](projectmgt/Concept.md).
 
 ## General concept
 

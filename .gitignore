@@ -1,8 +1,1 @@
 /target
-
-# Screenshots for the review of the look (issue 114).
-ui-review/*.png
-ui-review/sheets/
-
-# Research papers that Babawus's own documents are written from (issue 170).
-/research/

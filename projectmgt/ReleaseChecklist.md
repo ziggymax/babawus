@@ -40,7 +40,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
 
 ## Adding a language by hand
 
-These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up French file that has only one text translated.
+These steps follow [AddingALanguage.md](../AddingALanguage.md), with a made-up French file that has only one text translated.
 
 - [ ] Close Babawus. Copy the English file and make it French: `cp /usr/share/babawus/languages/en.toml ~/fr.toml`, and in `~/fr.toml` change `code = "en"` to `code = "fr"`, `name = "English"` to `name = "Français"`, and `PlugIn = "Plug in your backup stick"` to `PlugIn = "Branchez votre clé de sauvegarde"`.
 - [ ] Install it: `sudo cp ~/fr.toml /usr/share/babawus/languages/`. → It asks for your password, and copies it.
@@ -127,7 +127,7 @@ These steps follow [AddingALanguage.md](AddingALanguage.md), with a made-up Fren
 - [ ] Run `babawus --checklastbackup`. → Nothing shows, and the command ends at once.
 - [ ] Make the note 9 days old: `sed -i "s/^last_backup = .*/last_backup = \"$(date -d '9 days ago' '+%Y-%m-%d %H:%M:%S %z')\"/" ~/.local/state/babawus/last_backup`. Run `babawus --checklastbackup`. → A small window with the elephant: "Your last backup was 9 days ago.", "Do you want to back up now?", "Not now" and "Back up now". Press "Not now". → Babawus closes.
 - [ ] Run it again, and press "Back up now". → The normal window opens. Back up to stick A. → The note has today's time again, and `run_check_days = 8`, from stick A's setup.
-- [ ] Add "Babawus reminder" in "Startup Applications" as [UserGuide.md](UserGuide.md) says, make the note 9 days old again, and log out and in. → The reminder shows after login. Remove the entry from "Startup Applications" afterwards, unless you want to keep it.
+- [ ] Add "Babawus reminder" in "Startup Applications" as [UserGuide.md](../UserGuide.md) says, make the note 9 days old again, and log out and in. → The reminder shows after login. Remove the entry from "Startup Applications" afterwards, unless you want to keep it.
 
 ## Cancelling and closing
 
@@ -158,9 +158,9 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 ## Uninstalling
 
 - [ ] Uninstall with `sudo apt remove babawus`. → The "Backup" entry leaves the menu.
-- [ ] Run `ls /usr/share/babawus/languages`. → Only `fr.toml`, the file added by hand, is left. Remove it and its folder with `sudo rm -r /usr/share/babawus`, as [UserGuide.md](UserGuide.md) says.
+- [ ] Run `ls /usr/share/babawus/languages`. → Only `fr.toml`, the file added by hand, is left. Remove it and its folder with `sudo rm -r /usr/share/babawus`, as [UserGuide.md](../UserGuide.md) says.
 - [ ] Look at stick A. → Nothing changed on it: `.babawus` and `backup` are as before.
-- [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes in [UserGuide.md](UserGuide.md) say.
+- [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes in [UserGuide.md](../UserGuide.md) say.
 
 ## Afterwards
 

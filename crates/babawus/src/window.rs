@@ -536,7 +536,7 @@ fn wrapping_label() -> Label {
 
 /// The details pane, and the widgets in it that change. From the top: the label, the stick's
 /// details, a thin line, and the explanation, which starts with the status and holds every
-/// message about the stick. See `ui-review/UiReview.md` item G01.
+/// message about the stick. See `ui-review/UiReview.md` item G01 at ccbfb96.
 fn details_widgets() -> (DetailsWidgets, Overlay) {
     let title = Label::builder().xalign(0.0).build();
     title.add_css_class("babawus-title");
@@ -996,7 +996,7 @@ impl Window {
             .website("https://github.com/ziggymax/babawus")
             .build();
         // GTK gives the first selectable text the focus, which selects all of it: the name.
-        // Nothing in the dialog needs copying (`ui-review/UiReview.md` W05).
+        // Nothing in the dialog needs copying (`ui-review/UiReview.md` W05 at ccbfb96).
         unselectable(dialog.upcast_ref());
         // The comment is markup, which `AboutDialog` would show as it is (issue 132).
         use_markup_for(dialog.upcast_ref(), &text::about_comments(language));

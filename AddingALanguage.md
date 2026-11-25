@@ -1,6 +1,6 @@
 # Adding a language to Babawus
 
-Babawus reads its texts from language files, one per language, each time it starts. To add a language, write one more file and copy it into place. No new build of Babawus is needed. The rules are in "Translations" in [Requirements.md](Requirements.md), and the reasons in issues 147 to 149.
+Babawus reads its texts from language files, one per language, each time it starts. To add a language, write one more file and copy it into place. No new build of Babawus is needed. The rules are in "Translations" in [Requirements.md](projectmgt/Requirements.md), and the reasons in issues 147 to 149.
 
 ## What a language file holds
 
