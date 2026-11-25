@@ -1,1 +1,4 @@
 /target
+
+# Python caches, such as vms/driver.py compiled when it runs.
+__pycache__/
