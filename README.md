@@ -69,7 +69,7 @@ To uninstall Babawus, run `sudo apt remove babawus`, or remove it in the Softwar
 
 ## For developers
 
-[DevEnvSetup.md](DevEnvSetup.md) explains how to build, test and package Babawus, and how to set up the development environment.
+[DevEnvSetup.md](DevEnvSetup.md) explains how to build, test and package Babawus, and how to set up the development environment. [TestSetup.md](TestSetup.md) explains how Babawus is built, tested and released on every distribution: the containers, CI, the VMs and how they are driven.
 
 ## Licence
 

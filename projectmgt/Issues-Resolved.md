@@ -780,6 +780,9 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided (2026-11-24):** the VMs run in libvirt's user session (`qemu:///session`), not the system one, so that nothing about them runs as root and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters (issue 169). The user is already in the `kvm` group. What the user session can't do as easily is checked on the first guest (T-126): the network is QEMU's own, with a forwarded port for SSH, and passing a real stick through needs the user to have access to its device, likely through one udev rule.
     - **Decided (2026-11-24):** the research paper and its `research/` folder are not kept in the repository. Babawus gets its own description of the set-up, as a document in the project (T-125).
     - **Decided (2026-11-24):** the guests are installed by hand first and described in DevEnvSetup.md. Building them from scripts (Packer or similar), an automated test suite for the window and accessible names for its widgets are ideas for later, in ReleasePlanning.md.
+    - **Decided (2026-11-25, T-125):** Babawus's description of the set-up is `TestSetup.md`, at the top of the repository beside DevEnvSetup.md. TestSetup.md explains the design and how the parts fit together; DevEnvSetup.md stays the steps for setting up each machine.
+    - **Decided (2026-11-25, T-125):** it describes the whole set-up as planned, and marks each part that has not been tried yet with the task that proves it, such as "not tried yet (T-126)". A mark goes when its task makes the part work.
+    - **Decided (2026-11-25, T-125):** it carries only Babawus's own choices and their reasons, with the decisions of this issue, and not the alternatives the research paper weighed, its Windows tooling or macOS.
 
 ## Decisions on Babawus's licence (T-121)
 
