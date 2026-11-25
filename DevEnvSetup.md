@@ -1,6 +1,6 @@
 # Babawus development environment setup
 
-This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The VM**, with Linux Mint, is a test machine for real sticks, the desktop and the release checklist. The host is described as it is on 2026-11-19, and the VM as it is on 2026-11-15, with Babawus 0.2.1.
+This guide explains how to set up the computers Babawus is developed and tested on, and records what was learned on them. Since 1.2.0 (issue 169), Babawus is developed on **the host**, a computer with Ubuntu and GNOME on Wayland that also runs the VMs. **The VM**, with Linux Mint, is a test machine for real sticks, the desktop and the release checklist. [TestSetup.md](TestSetup.md) explains what each part of the set-up is for and how they fit together; this guide has the steps. The host is described as it is on 2026-11-19, and the VM as it is on 2026-11-15, with Babawus 0.2.1.
 
 The steps are split between **You** (things that need `sudo` on the host, the VirtualBox host settings, a password, an account or a physical USB stick) and **Claude** (everything that can be done from a session without a password).
 
