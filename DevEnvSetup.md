@@ -108,15 +108,15 @@ A `.deb` built on the host depends on the host's newer libraries, so it is for t
 
 Each test VM is a guest in libvirt's user session on the host, defined by its file in `vms/` and driven by `vms/driver.py` (TestSetup.md, "The VMs" and "The driver"). `vms/driver.py --help` lists the commands, and `vms/driver.py list` shows the guests.
 
-| Item | Ubuntu 26.04 | Linux Mint 22.3 |
-| --- | --- | --- |
-| Name for the driver | `ubuntu-26.04` (`vms/ubuntu-26.04.xml`) | `mint-22.3` (`vms/mint-22.3.xml`) |
-| Operating system | Ubuntu 26.04.1 LTS, GNOME on Wayland | Linux Mint 22.3, Cinnamon on X11 |
-| Updated | 2026-11-25 | 2026-11-25 |
-| SSH on the host | `127.0.0.1:2601` | `127.0.0.1:2602` |
-| VNC on the host | `127.0.0.1:5961` | `127.0.0.1:5962` |
+| Name for the driver (file in `vms/`) | Operating system and desktop | SSH on the host | VNC on the host |
+| --- | --- | --- | --- |
+| `ubuntu-26.04` | Ubuntu 26.04.1 LTS, GNOME on Wayland | `127.0.0.1:2601` | `127.0.0.1:5961` |
+| `mint-22.3` | Linux Mint 22.3, Cinnamon on X11 | `127.0.0.1:2602` | `127.0.0.1:5962` |
+| `ubuntu-24.04` | Ubuntu 24.04.5 LTS, GNOME on Wayland | `127.0.0.1:2603` | `127.0.0.1:5963` |
+| `debian-13` | Debian 13.8, GNOME on Wayland | `127.0.0.1:2604` | `127.0.0.1:5964` |
+| `fedora-45` | Fedora 45 Workstation, GNOME on Wayland | `127.0.0.1:2605` | `127.0.0.1:5965` |
 
-Both have 4 CPUs, 4 GB of memory and a 25 GB disk (`~/.local/share/libvirt/images/babawus-<name>.qcow2`), BIOS, and a 1280×800 screen. Their user is `tester`, logged in automatically, with passwordless `sudo`, the host's SSH key and a US keyboard layout. The screen never blanks, locks or sleeps, and a stick that is plugged in is mounted without a file manager window opening. Their `clean` snapshot is running, logged in, with nothing open. To watch one, or type a password into it:
+All were installed and updated on 2026-11-25. All have 4 CPUs, 4 GB of memory and a 25 GB disk (`~/.local/share/libvirt/images/babawus-<name>.qcow2`), BIOS, and a 1280×800 screen. Their user is `tester`, logged in automatically, with passwordless `sudo`, the host's SSH key and a US keyboard layout. The screen never blanks, locks or sleeps, and a stick that is plugged in is mounted without a file manager window opening. Their `clean` snapshot is running, logged in, with nothing open. To watch one, or type a password into it:
 
 ```bash
 virt-manager --connect qemu:///session --show-domain-console babawus-<name>
@@ -124,19 +124,26 @@ virt-manager --connect qemu:///session --show-domain-console babawus-<name>
 
 ### Making a guest
 
-Ubuntu 26.04 and Mint 22.3 were made this way; the other guests follow it (T-124). Each guest gets the next SSH and VNC ports in its file in `vms/`.
+All five guests were made this way (T-126, T-127, T-124). Each guest gets the next SSH and VNC ports in its file in `vms/`.
 
 1. **Install libvirt (You, once).** On Ubuntu 26.04 the host already had libvirt, QEMU and `python3-libvirt`; otherwise install `qemu-system-x86 libvirt-daemon-system virt-manager python3-libvirt`. Nothing more is needed for the user session, apart from membership of the `kvm` group.
 2. **Download the installer (Claude).** The ISO goes into `~/.local/share/libvirt/images/`, checked against the distribution's SHA-256 list.
 3. **Define and start the guest (Claude).** `vms/driver.py define ubuntu-26.04`, then `vms/driver.py start ubuntu-26.04`. The guest boots the installer from the ISO, since its disk is empty.
-4. **Install (Claude, and You for the password).** Claude clicks and types through the installer with the driver: English, US keyboard, no extra codecs or proprietary software, erase the (virtual) disk, no encryption or LVM, name "Tester", user `tester`, logging in automatically. You type the password in virt-manager. Restart, `vms/driver.py eject <name>`, and press Enter when asked to remove the medium. Claude goes through the welcome screens: on Ubuntu it skips Ubuntu Pro and leaves location and reports off; on Mint it unticks "Show this dialog at startup". On Mint the installer takes about ten seconds to appear after its icon is double-clicked.
-5. **SSH and sudo (Claude, and You for the password).** In a terminal in the guest, Claude puts the host's public key into `~/.ssh/authorized_keys` and runs `sudo apt-get install -y openssh-server`, and you type the password. Then Claude runs, in the same terminal:
+4. **Install (Claude, and You for the password).** Claude clicks and types through the installer with the driver: English, US keyboard, no extra codecs or proprietary software, erase the (virtual) disk, no encryption or LVM, name "Tester", user `tester`, logging in automatically. You type the password in virt-manager. Restart, `vms/driver.py eject <name>`, and press Enter when asked to remove the medium. Claude goes through the welcome screens: on Ubuntu it skips Ubuntu Pro and leaves location and reports off; on Mint it unticks "Show this dialog at startup". On Mint the installer takes about ten seconds to appear after its icon is double-clicked. Where the distributions differ:
+
+   - **Ubuntu 24.04** defaults to sharing system data with Ubuntu; choose not to. On first login it offers the upgrade to 26.04, which must be declined; Claude then sets `Prompt=never` in `/etc/update-manager/release-upgrades`, so that it never upgrades by accident.
+   - **Debian 13** installs from its live system with Calamares, whose icon is first in the dock. Calamares guesses Finnish from a click on the map near Copenhagen, so pick Europe/Copenhagen from the zone list and set both the language and the formats to `en_US.UTF-8`. It refuses a password that fails its dictionary check, also one spelled backwards. It makes a swap partition of 8 GB.
+   - **Fedora 45** asks for the language in its own language: search the list for "English (United States)". Set the host name with "edit" on the review page. Fedora makes the user at the first boot, in GNOME's setup: location services off, Copenhagen, no third-party repositories, then "Tester" and the password. Its SSH server is installed but off, and GNOME's setup logs in only that once, so Claude starts `sshd` instead of installing it, and turns on automatic login (step 5).
+   - **Eject the ISO only once the guest asks to remove the medium, or has booted from its disk.** Ejecting it while Fedora's live system was still running made its restart hang, and the guest had to be turned off. The disk comes first in the boot order, so a guest that restarts with the ISO still in boots its installed system anyway.
+5. **SSH and sudo (Claude, and You for the password).** In a terminal in the guest (on GNOME, Fedora and Debian don't open one with Ctrl+Alt+T, so Claude finds it in the overview's search), Claude puts the host's public key into `~/.ssh/authorized_keys` and runs `sudo apt-get install -y openssh-server`, or on Fedora `restorecon -R ~/.ssh && sudo systemctl enable --now sshd`, and you type the password. Then Claude runs, in the same terminal, while `sudo` still remembers the password:
 
 ```bash
 echo 'tester ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/tester && sudo chmod 440 /etc/sudoers.d/tester && sudo visudo -c
 ```
 
-6. **Updates and settings (Claude).** Over SSH: `sudo apt-get update && sudo apt-get -y full-upgrade`, and reboot. Then stop the screen from blanking, locking and sleeping, so that screenshots stay readable and the driver isn't locked out, and stop the file manager from opening a window for every stick, which can keep a stick busy (see "Discoveries"). On GNOME:
+   On Fedora, Claude then turns on automatic login over SSH, by adding `AutomaticLoginEnable=True` and `AutomaticLogin=tester` under `[daemon]` in `/etc/gdm/custom.conf`; the other installers set it themselves.
+
+6. **Updates and settings (Claude).** Over SSH: `sudo apt-get update && sudo apt-get -y full-upgrade`, or on Fedora `sudo dnf -y upgrade`, and reboot. Then stop the screen from blanking, locking and sleeping, so that screenshots stay readable and the driver isn't locked out, and stop the file manager from opening a window for every stick, which can keep a stick busy (see "Discoveries"). On GNOME:
 
 ```bash
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus
