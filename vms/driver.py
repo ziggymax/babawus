@@ -137,8 +137,11 @@ def forward_ssh(dom):
     (TestSetup.md, "The VMs"). QEMU's own network forgets the forward when QEMU stops, so it is
     added again each time the guest starts."""
     port, _user = ssh_settings(dom)
-    if f"127.0.0.1:{port}" in hmp(dom, "info usernet"):
-        return
+    # QEMU lists a forward as columns, such as "TCP[HOST_FORWARD]  30  127.0.0.1  2601  10.0.2.15  22".
+    for line in hmp(dom, "info usernet").splitlines():
+        fields = line.split()
+        if fields and fields[0] == "TCP[HOST_FORWARD]" and fields[2:4] == ["127.0.0.1", port]:
+            return
     reply = hmp(dom, f"hostfwd_add tcp:127.0.0.1:{port}-:22").strip()
     if reply:
         fail(f"Couldn't forward port {port} to the guest's SSH: {reply}")

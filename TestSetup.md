@@ -59,7 +59,7 @@ For a release, GitHub builds both packages, and the smoke test and the checklist
 
 ## The VMs
 
-There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint 22.3 followed, installed anew, since VirtualBox and its Mint VM were removed from the host on 2026-11-25 (T-127); the driver drives it unchanged, on Cinnamon on X11. The others follow *(not tried yet, T-124)*.
+There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint 22.3 followed, installed anew, since VirtualBox and its Mint VM were removed from the host on 2026-11-25 (T-127); the driver drives it unchanged, on Cinnamon on X11. Ubuntu 24.04, Debian 13 and Fedora 45 came last, installed through the driver the same way (T-124).
 
 **libvirt in the user session.** The VMs run under KVM, managed by libvirt in the user's own session (`qemu:///session`), not the system one. Nothing about them runs as root, and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters. The user is in the `kvm` group, which is all KVM needs. The user session has two limits:
 
