@@ -24,6 +24,8 @@ To build, install Rust, `cargo-deb`, `cargo-about` and `libgtk-4-dev`, then use 
 | Run clippy and the unit tests on every supported distribution, in podman containers (`--list` names them; give names to run only those) | `containers/check.sh` |
 | Build the `.deb` package, with the licences of the crates it is built from in `THIRD-PARTY-LICENSES` | `containers/licences.sh && cargo deb -p babawus` |
 | Build the `.deb` in the Ubuntu 24.04 container and the `.rpm` in the Fedora one, and check that each installs in clean images of the distributions it is for (give `deb` or `rpm` to build only that one) | `containers/package.sh` |
+| Download the `.deb`, the `.rpm` and their `SHA256SUMS` that CI built for main's newest commit, or the commit given, and check the sums; the folder is printed last | `vms/fetch-packages.sh [commit]` |
+| Try the packages on every test VM, without Claude: install, a stick, and the tests on real file systems | `vms/smoke.py [--packages <folder>] [guest ...]` |
 
 ## The host
 

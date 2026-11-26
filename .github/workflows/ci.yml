@@ -122,6 +122,16 @@ jobs:
         if: matrix.name == 'fedora-45'
         run: containers/package.sh rpm
 
+      # Handed to the packages job below, which keeps both packages together (T-129).
+      - name: Hand on the .rpm
+        if: matrix.name == 'fedora-45'
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-rpm
+          path: target/containers/packages/*.rpm
+          if-no-files-found: error
+          retention-days: 1
+
   # The .deb, built in the Ubuntu 24.04 container and installed in clean images of Ubuntu 24.04
   # and 26.04, as a user would (T-122, T-133).
   package-deb:
@@ -146,3 +156,39 @@ jobs:
 
       - name: Build the .deb and check that it installs
         run: containers/package.sh deb
+
+      - name: Hand on the .deb
+        uses: actions/upload-artifact@v7
+        with:
+          name: package-deb
+          path: target/containers/packages/*.deb
+          if-no-files-found: error
+          retention-days: 1
+
+  # Both packages, with their SHA-256 sums, kept as the run's artifact "packages" (T-129). For a
+  # release, the smoke test and the checklist run on the artifact of main's commit, and the same
+  # files are attached to the GitHub release (TestSetup.md, "A release, step by step"). A push to
+  # main keeps it for 90 days, a pull request for 7, so that its packages can be tried on a VM.
+  packages:
+    needs: [distribution, package-deb]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Fetch both packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: package-*
+          merge-multiple: true
+          path: packages
+
+      - name: Write their SHA-256 sums
+        working-directory: packages
+        run: sha256sum *.deb *.rpm | tee SHA256SUMS
+
+      - name: Keep them
+        uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: packages/
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'push' && 90 || 7 }}

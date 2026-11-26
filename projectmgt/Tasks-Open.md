@@ -20,11 +20,10 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). Next come the test VMs of 1.2.0, before 1.2.0-alpha.2 (issue 170, and "The VMs" in [ReleasePlanning.md](ReleasePlanning.md)).
+Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). The test VMs of 1.2.0 are done too (T-124 to T-129, T-132, T-133; issue 170): three guests, a smoke test, and CI keeping the packages a release is made from. Next is 1.2.0-alpha.2, GNOME; its tasks are added when work begins.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-129 | Let GitHub build the `.deb` and the `.rpm` of a release, so that the checklists run on the very files that are released | Todo | Issue 170 |
 
 ## Needs a decision
 

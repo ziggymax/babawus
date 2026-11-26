@@ -17,7 +17,7 @@ Each step says what to do, then **→** what should be seen. Texts in quotes are
   - `meeting: notes.txt`, whose name exFAT can't store;
   - `Photos/big.bin`, about 2 GB, so that a copy takes long enough to pull out a stick: `head -c 2G /dev/urandom > ~/BabawusTest/Photos/big.bin`;
   - `secret.txt` that can't be read: `chmod 000 ~/BabawusTest/secret.txt`.
-- [ ] The package for this release, built with `cargo deb -p babawus`. → `target/debian/babawus_<version>-1_amd64.deb` exists.
+- [ ] The package for this release, built by CI for main's commit, and fetched with `vms/fetch-packages.sh` on the host. → It prints the folder, `target/github-packages/<commit>/`, after "babawus_<version>-1_amd64.deb: OK". This very file is the one released (TestSetup.md, "A release, step by step").
 - [ ] Babawus is not installed yet: `dpkg -s babawus` → "package 'babawus' is not installed". (If it is, uninstall it first with `sudo apt remove babawus`.)
 
 ## Installing
