@@ -31,6 +31,7 @@ rm -rf "$out"
 mkdir -p "$out"
 echo "==> Downloading the packages of CI run $run, for $commit" >&2
 if ! gh run download "$run" --name packages --dir "$out"; then
+    rm -rf "$out"
     echo "CI run $run has no packages: it ran before T-129, or they have expired" >&2
     exit 1
 fi
