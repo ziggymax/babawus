@@ -2,7 +2,7 @@
 
 This document explains how Babawus is built, tested and released on every distribution it supports, and how the parts fit together. [DevEnvSetup.md](DevEnvSetup.md) has the steps for setting up each machine; this document says what each one is for and why. The decisions are in issues 169 and 170 in [Issues-Resolved.md](projectmgt/Issues-Resolved.md).
 
-The set-up is described as planned. A part that has not been tried yet is marked with the task that proves it, such as *(not tried yet, T-128)*. The mark goes when the task makes the part work, and this document changes if the task finds that something works differently.
+The set-up is described as planned. A part that has not been tried yet is marked with the task that proves it, such as *(not tried yet, T-129)*. The mark goes when the task makes the part work, and this document changes if the task finds that something works differently.
 
 ## The parts
 
@@ -20,7 +20,7 @@ Babawus is built and unit-tested in one place, the containers, and the finished 
 
 The host is a computer that matters, so it has no passwordless `sudo` and no polkit rule for udisks2 (issue 169). Claude builds, runs the tests and the containers, and will drive the VMs, without a password. The user does the few steps that need `sudo` or hands.
 
-The tests on real file systems format loop devices through udisks2, which needs those rights, so they don't run on the host: they run in CI and on the VMs. In a VM they need a polkit rule for udisks2, as CI and the old Mint VM have *(not tried yet, T-128)*.
+The tests on real file systems format loop devices through udisks2, which needs those rights, so they don't run on the host: they run in CI and on the VMs. In a VM they need a polkit rule for udisks2, as CI has, which the smoke test installs (T-128).
 
 ## The containers
 
@@ -106,10 +106,20 @@ Claude uses the driver to drive the window in every guest, and the smoke test us
 | Unit tests, clippy | The host, each container, CI | Claude, CI | Every change |
 | Tests on real file systems | CI, the VMs | CI, Claude over SSH | Every pull request, and when needed |
 | Packages install and find their libraries | Clean container images, CI | `containers/package.sh` | Every pull request |
-| Smoke test | Every VM | The driver, without Claude | Before each release *(not tried yet, T-128)* |
+| Smoke test | Every VM | `vms/smoke.py`, without Claude | Before each release |
 | Release checklist ([ReleaseChecklist.md](projectmgt/ReleaseChecklist.md)) | Each distribution's VM | Claude, with the user | Before each release |
 
-**The smoke test** reverts a VM to `clean`, installs the package as a user would (`apt install ./babawus.deb` or `dnf install ./babawus.rpm`), starts Babawus, plugs in an emulated stick and checks that it shows up, and runs the tests on real file systems, built in that distribution's container *(not tried yet, T-128)*.
+**The smoke test**, `vms/smoke.py`, tries the packages on every guest, one after another, without Claude (T-128). For each guest it:
+
+1. reverts it to `clean`, and sets its clock, which stood still in the snapshot;
+2. installs the package as a user would (`apt-get install ./babawus….deb` or `dnf install ./babawus….rpm`);
+3. starts Babawus with `--debug=sticks`, plugs in an emulated exFAT stick labelled `SMOKE`, checks that Babawus lists it, saves a screenshot, pulls the stick out, and checks that Babawus no longer lists it;
+4. installs the tools that the tests on real file systems use, and a polkit rule that lets `tester` use udisks2 from SSH, outside the desktop session;
+5. runs the tests on real file systems, built in that distribution's container by `containers/build-tests.sh` (Mint's in Ubuntu 24.04's).
+
+The tools and the rule come only after Babawus has been tried, so that they can't hide a dependency missing from a package, and the `clean` snapshot has neither, so that the checklist runs with no rights a user wouldn't have (issue 170). It takes the packages from `target/containers/packages/`, where `containers/package.sh` leaves them, or from the folder given with `--packages`. Each guest is left running as the test left it, and its log and screenshot go to `target/smoke/`. All five guests take about 4 minutes.
+
+**`--debug`** lets a test ask Babawus what it sees, rather than compare screenshots, which differ between desktops. `babawus --debug=sticks` prints a line to standard error each time the start screen reads the list of sticks, such as `Babawus debug sticks: listed "SMOKE"`. More topics can be added to the same option, as a comma-separated list; an unknown topic is reported and ignored. It is for testing, so the Help and the README don't mention it (issue 170).
 
 **The release checklist** is run on each distribution's VM. Claude drives the window through the driver, GNOME on Wayland included, and checks the rest over SSH. The user does what needs hands, such as pulling out a real stick, and types passwords (issue 170).
 
@@ -119,7 +129,7 @@ There is no automated test suite for the window: the logic behind each screen is
 
 1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)).
 2. GitHub builds the `.deb` and the `.rpm` *(not tried yet, T-129)*.
-3. The smoke test runs on every VM, on those packages *(not tried yet, T-128)*.
+3. The smoke test runs on every VM, on those packages.
 4. The release checklist runs on each distribution's VM, on the same packages.
 5. The version is tagged, and the GitHub release gets both packages.
 

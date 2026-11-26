@@ -15,6 +15,7 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::time::SystemTime;
 
+use babawus_core::debug;
 use babawus_core::fs::RealFs;
 use babawus_core::language::{self, Languages};
 use babawus_core::platform::{self, ComputerLock, Taken};
@@ -32,6 +33,12 @@ const LOGO_SIZE: i32 = 64;
 
 fn main() -> glib::ExitCode {
     let mut args: Vec<String> = std::env::args().collect();
+    // `--debug=sticks` and the like print what Babawus sees, for tests (T-128).
+    let (debugging, problems) = debug::take(&mut args);
+    for problem in problems {
+        eprintln!("Babawus: {problem}");
+    }
+    window::set_debug(debugging);
     // With `--checklastbackup`, Babawus only opens if the last backup is too long ago, and then
     // first asks (issue 137). That is decided before anything is shown, so that
     // otherwise it closes without a trace.
@@ -74,7 +81,7 @@ fn main() -> glib::ExitCode {
             None => activate(app, &lock),
         }
     });
-    // GTK doesn't know the option, so it is left out of what GTK sees.
+    // GTK doesn't know the options, so they are left out of what GTK sees.
     app.run_with_args(&args)
 }
 

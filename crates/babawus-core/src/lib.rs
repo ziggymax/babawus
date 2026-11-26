@@ -8,6 +8,7 @@ pub mod choose_screen;
 pub mod config;
 pub mod copy;
 pub mod coverage_screen;
+pub mod debug;
 pub mod exclude;
 pub mod format;
 pub mod format_screen;

@@ -540,6 +540,10 @@ Formatting cannot be cancelled once step 1 has started. Ext4 takes about a minut
 - In the media list, a medium with a live lock shows "Backup in progress (by `<user>`)", and a backup can't be started on it. If the lock has become live since the list was shown, a backup that is started does nothing, gives no verdict, and the list shows the same.
 - After a backup, the lock is removed after the end entry has been written to the log.
 
+### Output for tests
+
+Started with `--debug=<topics>`, a comma-separated list, Babawus prints what it sees to standard error, so that a test can check it without looking at the screen (issue 170, T-128). The only topic is `sticks`: each time the start screen reads the list of sticks, a line such as `Babawus debug sticks: listed "BACKUP-A", "SMOKE"`, or `listed none`, followed by `; also plugged in: one that isn't opened` or `one that can't be used` when such a stick is there. An unknown topic is reported on standard error and ignored. The option is taken out before GTK sees the arguments, as `--checklastbackup` is, and it is not in the Help or the README, since it is for testing.
+
 ### Format of the configuration file
 
 `.babawus/babawus_config` is a TOML file, encoded in UTF-8, with LF line endings and a line ending after the last line.

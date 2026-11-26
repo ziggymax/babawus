@@ -7,9 +7,9 @@
 #   containers/check.sh --list          the names
 #
 # The tests on real file systems need udisks2 and loop devices, so they don't run here, only on
-# the CI runner and on the Mint VM. Build output and downloaded crates are kept per distribution in
-# target/containers/, so that a second run only builds what changed. The distributions are listed
-# in common.sh.
+# the CI runner and in the test VMs (vms/smoke.py). Build output and downloaded crates are kept
+# per distribution in target/containers/, so that a second run only builds what changed. The
+# distributions are listed in common.sh.
 set -eu
 . "$(dirname "$0")/common.sh"
 
