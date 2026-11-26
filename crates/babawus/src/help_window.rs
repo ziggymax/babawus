@@ -15,7 +15,7 @@ use gtk4::{
 };
 
 const WIDTH: i32 = 640;
-const HEIGHT: i32 = 700;
+const HEIGHT: i32 = 640;
 const MARGIN: i32 = 12;
 /// A match is scrolled to this far down the window, so that the lines above it show too.
 const MATCH_POSITION: f64 = 0.3;

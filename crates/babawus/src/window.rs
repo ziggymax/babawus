@@ -420,10 +420,11 @@ pub fn show(app: &Application) {
 
     let window = ApplicationWindow::builder()
         .application(app)
-        // Opens at 700 × 768 with its title bar, assuming Full HD screens (issue 118). A stick's
-        // buttons wrap onto centred lines when they don't fit on one (issue 165).
+        // Opens at 700 × 680 with its title bar, which fits a screen 800 high with a top bar or a
+        // panel, and is just enough for "Prepare a stick" without scrolling (issues 118, 173). A
+        // stick's buttons wrap onto centred lines when they don't fit on one (issue 165).
         .default_width(700)
-        .default_height(768)
+        .default_height(680)
         .titlebar(&header)
         .child(&screens)
         .build();
