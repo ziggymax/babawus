@@ -38,11 +38,12 @@ The steps below are the same on every distribution, except where they point to t
 
 ## Installing
 
-- [ ] Install the package from Downloads, as the table says. → On Mint, Captain shows "Basic Backup With Usb Storage" (it capitalises every word), and on Ubuntu, App Center shows "babawus" and "Basic backup with USB storage"; below it, three short paragraphs about Babawus. It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
+- [ ] Install the package from Downloads, as the table says. → On Mint, Captain shows "Basic Backup With Usb Storage" (it capitalises every word), and on Ubuntu, App Center shows "babawus" and "Basic backup with USB storage"; below it, three short paragraphs about Babawus. (App Center also shows "License: unknown" and a blank icon, as for every package from outside it; issue 175.) It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
 - [ ] Find Babawus, as the table says. → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see issue 101). Right after installing, the search may need a few seconds to find it.
 - [ ] Start it from the menu. → A window titled "Backup" opens. With no stick plugged in, it says "Plug in your backup stick".
 - [ ] Start it again from the menu while it is open. → No second window: the open one comes to the front.
 - [ ] In a terminal, run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml`.
+- [ ] Fedora only: open Software, choose "Installed", then "Backup". → The page shows the elephant, "Steen Kroeyer", the README's screenshot, "Back up files to USB media" (the menu entry's comment) above the three paragraphs about Babawus, the version, "released under the MIT license", the project website and "Report an Issue" (issue 175).
 
 ## Language
 

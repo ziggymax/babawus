@@ -129,7 +129,7 @@ There is no automated test suite for the window: the logic behind each screen is
 
 ## A release, step by step
 
-1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main. **In the same pull request, the README's "Supported platforms" is brought up to date** (T-139, issue 174): the distributions, desktops and packages the release supports, and how its packages are tested, so that the commit that is tagged carries it. A note such as "Until 1.2.0 is released, …" goes once that release is made.
+1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main. **In the same pull request, the README's "Supported platforms" is brought up to date** (T-139, issue 174): the distributions, desktops and packages the release supports, and how its packages are tested, so that the commit that is tagged carries it. A note such as "Until 1.2.0 is released, …" goes once that release is made. **The same pull request adds the release at the top of `<releases>` in `crates/babawus/assets/io.github.ziggymax.Babawus.metainfo.xml`**, `<release version="<version>" date="<the day it is released>"/>` (issue 175); `tests/metainfo.rs` fails without it. Interim versions get none.
 2. CI builds the `.deb` and the `.rpm` for main's commit and keeps them, with `SHA256SUMS` (T-129). `vms/fetch-packages.sh` downloads them into `target/github-packages/<commit>/` and checks the sums.
 3. The smoke test runs on every VM, on those packages: `vms/smoke.py --packages target/github-packages/<commit>`.
 4. The release checklist runs on each distribution's VM, on the same packages.

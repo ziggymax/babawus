@@ -5,6 +5,7 @@ version.workspace = true
 edition.workspace = true
 publish.workspace = true
 license.workspace = true
+homepage.workspace = true
 
 [dependencies]
 babawus-core.workspace = true
@@ -13,7 +14,8 @@ gtk4.workspace = true
 [package.metadata.deb]
 maintainer = "Steen K <steen@kroeyer.net>"
 section = "utils"
-# Shown below the summary by the installer (issue 111).
+# Shown below the summary by the installer (issue 111). The metainfo has the same paragraphs
+# (issue 175, tests/metainfo.rs).
 extended-description = """\
 Babawus backs up your important files to a USB stick, with one button.
 
@@ -28,6 +30,8 @@ assets = [
     ["target/release/babawus", "usr/bin/", "755"],
     ["assets/io.github.ziggymax.Babawus.desktop", "usr/share/applications/", "644"],
     ["assets/io.github.ziggymax.Babawus.svg", "usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg", "644"],
+    # For software centres (issue 175).
+    ["assets/io.github.ziggymax.Babawus.metainfo.xml", "usr/share/metainfo/", "644"],
     # The language files, read at start (issue 147).
     ["../../languages/*.toml", "usr/share/babawus/languages/", "644"],
     # The licences of the crates compiled into Babawus, made by containers/licences.sh (T-130).
@@ -44,6 +48,8 @@ assets = [
     { source = "target/release/babawus", dest = "/usr/bin/babawus", mode = "755" },
     { source = "assets/io.github.ziggymax.Babawus.desktop", dest = "/usr/share/applications/io.github.ziggymax.Babawus.desktop", mode = "644" },
     { source = "assets/io.github.ziggymax.Babawus.svg", dest = "/usr/share/icons/hicolor/scalable/apps/io.github.ziggymax.Babawus.svg", mode = "644" },
+    # For GNOME Software (issue 175).
+    { source = "assets/io.github.ziggymax.Babawus.metainfo.xml", dest = "/usr/share/metainfo/io.github.ziggymax.Babawus.metainfo.xml", mode = "644" },
     # The language files, read at start (issue 147).
     { source = "../../languages/*.toml", dest = "/usr/share/babawus/languages/", mode = "644" },
     # Fedora keeps licences here (issue 171).
@@ -57,3 +63,7 @@ udisks2 = "*"
 exfatprogs = "*"
 e2fsprogs = "*"
 acl = "*"
+
+[dev-dependencies]
+# tests/metainfo.rs reads Cargo.toml.
+toml.workspace = true
