@@ -37,7 +37,7 @@ use gtk4::{
 };
 
 const WIDTH: i32 = 1000;
-const HEIGHT: i32 = 700;
+const HEIGHT: i32 = 640;
 const MARGIN: i32 = 24;
 const SPACING: i32 = 12;
 /// Where the divider between the tree and the versions starts.
