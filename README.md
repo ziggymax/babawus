@@ -4,6 +4,20 @@
 
 **BA**sic **BA**ckup **W**ith **U**sb **S**torage
 
+## Contents
+
+- [General concept](#general-concept)
+- [Getting your files back](#getting-your-files-back)
+- [A reminder at login](#a-reminder-at-login)
+- [Adding a language](#adding-a-language)
+- [Built-in help](#built-in-help)
+- [Choice of file system](#choice-of-file-system)
+- [Supported platforms](#supported-platforms)
+- [Installing and uninstalling](#installing-and-uninstalling)
+- [For developers](#for-developers)
+- [Document map](#document-map)
+- [Licence](#licence)
+
 Babawus is an application designed to make it easy to maintain backups of important files on detachable USB media (USB sticks). Think of it as the backup solution you might set up for your Gramps. Once it has been set up, all Gramps has to do is (and the order of the first two steps does not matter, should Gramps get confused):
 
 1. Insert their USB stick
@@ -70,6 +84,27 @@ To uninstall Babawus, run `sudo apt remove babawus`, or remove it in the Softwar
 ## For developers
 
 [DevEnvSetup.md](DevEnvSetup.md) explains how to build, test and package Babawus, and how to set up the development environment. [TestSetup.md](TestSetup.md) explains how Babawus is built, tested and released on every distribution: the containers, CI, the VMs and how they are driven.
+
+## Document map
+
+Every document in the project, and who it is for.
+
+| Document | For | What it holds |
+| --- | --- | --- |
+| [README.md](README.md) | Everyone | This page: what Babawus is, what it protects against, and where to read on |
+| [UserGuide.md](UserGuide.md) | Users | The practical details: setting up the reminder at login, where to find a stick's log, and what is left behind after uninstalling |
+| [AddingALanguage.md](AddingALanguage.md) | Translators | How to write a language file for a new language and put it in place, without a new build |
+| [DevEnvSetup.md](DevEnvSetup.md) | Developers | The steps for setting up the host and the test VMs, the commands for building and testing, and what was learned along the way |
+| [TestSetup.md](TestSetup.md) | Developers | How Babawus is built, tested and released on every distribution: the containers, CI, the packages, the VMs, the driver and the smoke test, and why |
+| [Concept.md](projectmgt/Concept.md) | Everyone | What Babawus is and why: its purpose and limits, who it is for, and its everyday and advanced functions |
+| [Requirements.md](projectmgt/Requirements.md) | Developers | The authoritative description of how Babawus behaves, with the glossary, the user stories and the technical requirements |
+| [ReleasePlanning.md](projectmgt/ReleasePlanning.md) | Developers | The latest release, the plan for the next one with its interim versions, and ideas for later releases |
+| [ReleaseChecklist.md](projectmgt/ReleaseChecklist.md) | Testers | The manual checklist run on real sticks before each release |
+| [Tasks-Open.md](projectmgt/Tasks-Open.md) | Developers | The central list of outstanding work |
+| [Tasks-Done.md](projectmgt/Tasks-Done.md) | Developers | The finished tasks, in order, each with the pull request that finished it |
+| [Issues-Unsettled.md](projectmgt/Issues-Unsettled.md) | Developers | The design questions that are still open |
+| [Issues-Resolved.md](projectmgt/Issues-Resolved.md) | Developers | The design questions that have been decided, with the decisions and the reasons for them |
+| [LICENSE](LICENSE) | Everyone | Babawus's licence, MIT |
 
 ## Licence
 
