@@ -262,7 +262,7 @@ As a user, if the medium runs out of space during a backup, or a file to be copi
 
 ### Set the number of older versions to keep
 
-As a user, under Advanced, I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N), for each backup profile, because some accounts' files change more often, or matter more, than others (issue 136). N is between 1 and 99, and 10 for a new backup profile. N = 0 is not allowed, because it would remove the protection against accidentally overwritten files. When I lower N, the extra versions are removed on the next backup (see "Handling of file versioning"). That way I can balance history against space on the medium.
+As a user, under Advanced, I want to set, in the configuration of a medium, how many older versions of each file Babawus keeps (N), for each backup profile, because some accounts' files change more often, or matter more, than others (issue 136). N is between 1 and 99, and 10 for a new backup profile. N = 0 is not allowed, because it would remove the protection against accidentally overwritten files. When I lower N, the extra versions are removed on the next backup (see "Handling of file versioning"), a changed file's before its new copy is written, so that lowering N makes room on a full medium (issue 177). That way I can balance history against space on the medium.
 
 ### Read the Help
 
@@ -346,7 +346,7 @@ Two kinds of name clashes are handled like this:
 
 The timestamp in an older version's name is the time the version was replaced on the medium (the backup time), in the form `YYYY-MM-DD_HHMMSS`, in UTC. It is not the file's modification time, so the order of the names matches the order in which versions were added, as long as the computer's clock is right. UTC is used because local time can go backwards, when the clocks change in autumn or when a computer moves west, and pruning would then remove the wrong version. This means that a name can differ from the local time by some hours. The file itself keeps its own modification time, which an ordinary file manager shows as usual, in local time. So the name says when a version was replaced, and the file says when it was last edited.
 
-When a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`):
+When a newer version of a file needs to be written, this algorithm is used (assume the file is named `userfile.ext`). First, if `userfile[]ext` holds more than N older versions, the oldest are removed until N remain, as in the last step, so that a lowered N makes room before the file is checked to fit (issue 177):
 
 1. The source file is copied to a temporary file in `.babawus/tmp/` with a unique name, given the source file's modification time, and flushed to the medium (`fsync`) as it is copied. See "Writing a new copy safely".
 1. It is checked if a subfolder called `userfile[]ext` exists in the folder where `userfile.ext` resides - if not it is created.

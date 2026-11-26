@@ -32,6 +32,8 @@ struct Test {
     format: Format,
     source_dir: PathBuf,
     clock: Mutex<String>,
+    /// The number of older versions to keep.
+    keep: usize,
 }
 
 impl Test {
@@ -49,6 +51,7 @@ impl Test {
             format,
             source_dir,
             clock: Mutex::new("2026-11-03_175400".to_owned()),
+            keep: 2,
         }
     }
 
@@ -66,7 +69,15 @@ impl Test {
         let now = || self.clock.lock().unwrap().clone();
         let cancel = AtomicBool::new(false);
         let root = self.medium.path().to_owned();
-        let mut copier = FileCopier::new(&RealFs, &RealFs, root, self.format, 2, &now, &cancel);
+        let mut copier = FileCopier::new(
+            &RealFs,
+            &RealFs,
+            root,
+            self.format,
+            self.keep,
+            &now,
+            &cancel,
+        );
         copier.empty_temp_folder()?;
         let visit = copier.visit(&self.source(), Path::new(TARGET), &mut |_| {})?;
         copier.flush_medium()?;
@@ -150,6 +161,35 @@ fn stops_when_a_file_does_not_fit(format: Format) {
     assert!(!test.newest().exists());
 }
 
+fn a_lowered_limit_makes_room_on_a_full_medium(format: Format) {
+    // Issue 177: the versions beyond the limit go before the new copy is checked to fit.
+    let mut test = Test::new(format);
+    test.keep = 10;
+    for version in 0..3_u64 {
+        test.write_source(
+            &vec![version as u8; 8 * MIB as usize],
+            time(1_600_000_000 + version * 100),
+        );
+        *test.clock.lock().unwrap() = format!("2026-11-0{}_080000", version + 1);
+        assert_eq!(test.visit(), Ok(COPIED));
+    }
+    test.write_source(&vec![3; 8 * MIB as usize], time(1_600_000_300));
+    *test.clock.lock().unwrap() = "2026-11-04_080000".to_owned();
+    assert_eq!(test.visit(), Err(Stop::MediumFull));
+
+    test.keep = 1;
+    assert_eq!(
+        test.visit(),
+        Ok(Visit::Copied(Pruned {
+            removed: 2,
+            failed: false
+        }))
+    );
+
+    assert_eq!(fs::read(test.newest()).unwrap(), vec![3; 8 * MIB as usize]);
+    assert_eq!(test.versions(), ["report[2026-11-04_080000].pdf"]);
+}
+
 fn a_file_from_before_1980_is_not_copied_again(format: Format) {
     let test = Test::new(format);
     test.write_source(b"old file", time(1000));
@@ -192,6 +232,7 @@ on_both_file_systems! {
     prunes_to_the_limit: exfat_prunes, ext4_prunes;
     copies_a_file_of_several_chunks: exfat_copies_chunks, ext4_copies_chunks;
     stops_when_a_file_does_not_fit: exfat_stops_when_full, ext4_stops_when_full;
+    a_lowered_limit_makes_room_on_a_full_medium: exfat_lowered_limit_makes_room, ext4_lowered_limit_makes_room;
     a_file_from_before_1980_is_not_copied_again: exfat_old_file, ext4_old_file;
     a_file_from_the_far_future_is_not_copied_again: exfat_future_file, ext4_future_file;
 }
