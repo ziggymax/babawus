@@ -24,7 +24,6 @@ Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributi
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-138 | ReleaseChecklist.md gets what differs per distribution, so that it can be run on each VM | Todo | Issue 174 |
 | T-139 | The README says which platforms are supported and how and where the `.deb` and the `.rpm` were tested, its "A reminder at login" points to the tick in the menu (T-136) rather than to setting up the desktop, and its Document map is sorted by who a document is for: Everyone, Users, Translators, Testers, Developers. The release procedure gets a fixed step that brings the README's platforms up to date and puts the same, with how and where the packages were tested, into the release message | Todo | Issue 174 |
 | T-140 | Raise the version to 1.2.0-alpha.2, and tag it on main | Todo | Issue 174 |
 
