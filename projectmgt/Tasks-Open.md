@@ -20,7 +20,14 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). The test VMs of 1.2.0 are done too (T-124 to T-129, T-132, T-133; issue 170): three guests, a smoke test, and CI keeping the packages a release is made from. 1.2.0-alpha.2, GNOME, is done too (T-135 to T-140; issue 174). T-141, AppStream metadata, is done too (issue 175). Next is the release of 1.2.0: the smoke test and the checklist on every distribution, on the packages GitHub built, as "A release, step by step" in [TestSetup.md](../TestSetup.md) says; the release's own tasks are added when that work begins.
+Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). The test VMs of 1.2.0 are done too (T-124 to T-129, T-132, T-133; issue 170): three guests, a smoke test, and CI keeping the packages a release is made from. 1.2.0-alpha.2, GNOME, is done too (T-135 to T-140; issue 174). T-141, AppStream metadata, is done too (issue 175). Next is the release of 1.2.0 (issue 176), as "A release, step by step" in [TestSetup.md](../TestSetup.md) says: the version 1.2.0 (T-142, done), then the smoke test and the checklist on every distribution, on the packages GitHub built for that commit, and the release.
+
+| ID | Task | Status | Source |
+| --- | --- | --- | --- |
+| T-143 | Run the smoke test on every guest, and the whole release checklist on Linux Mint 22.3, on the 1.2.0 packages GitHub built for T-142's commit, recorded in an issue "Release 1.2.0 checklist on Linux Mint 22.3" | Todo | Issue 176 |
+| T-144 | Run the whole release checklist on Ubuntu 26.04, on the same packages, recorded in an issue "Release 1.2.0 checklist on Ubuntu 26.04" | Todo | Issue 176 |
+| T-145 | Run the whole release checklist on Fedora 45, on the same packages, recorded in an issue "Release 1.2.0 checklist on Fedora 45" | Todo | Issue 176 |
+| T-146 | Release 1.2.0: the annotated tag `v1.2.0` on T-142's commit, and a GitHub release with that commit's `.deb`, `.rpm` and `SHA256SUMS` and the notes with the fixed parts, reviewed by you; ReleasePlanning.md names 1.2.0 as the latest release | Todo | Issue 176 |
 
 ## Needs a decision
 
