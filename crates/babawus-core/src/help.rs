@@ -410,7 +410,7 @@ Free some space.",
 
     #[test]
     fn the_numbers_without_an_entry_are_found() {
-        let text: String = (1..=62)
+        let text: String = (1..=63)
             .filter(|number| ![3, 40].contains(number))
             .map(|number| format!("#{number} Something.\n"))
             .collect();

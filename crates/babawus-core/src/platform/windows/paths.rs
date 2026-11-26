@@ -13,6 +13,10 @@ pub fn settings_file() -> PathBuf {
     PathBuf::new()
 }
 
+pub fn autostart_folder() -> PathBuf {
+    PathBuf::new()
+}
+
 pub fn last_backup_file() -> PathBuf {
     PathBuf::new()
 }

@@ -13,6 +13,7 @@ WindowTitle = "Backup"
 Menu = "Menu"
 MenuLanguage = "Sprog"
 MenuAdvanced = "Avanceret"
+MenuReminder = "Påmind mig ved login"
 MenuAbout = "Om Babawus"
 AdvancedMarker = "Avanceret"
 AdvancedMarkerTooltip = "De avancerede funktioner vises. Vælg »Avanceret« i menuen igen for at skjule dem."
@@ -217,7 +218,7 @@ SetupNewerFormat_48 = "Opsætningen på dette USB-stik kræver en nyere Babawus.
 SetupNotBabawus_49 = "Dette USB-stik har ikke længere nogen Babawus-opsætning."
 SetupOlderVersions = "Ældre versioner, der gemmes:"
 SetupRunCheckDays = "Påmindelse efter dage uden backup:"
-SetupRunCheckDaysDetail = "Når denne konto logger ind, kan Babawus minde om at tage backup, hvis den seneste backup er ældre end så mange dage. 0 betyder aldrig."
+SetupRunCheckDaysDetail = "Når denne konto logger ind, kan Babawus minde om at tage backup, hvis den seneste backup er ældre end så mange dage, når \"Påmind mig ved login\" er slået til i menuen under \"Avanceret\". 0 betyder aldrig."
 SetupOlderVersionsDetail = "Når en fil ændres, gemmes dens tidligere kopier, op til så mange. Færre giver mere plads på USB-stikket."
 SetupHere = "Dig på denne computer"
 SetupNoComputerId_50 = "Denne computer har intet id, så den kan ikke sættes op."
@@ -349,6 +350,7 @@ RestoreInTheWay_59 = "Noget andet med det navn står i vejen"
 RestoreFull_60 = "Disken er fuld, så gendannelsen stoppede."
 RestoreOnStick_61 = "Den mappe ligger på USB-stikket, og Babawus gendanner aldrig til USB-stikket. Vælg en anden mappe."
 RestoreCantRead_62 = "Backuppen på dette USB-stik kan ikke læses. Luk dette vindue, og prøv igen."
+ReminderSwitchFailed_63 = "Påmindelsen ved login kunne ikke ændres: {error}"
 
 Bytes = "{size} byte"
 Kilobytes = "{size} kB"
@@ -398,6 +400,8 @@ Du kan også åbne USB-stikket i filhåndteringen: dine filer ligger i mappen "b
 # Avancerede funktioner
 
 Under "{MenuAdvanced}" i menuen ligger de funktioner, der sætter et USB-stik op: "{Prepare}" sletter alt på et USB-stik og gør det klar til Babawus, og "{ChangeSetup}" vælger, hvad der tages backup af, og for hvilke computere og konti. En fejl her kan koste backups, så Babawus spørger først. "{MenuAdvanced}" slås fra igen, når Babawus lukkes.
+
+Med "{MenuReminder}", i menuen, mens "{MenuAdvanced}" er slået til, ser Babawus ved hvert login efter, om din seneste backup er for længe siden, og tilbyder i så fald at starte en. Hvor mange dage der er for længe, indstilles for hvert USB-stik under "{ChangeSetup}". Det virker på alle skriveborde, og en post, du selv har lavet i skrivebordets "Startprogrammer", tæller også med.
 
 # Meddelelser
 
@@ -588,4 +592,7 @@ Vælg en mappe på computeren eller på en anden disk.
 
 #62
 Træk USB-stikket ud, og sæt det i igen. Sker det igen, så se #6.
+
+#63
+Babawus gemmer påmindelsen i mappen .config/autostart i din hjemmemappe. Tjek, at din konto må skrive der, og prøv igen. Du kan også sætte den op i dit skrivebords "Startprogrammer", som brugervejledningen forklarer.
 """
