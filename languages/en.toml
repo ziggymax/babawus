@@ -14,6 +14,7 @@ WindowTitle = "Backup"
 Menu = "Menu"
 MenuLanguage = "Language"
 MenuAdvanced = "Advanced"
+MenuReminder = "Remind me at login"
 MenuAbout = "About Babawus"
 AdvancedMarker = "Advanced"
 AdvancedMarkerTooltip = "The advanced functions are shown. Choose Advanced in the menu again to hide them."
@@ -219,7 +220,7 @@ SetupNewerFormat_48 = "The setup on this stick needs a newer Babawus. It can't b
 SetupNotBabawus_49 = "This stick has no Babawus setup any more."
 SetupOlderVersions = "Older versions to keep:"
 SetupRunCheckDays = "Remind after days without a backup:"
-SetupRunCheckDaysDetail = "When this account logs in, Babawus can remind it to back up if its last backup is older than this many days. 0 means never."
+SetupRunCheckDaysDetail = "When this account logs in, Babawus can remind it to back up if its last backup is older than this many days, once \"Remind me at login\" is on in the menu, under Advanced. 0 means never."
 SetupOlderVersionsDetail = "When a file changes, its earlier copies are kept, up to this many. Fewer leaves more space on the stick."
 SetupHere = "You on this computer"
 SetupNoComputerId_50 = "This computer has no ID, so it can't be set up."
@@ -351,6 +352,7 @@ RestoreInTheWay_59 = "Something else of that name is in the way"
 RestoreFull_60 = "The disk is full, so the restore stopped."
 RestoreOnStick_61 = "That folder is on the stick, and Babawus never restores to the stick. Choose another folder."
 RestoreCantRead_62 = "The backup on this stick can't be read. Close this window and try again."
+ReminderSwitchFailed_63 = "The reminder at login couldn't be changed: {error}"
 
 Bytes = "{size} bytes"
 Kilobytes = "{size} kB"
@@ -400,6 +402,8 @@ You can also open the stick in the file manager: your files are in the folder "b
 # Advanced functions
 
 Under {MenuAdvanced} in the menu are the functions that set up a stick: "{Prepare}" erases a stick and makes it ready for Babawus, and "{ChangeSetup}" chooses what is backed up, and for which computers and accounts. A mistake here can cost backups, so Babawus asks first. {MenuAdvanced} turns off again when Babawus is closed.
+
+{MenuReminder}, in the menu while {MenuAdvanced} is on, makes Babawus look at each login whether your last backup is too long ago, and if so offer to start one. How many days are too long is set for each stick, under "{ChangeSetup}". It works on every desktop, and an entry you made yourself in the desktop's "Startup Applications" counts too.
 
 # Messages
 
@@ -590,4 +594,7 @@ Choose a folder on the computer, or on another disk.
 
 #62
 Pull the stick out and plug it back in. If it happens again, see #6.
+
+#63
+Babawus keeps the reminder in the folder .config/autostart in your home folder. Check that your account may write there, and try again. You can also set it up in your desktop's "Startup Applications", as the user guide explains.
 """

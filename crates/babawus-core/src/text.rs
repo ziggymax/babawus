@@ -34,6 +34,7 @@ texts! {
     Menu,
     MenuLanguage,
     MenuAdvanced,
+    MenuReminder,
     MenuAbout,
     AdvancedMarker,
     AdvancedMarkerTooltip,
@@ -369,6 +370,7 @@ texts! {
     RestoreFull,
     RestoreOnStick,
     RestoreCantRead,
+    ReminderSwitchFailed,
 
     Bytes,
     Kilobytes,
@@ -455,6 +457,7 @@ impl Text {
             Self::RestoreFull => 60,
             Self::RestoreOnStick => 61,
             Self::RestoreCantRead => 62,
+            Self::ReminderSwitchFailed => 63,
             _ => return None,
         })
     }
@@ -590,11 +593,11 @@ mod tests {
     use crate::language::testing::{english, german};
 
     #[test]
-    fn the_numbers_run_from_1_to_62_with_none_twice() {
+    fn the_numbers_run_from_1_to_63_with_none_twice() {
         let mut numbers: Vec<u16> = Text::ALL.iter().filter_map(|text| text.number()).collect();
         numbers.sort_unstable();
 
-        assert_eq!(numbers, (1..=62).collect::<Vec<_>>());
+        assert_eq!(numbers, (1..=63).collect::<Vec<_>>());
     }
 
     #[test]

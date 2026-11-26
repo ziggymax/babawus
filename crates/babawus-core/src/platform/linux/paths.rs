@@ -23,6 +23,14 @@ pub fn settings_file() -> PathBuf {
     xdg_folder(env::var_os("XDG_CONFIG_HOME").as_deref(), &home, ".config").join(SETTINGS_FILE)
 }
 
+/// The folder of the programs started at the user's login, `autostart` in `$XDG_CONFIG_HOME`,
+/// as the XDG Desktop Application Autostart Specification says, which GNOME and Cinnamon follow
+/// (T-136).
+pub fn autostart_folder() -> PathBuf {
+    let home = home_folder();
+    xdg_folder(env::var_os("XDG_CONFIG_HOME").as_deref(), &home, ".config").join("autostart")
+}
+
 /// The note of the user's last backup, in `$XDG_STATE_HOME`.
 pub fn last_backup_file() -> PathBuf {
     let home = home_folder();

@@ -12,6 +12,7 @@ WindowTitle = "Sicherung"
 Menu = "Menü"
 MenuLanguage = "Sprache"
 MenuAdvanced = "Erweitert"
+MenuReminder = "Beim Anmelden erinnern"
 MenuAbout = "Über Babawus"
 AdvancedMarker = "Erweitert"
 AdvancedMarkerTooltip = "Die erweiterten Funktionen werden angezeigt. Wähle „Erweitert“ im Menü noch einmal, um sie auszublenden."
@@ -216,7 +217,7 @@ SetupNewerFormat_48 = "Die Einrichtung auf diesem Stick braucht ein neueres Baba
 SetupNotBabawus_49 = "Dieser Stick hat keine Babawus-Einrichtung mehr."
 SetupOlderVersions = "Ältere Versionen aufbewahren:"
 SetupRunCheckDays = "Erinnern nach Tagen ohne Sicherung:"
-SetupRunCheckDaysDetail = "Wenn sich dieses Konto anmeldet, kann Babawus daran erinnern, eine Sicherung zu machen, wenn die letzte älter ist als so viele Tage. 0 heißt nie."
+SetupRunCheckDaysDetail = "Wenn sich dieses Konto anmeldet, kann Babawus daran erinnern, eine Sicherung zu machen, wenn die letzte älter ist als so viele Tage, sobald \"Beim Anmelden erinnern\" im Menü unter \"Erweitert\" eingeschaltet ist. 0 heißt nie."
 SetupOlderVersionsDetail = "Wenn sich eine Datei ändert, werden ihre früheren Fassungen aufbewahrt, bis zu dieser Anzahl. Weniger lässt mehr Platz auf dem Stick."
 SetupHere = "Du auf diesem Computer"
 SetupNoComputerId_50 = "Dieser Computer hat keine Kennung und kann deshalb nicht eingerichtet werden."
@@ -348,6 +349,7 @@ RestoreInTheWay_59 = "Etwas anderes mit diesem Namen steht im Weg"
 RestoreFull_60 = "Der Datenträger ist voll, darum wurde das Wiederherstellen angehalten."
 RestoreOnStick_61 = "Dieser Ordner liegt auf dem Stick, und Babawus stellt nie auf dem Stick wieder her. Wähl einen anderen Ordner."
 RestoreCantRead_62 = "Die Sicherung auf diesem Stick kann nicht gelesen werden. Schließ dieses Fenster und versuch es noch einmal."
+ReminderSwitchFailed_63 = "Die Erinnerung beim Anmelden konnte nicht geändert werden: {error}"
 
 Bytes = "{size} Bytes"
 Kilobytes = "{size} kB"
@@ -397,6 +399,8 @@ Du kannst den Stick auch in der Dateiverwaltung öffnen: Deine Dateien liegen im
 # Erweiterte Funktionen
 
 Unter "{MenuAdvanced}" im Menü stehen die Funktionen, mit denen ein Stick eingerichtet wird: "{Prepare}" löscht einen Stick und macht ihn für Babawus bereit, und mit "{ChangeSetup}" wählst du, was gesichert wird und für welche Computer und Konten. Ein Fehler kann hier Sicherungen kosten, deshalb fragt Babawus vorher nach. "{MenuAdvanced}" schaltet sich wieder aus, wenn Babawus geschlossen wird.
+
+Mit "{MenuReminder}", im Menü, solange "{MenuAdvanced}" eingeschaltet ist, schaut Babawus bei jeder Anmeldung, ob deine letzte Sicherung zu lange her ist, und bietet dann an, eine zu starten. Wie viele Tage zu lange sind, wird für jeden Stick unter "{ChangeSetup}" eingestellt. Das klappt auf jedem Desktop, und ein Eintrag, den du selbst in den "Startprogrammen" des Desktops angelegt hast, zählt auch.
 
 # Meldungen
 
@@ -587,4 +591,7 @@ Wähl einen Ordner auf dem Computer oder auf einem anderen Datenträger.
 
 #62
 Zieh den Stick heraus und steck ihn wieder ein. Passiert es wieder, siehe #6.
+
+#63
+Babawus legt die Erinnerung im Ordner .config/autostart in deinem persönlichen Ordner ab. Prüf, ob dein Konto dort schreiben darf, und versuch es noch einmal. Du kannst sie auch in den "Startprogrammen" deines Desktops einrichten, wie es das Benutzerhandbuch erklärt.
 """

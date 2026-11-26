@@ -3,6 +3,7 @@
 //!
 //! This crate must stay free of UI code.
 
+pub mod autostart;
 pub mod backup_screen;
 pub mod choose_screen;
 pub mod config;

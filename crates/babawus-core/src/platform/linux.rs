@@ -16,8 +16,8 @@ pub(crate) use flush::{OWN_PROGRAM_FILE, program_file};
 pub(crate) use identity::{BOOT_ID_FILE, MACHINE_ID_FILE};
 pub use identity::{boot_id, hostname, is_administrator, machine_id};
 pub use paths::{
-    computer_lock_file, home_folder, installed_languages_folder, last_backup_file, name_from_bytes,
-    settings_file,
+    autostart_folder, computer_lock_file, home_folder, installed_languages_folder,
+    last_backup_file, name_from_bytes, settings_file,
 };
 pub use sticks::Sticks;
 pub use system::{random_bytes, utc_offset};

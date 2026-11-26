@@ -13,6 +13,7 @@ use std::time::{Duration, SystemTime};
 
 use babawus_core::backup_screen::Tracker;
 
+use babawus_core::autostart;
 use babawus_core::coverage_screen::{Gathered, coverage_screen};
 use babawus_core::debug::{self, Debug, Topic};
 use babawus_core::format_screen::{
@@ -508,6 +509,15 @@ fn debugging(topic: Topic) -> bool {
     DEBUG.get().is_some_and(|debug| debug.on(topic))
 }
 
+/// Whether the reminder at login is on, as the autostart folder has it now. A folder that can't
+/// be read counts as off.
+fn reminder_on() -> bool {
+    autostart::is_on(&RealFs, &platform::autostart_folder()).unwrap_or_else(|error| {
+        eprintln!("Babawus could not read the autostart folder: {error}");
+        false
+    })
+}
+
 /// The languages read at start, before any window opens.
 static LANGUAGES: std::sync::OnceLock<Languages> = std::sync::OnceLock::new();
 
@@ -805,6 +815,28 @@ impl Window {
         });
         self.window.add_action(&advanced);
 
+        // "Remind me at login", in the menu under Advanced: an entry in the autostart folder,
+        // which every desktop reads (issue 174). Its tick shows the folder as it is when the
+        // menu opens, since the user may change it in "Startup Applications" meanwhile.
+        let reminder =
+            gio::SimpleAction::new_stateful("reminder", None, &reminder_on().to_variant());
+        let weak = Rc::downgrade(self);
+        reminder.connect_activate(move |action, _| {
+            if let Some(window) = weak.upgrade() {
+                window.switch_reminder(action);
+            }
+        });
+        self.window.add_action(&reminder);
+        let weak = Rc::downgrade(self);
+        self.menu.connect_active_notify(move |menu| {
+            if menu.is_active()
+                && let Some(window) = weak.upgrade()
+                && let Some(action) = window.reminder_action()
+            {
+                action.set_state(&reminder_on().to_variant());
+            }
+        });
+
         // Each row's Eject, with the object path of its medium's file system (issue 134).
         let eject = gio::SimpleAction::new("eject-stick", Some(glib::VariantTy::STRING));
         let weak = Rc::downgrade(self);
@@ -897,6 +929,31 @@ impl Window {
         self.set_advanced(action, false);
     }
 
+    /// The menu's "Remind me at login", a toggle.
+    fn reminder_action(&self) -> Option<gio::SimpleAction> {
+        self.window
+            .lookup_action("reminder")
+            .and_then(|action| action.downcast::<gio::SimpleAction>().ok())
+    }
+
+    /// Turns the reminder at login on or off, the opposite of what the autostart folder has
+    /// now, and says so if that fails (#63).
+    fn switch_reminder(&self, action: &gio::SimpleAction) {
+        let folder = platform::autostart_folder();
+        let result = if reminder_on() {
+            autostart::turn_off(&RealFs, &folder)
+        } else {
+            autostart::turn_on(&RealFs, &folder)
+        };
+        if let Err(error) = result {
+            let language = self.language.get();
+            let message =
+                Text::ReminderSwitchFailed.fill(language, &[("error", &error.to_string())]);
+            self.tell(&message, || {});
+        }
+        action.set_state(&reminder_on().to_variant());
+    }
+
     /// The menu's Advanced, a toggle.
     fn advanced_action(&self) -> Option<gio::SimpleAction> {
         self.window
@@ -972,6 +1029,9 @@ impl Window {
         let menu = gio::Menu::new();
         menu.append_submenu(Some(Text::MenuLanguage.get(language)), &submenu);
         menu.append(Some(Text::MenuAdvanced.get(language)), Some("win.advanced"));
+        if self.advanced.get() {
+            menu.append(Some(Text::MenuReminder.get(language)), Some("win.reminder"));
+        }
         menu.append(Some(Text::MenuHelp.get(language)), Some("win.help"));
         menu.append(Some(Text::MenuAbout.get(language)), Some("win.about"));
         menu
