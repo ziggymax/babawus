@@ -36,10 +36,9 @@ The next releases start bringing Babawus to more platforms: first other Linux di
 | --- | --- | --- |
 | Linux Mint | 22.x (as now) | `.deb` |
 | Ubuntu | 24.04 LTS and 26.04 LTS | `.deb` |
-| Debian | The current stable version | `.deb` |
 | Fedora | The newest version only | `.rpm` |
 
-Ubuntu 24.04 is close to free: Linux Mint 22 is built on it, with the same packages and GTK 4.14. Ubuntu, Debian and Fedora use GNOME, unlike Mint's Cinnamon, which matters in two places:
+Ubuntu 24.04 is close to free: Linux Mint 22 is built on it, with the same packages and GTK 4.14. Ubuntu and Fedora use GNOME, unlike Mint's Cinnamon, which matters in two places:
 
 - **The reminder at login.** GNOME has no "Startup Applications". `babawus --checklastbackup` stays as it is, and under Advanced, Babawus can also add its own entry in `~/.config/autostart/`, which works on every desktop. Whether to use that, or a desktop's own way, is the advanced user's choice.
 - **Starting Babawus.** GNOME shows no icons on the desktop by default, so the user guide says to pin Babawus to the dock instead.
@@ -48,7 +47,7 @@ Ubuntu 24.04 is close to free: Linux Mint 22 is built on it, with the same packa
 
 **The VMs.** The VMs run under KVM, managed by libvirt in the user's session, in place of VirtualBox. One small driver on the host does the same things to every guest: through libvirt it reverts the guest to a clean snapshot, takes screenshots, clicks and types, and plugs sticks in and out, and through SSH it runs commands. Because the clicks and screenshots are made below the guest, they work on Wayland too. A stick is usually an image file that the guest sees as a USB stick, which makes tests repeatable; real sticks are passed through for the steps that are about hardware. The guests are installed by hand and described in [DevEnvSetup.md](../DevEnvSetup.md). The decisions are in issue 170, and Babawus's own description of the set-up is [TestSetup.md](../TestSetup.md).
 
-**Packages.** One `.deb`, built on Ubuntu 24.04, the oldest of the distributions, serves Mint, both Ubuntus and Debian, as today. Fedora gets one `.rpm`. GitHub builds both, the checklists run on those files, and the same files are attached to the GitHub release (T-129).
+**Packages.** One `.deb`, built on Ubuntu 24.04, the oldest of the distributions, serves Mint and both Ubuntus. Debian was dropped (T-133). Fedora gets one `.rpm`. GitHub builds both, the checklists run on those files, and the same files are attached to the GitHub release (T-129).
 
 **Checklists.** The release checklist runs on a VM for each distribution. Claude drives the window on every one of them through the driver, GNOME on Wayland included, and checks the rest over SSH. The user does what needs hands, such as pulling out a real stick, and types passwords (issue 170). Before the checklist, a smoke test runs on every guest without Claude: it installs the package as a user would, starts Babawus, plugs in an emulated stick, and runs the tests on real file systems (T-128).
 

@@ -200,8 +200,9 @@ impl BlankLoop {
             .unwrap_or_default();
         drop(setting_up);
         let blank = Self { dir, device };
+        // By its path, because Debian leaves /usr/sbin out of a user's PATH (T-128).
         let backing_file = command_output(
-            "losetup",
+            "/usr/sbin/losetup",
             &["--noheadings", "--output", "BACK-FILE", &blank.device],
         );
         check_device(&blank.device, &backing_file, &image).expect("refusing to format");

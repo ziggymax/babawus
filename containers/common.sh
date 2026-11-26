@@ -2,11 +2,10 @@
 # built and run. Sourced, not run.
 
 # Name, Containerfile and image of each distribution. The tags are pinned (issue 169); a new
-# Debian or Fedora is taken up in a task of its own. .github/workflows/ci.yml lists the same names.
+# Ubuntu or Fedora is taken up in a task of its own. Debian is no longer supported (T-133). .github/workflows/ci.yml lists the same names.
 DISTRIBUTIONS="
 ubuntu-24.04 apt docker.io/library/ubuntu:24.04
 ubuntu-26.04 apt docker.io/library/ubuntu:26.04
-debian-13 apt docker.io/library/debian:13
 fedora-45 dnf docker.io/library/fedora:45
 "
 
@@ -34,6 +33,7 @@ build_image() {
     kind=$(echo "$DISTRIBUTIONS" | awk -v n="$1" '$1 == n { print $2 }')
     tag="localhost/babawus-check:$1"
     podman build --quiet --pull=newer --build-arg IMAGE="$image" \
+        --build-arg UBUNTU_MIRROR="${UBUNTU_MIRROR:-}" \
         -f "$here/$kind.Containerfile" -t "$tag" "$here" > /dev/null
     echo "$tag"
 }

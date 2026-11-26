@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-132.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-134 (T-132 is the smaller windows, waiting on its own branch).
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -24,7 +24,6 @@ Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributi
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-128 | A smoke test that runs on every guest without Claude: revert to the clean snapshot, install the package as a user would, start Babawus, plug in an emulated stick and check that it shows up, and run the tests on real file systems, built in that distribution's container | Todo | Issue 170 |
 | T-129 | Let GitHub build the `.deb` and the `.rpm` of a release, so that the checklists run on the very files that are released | Todo | Issue 170 |
 
 ## Needs a decision

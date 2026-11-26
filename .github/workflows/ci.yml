@@ -12,6 +12,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# The Ubuntu containers fetch their packages from the runner's own mirror, which is close by,
+# rather than from Ubuntu's, which on a slow day took a job past its 30 minutes (T-133).
+env:
+  UBUNTU_MIRROR: http://azure.archive.ubuntu.com/ubuntu
+
 jobs:
   check:
     # Linux Mint 22 is based on Ubuntu 24.04, so this has the same GTK version.
@@ -91,7 +96,7 @@ jobs:
       fail-fast: false
       matrix:
         # The names in containers/common.sh.
-        name: [ubuntu-26.04, debian-13, fedora-45]
+        name: [ubuntu-26.04, fedora-45]
     name: check (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v7
@@ -118,7 +123,7 @@ jobs:
         run: containers/package.sh rpm
 
   # The .deb, built in the Ubuntu 24.04 container and installed in clean images of Ubuntu 24.04
-  # and 26.04 and Debian 13, as a user would (T-122, issue 169).
+  # and 26.04, as a user would (T-122, T-133).
   package-deb:
     runs-on: ubuntu-24.04
     timeout-minutes: 30

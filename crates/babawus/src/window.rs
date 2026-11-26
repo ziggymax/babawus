@@ -14,6 +14,7 @@ use std::time::{Duration, SystemTime};
 use babawus_core::backup_screen::Tracker;
 
 use babawus_core::coverage_screen::{Gathered, coverage_screen};
+use babawus_core::debug::{self, Debug, Topic};
 use babawus_core::format_screen::{
     DriveChoice, Failure, can_format, drive_choices, label_problem, result_screen, suggested_label,
     warning,
@@ -492,6 +493,18 @@ pub fn show(app: &Application) {
         }
     });
     this_window.window.present();
+}
+
+/// The test and debug output that is on, from `--debug` (T-128).
+static DEBUG: std::sync::OnceLock<Debug> = std::sync::OnceLock::new();
+
+/// Keeps what `--debug` turned on. Called once, before any window opens.
+pub fn set_debug(debug: Debug) {
+    DEBUG.set(debug).expect("--debug is only read once");
+}
+
+fn debugging(topic: Topic) -> bool {
+    DEBUG.get().is_some_and(|debug| debug.on(topic))
 }
 
 /// The languages read at start, before any window opens.
@@ -1045,6 +1058,9 @@ impl Window {
             return;
         };
         let snapshot = sticks.snapshot();
+        if debugging(Topic::Sticks) {
+            eprintln!("{}", debug::sticks_line(&snapshot));
+        }
         self.unlisted.set(start_screen::unlisted(&snapshot));
         *self.formattable.borrow_mut() = snapshot
             .formattable()
