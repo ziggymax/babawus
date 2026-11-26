@@ -46,7 +46,7 @@ CI runs on every pull request and every push to main, with the same scripts as t
 - **check:** fmt, clippy, the Windows build of `babawus-core`, and all tests, including those on real file systems, directly on an Ubuntu 24.04 runner, where a polkit rule lets the runner use udisks2.
 - **check (ubuntu-26.04, fedora-45):** `containers/check.sh` for each of these. The Fedora job also builds the `.rpm` and installs it in a clean Fedora.
 - **package (deb):** builds the `.deb` in the Ubuntu 24.04 container and installs it on Ubuntu 24.04 and 26.04.
-- **packages:** keeps the `.deb` and the `.rpm` that the jobs above built, with a `SHA256SUMS` file, as the run's artifact `packages`: for 90 days for a push to main, and for 7 days for a pull request (T-129). `vms/fetch-packages.sh [commit]` downloads them and checks the sums.
+- **packages:** keeps the `.deb` and the `.rpm` that the jobs above built, with a `SHA256SUMS` file, as the run's artifact `packages` (T-129). Only the newest of each branch is kept: the job deletes the packages of older runs on the same branch, and its two hand-offs, so that a pull request's packages can be tried on a VM and a release made from main's, without old ones piling up (T-134). `vms/fetch-packages.sh [commit]` downloads them and checks the sums.
 
 The Ubuntu containers set apt up with `containers/apt-setup.sh`: a short timeout and retries, and in CI the runner's own mirror (`UBUNTU_MIRROR`) in place of Ubuntu's, which on a slow day took a job past its 30 minutes (T-133).
 

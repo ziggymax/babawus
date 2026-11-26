@@ -167,12 +167,17 @@ jobs:
 
   # Both packages, with their SHA-256 sums, kept as the run's artifact "packages" (T-129). For a
   # release, the smoke test and the checklist run on the artifact of main's commit, and the same
-  # files are attached to the GitHub release (TestSetup.md, "A release, step by step"). A push to
-  # main keeps it for 90 days, a pull request for 7, so that its packages can be tried on a VM.
+  # files are attached to the GitHub release (TestSetup.md, "A release, step by step"). Only the
+  # newest of each branch is kept, so that a pull request's packages can be tried on a VM and a
+  # release made from main's, without old ones piling up (T-134).
   packages:
     needs: [distribution, package-deb]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # Deleting artifacts needs actions: write, for this job only.
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Fetch both packages
         uses: actions/download-artifact@v8
@@ -192,3 +197,28 @@ jobs:
           path: packages/
           if-no-files-found: error
           retention-days: ${{ github.event_name == 'push' && 90 || 7 }}
+
+      # This run's two hand-offs, and the hand-offs and packages of older runs on the same branch,
+      # older by run ID, so that a slow older run never deletes a newer one's (T-134). A pull request from a fork gets
+      # a token that can't delete, which mustn't fail its checks.
+      - name: Delete the hand-offs and the branch's older packages
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq "
+            .artifacts[]
+            | select(.expired | not)
+            | select(
+                ((.name == \"package-deb\" or .name == \"package-rpm\")
+                  and (.workflow_run.id == $GITHUB_RUN_ID
+                    or (.workflow_run.head_branch == \$ENV.BRANCH
+                      and .workflow_run.id < $GITHUB_RUN_ID)))
+                or (.name == \"packages\" and .workflow_run.head_branch == \$ENV.BRANCH
+                  and .workflow_run.id < $GITHUB_RUN_ID))
+            | \"\\(.id) \\(.name) \\(.workflow_run.id)\"" |
+          while read -r id name run; do
+            echo "Deleting $name of run $run"
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/$id"
+          done
