@@ -21,7 +21,7 @@
 Babawus is an application designed to make it easy to maintain backups of important files on detachable USB media (USB sticks). Think of it as the backup solution you might set up for your Gramps. Once it has been set up, all Gramps has to do is (and the order of the first two steps does not matter, should Gramps get confused):
 
 1. Insert their USB stick
-2. Start Babawus (just put a link to Babawus on their desktop)
+2. Start Babawus (just put a link to Babawus on their desktop, or in their dock)
 3. Click a button
 4. Remove the stick when Babawus says the backup is done.
 
@@ -54,7 +54,7 @@ Choose "Restore files…" for the stick, tick the files and folders you want bac
 
 ## A reminder at login
 
-Babawus can remind a user at login when their last backup is too long ago, and offer to start one. Set your desktop up to run Babawus at login, and Babawus checks whether the last backup is more days ago than configured (7 by default). If not, Babawus quietly closes, but if too many days have passed since the last backup, Babawus asks the user whether a backup should be run. [UserGuide.md](UserGuide.md) explains how to set it up.
+Babawus can remind a user at login when their last backup is too long ago, and offer to start one. Tick "Remind me at login" in the menu, under Advanced, and at each login Babawus checks whether the last backup is more days ago than configured (7 by default). If not, Babawus quietly closes, but if too many days have passed since the last backup, Babawus asks the user whether a backup should be run. It works on every desktop; [UserGuide.md](UserGuide.md) explains it.
 
 ## Adding a language
 
@@ -73,13 +73,34 @@ Babawus allows you to create USB backup media in two different file systems:
 
 ## Supported platforms
 
-This first version of Babawus only runs on Linux (it specifically targets Linux Mint 22.x with the Cinnamon desktop). More will follow, watch this space.
+From Babawus 1.2.0, these Linux distributions are supported, each with the desktop it comes with:
+
+| Distribution | Desktop | Package |
+| --- | --- | --- |
+| Linux Mint 22.x | Cinnamon | `.deb` |
+| Ubuntu 24.04 LTS and 26.04 LTS | GNOME | `.deb` |
+| Fedora 45 | GNOME | `.rpm` |
+
+Until 1.2.0 is released, the latest release, 1.1.1, runs on Linux Mint 22.x only. Windows is planned; macOS is not.
+
+**How the packages are tested.**
+
+- **Every change** is built, and its automated tests run, on each of these distributions, in GitHub's CI. The tests that format and fill real USB file systems run on Ubuntu 24.04, the base of Linux Mint 22. The `.deb` is installed in clean Ubuntu 24.04 and 26.04, and the `.rpm` in a clean Fedora 45, to check that everything it needs comes with it.
+- **Every release** is tested on the very `.deb` and `.rpm` that are released, which GitHub builds. They are installed as a user would in a virtual machine for each distribution, Linux Mint 22.3 (Cinnamon, X11), Ubuntu 26.04 and Fedora 45 (both GNOME, Wayland), and tried there: first by an automated smoke test, which also runs the tests on real file systems, then by hand with the whole [release checklist](projectmgt/ReleaseChecklist.md), on USB sticks. Ubuntu 24.04 has no machine of its own: Linux Mint 22 is built on its packages, so Mint's tests cover them.
+
+Each release's notes say which distributions its files were tested on. [TestSetup.md](TestSetup.md) describes the set-up.
 
 ## Installing and uninstalling
 
-Install Babawus by double-clicking the `.deb` package and choosing "Install Package". Install a newer version the same way: it replaces the old one, and keeps the chosen language and everything on the sticks.
+Download the package for your distribution from the release on GitHub, and install it:
 
-To uninstall Babawus, run `sudo apt remove babawus`, or remove it in the Software Manager. Your backups on the sticks are not touched. A few small files stay behind on the computer; [UserGuide.md](UserGuide.md) lists them and how to remove them.
+- **Linux Mint:** double-click the `.deb`, and choose "Install Package".
+- **Ubuntu:** double-click the `.deb`. App Center opens, warning that the package comes from outside it; choose "Install".
+- **Fedora:** in a terminal, in the folder with the package, run `sudo dnf install ./babawus-<version>-1.x86_64.rpm`. (Fedora's Software can't install a package file that was downloaded.)
+
+Install a newer version the same way: it replaces the old one, and keeps the chosen language and everything on the sticks. Then start Babawus as [UserGuide.md](UserGuide.md) says: it is called "Backup" in the desktop's menus.
+
+To uninstall Babawus, run `sudo apt remove babawus` on Linux Mint and Ubuntu, or `sudo dnf remove babawus` on Fedora. Your backups on the sticks are not touched. A few small files stay behind on the computer; [UserGuide.md](UserGuide.md) lists them and how to remove them.
 
 ## For developers
 
@@ -87,24 +108,24 @@ To uninstall Babawus, run `sudo apt remove babawus`, or remove it in the Softwar
 
 ## Document map
 
-Every document in the project, and who it is for.
+Every document in the project, and who it is for, sorted by who it is for.
 
 | Document | For | What it holds |
 | --- | --- | --- |
 | [README.md](README.md) | Everyone | This page: what Babawus is, what it protects against, and where to read on |
-| [UserGuide.md](UserGuide.md) | Users | The practical details: setting up the reminder at login, where to find a stick's log, and what is left behind after uninstalling |
+| [Concept.md](projectmgt/Concept.md) | Everyone | What Babawus is and why: its purpose and limits, who it is for, and its everyday and advanced functions |
+| [LICENSE](LICENSE) | Everyone | Babawus's licence, MIT |
+| [UserGuide.md](UserGuide.md) | Users | The practical details: starting Babawus on each desktop, setting up the reminder at login, how the files are kept on the stick, where to find a stick's log, and what is left behind after uninstalling |
 | [AddingALanguage.md](AddingALanguage.md) | Translators | How to write a language file for a new language and put it in place, without a new build |
+| [ReleaseChecklist.md](projectmgt/ReleaseChecklist.md) | Testers | The checklist run by hand on each distribution before each release |
 | [DevEnvSetup.md](DevEnvSetup.md) | Developers | The steps for setting up the host and the test VMs, the commands for building and testing, and what was learned along the way |
 | [TestSetup.md](TestSetup.md) | Developers | How Babawus is built, tested and released on every distribution: the containers, CI, the packages, the VMs, the driver and the smoke test, and why |
-| [Concept.md](projectmgt/Concept.md) | Everyone | What Babawus is and why: its purpose and limits, who it is for, and its everyday and advanced functions |
 | [Requirements.md](projectmgt/Requirements.md) | Developers | The authoritative description of how Babawus behaves, with the glossary, the user stories and the technical requirements |
 | [ReleasePlanning.md](projectmgt/ReleasePlanning.md) | Developers | The latest release, the plan for the next one with its interim versions, and ideas for later releases |
-| [ReleaseChecklist.md](projectmgt/ReleaseChecklist.md) | Testers | The manual checklist run on real sticks before each release |
 | [Tasks-Open.md](projectmgt/Tasks-Open.md) | Developers | The central list of outstanding work |
 | [Tasks-Done.md](projectmgt/Tasks-Done.md) | Developers | The finished tasks, in order, each with the pull request that finished it |
 | [Issues-Unsettled.md](projectmgt/Issues-Unsettled.md) | Developers | The design questions that are still open |
 | [Issues-Resolved.md](projectmgt/Issues-Resolved.md) | Developers | The design questions that have been decided, with the decisions and the reasons for them |
-| [LICENSE](LICENSE) | Everyone | Babawus's licence, MIT |
 
 ## Licence
 

@@ -184,4 +184,5 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 ## Afterwards
 
-- [ ] Every box is ticked, or has a task in Tasks-Open.md for what it found. → Close the issue, and release.
+- [ ] Every box is ticked, or has a task in Tasks-Open.md for what it found. → Close the issue.
+- [ ] Once the checklist has run on every distribution: the README's "Supported platforms" on the tested commit names exactly the distributions it ran on, and the release message has "Supported platforms", "How these files were tested", with a link to each distribution's checklist issue, and "Checking the download", as "A release, step by step" in [TestSetup.md](../TestSetup.md) says (issue 174). → Release.
