@@ -2,7 +2,7 @@
 
 This document explains how Babawus is built, tested and released on every distribution it supports, and how the parts fit together. [DevEnvSetup.md](DevEnvSetup.md) has the steps for setting up each machine; this document says what each one is for and why. The decisions are in issues 169 and 170 in [Issues-Resolved.md](projectmgt/Issues-Resolved.md).
 
-The set-up is described as planned. A part that has not been tried yet is marked with the task that proves it, such as *(not tried yet, T-129)*. The mark goes when the task makes the part work, and this document changes if the task finds that something works differently.
+The set-up was first described as planned, with each part that had not been tried yet marked with the task that would prove it. Every part has been tried now (T-126 to T-133). A part added later and not tried yet is marked the same way, such as *(not tried yet, T-140)*, and the mark goes when its task makes the part work.
 
 ## The parts
 
@@ -46,6 +46,7 @@ CI runs on every pull request and every push to main, with the same scripts as t
 - **check:** fmt, clippy, the Windows build of `babawus-core`, and all tests, including those on real file systems, directly on an Ubuntu 24.04 runner, where a polkit rule lets the runner use udisks2.
 - **check (ubuntu-26.04, fedora-45):** `containers/check.sh` for each of these. The Fedora job also builds the `.rpm` and installs it in a clean Fedora.
 - **package (deb):** builds the `.deb` in the Ubuntu 24.04 container and installs it on Ubuntu 24.04 and 26.04.
+- **packages:** keeps the `.deb` and the `.rpm` that the jobs above built, with a `SHA256SUMS` file, as the run's artifact `packages`: for 90 days for a push to main, and for 7 days for a pull request (T-129). `vms/fetch-packages.sh [commit]` downloads them and checks the sums.
 
 The Ubuntu containers set apt up with `containers/apt-setup.sh`: a short timeout and retries, and in CI the runner's own mirror (`UBUNTU_MIRROR`) in place of Ubuntu's, which on a slow day took a job past its 30 minutes (T-133).
 
@@ -56,7 +57,7 @@ The Ubuntu containers set apt up with `containers/apt-setup.sh`: a short timeout
 - Both install Babawus's MIT licence and `THIRD-PARTY-LICENSES`, the licences of the crates it is built from, made with `cargo-about` (issue 171).
 - An interim version such as 1.2.0-alpha.1 is numbered `1.2.0~alpha.1` in both, so that it sorts before 1.2.0.
 
-For a release, GitHub builds both packages, and the smoke test and the checklist run on those very files, which are then attached to the GitHub release *(not tried yet, T-129)*.
+For a release, GitHub builds both packages, and the smoke test and the checklist run on those very files, which are then attached to the GitHub release, with their `SHA256SUMS` (T-129).
 
 ## The VMs
 
@@ -128,11 +129,11 @@ There is no automated test suite for the window: the logic behind each screen is
 
 ## A release, step by step
 
-1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)).
-2. GitHub builds the `.deb` and the `.rpm` *(not tried yet, T-129)*.
-3. The smoke test runs on every VM, on those packages.
+1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main.
+2. CI builds the `.deb` and the `.rpm` for main's commit and keeps them, with `SHA256SUMS` (T-129). `vms/fetch-packages.sh` downloads them into `target/github-packages/<commit>/` and checks the sums.
+3. The smoke test runs on every VM, on those packages: `vms/smoke.py --packages target/github-packages/<commit>`.
 4. The release checklist runs on each distribution's VM, on the same packages.
-5. The version is tagged, and the GitHub release gets both packages.
+5. That commit is tagged, and the GitHub release gets the same three files: `gh release create v<version> --target <commit> --title "Babawus <version>" --notes-file <notes> target/github-packages/<commit>/*`. Nothing is built again, so the released files are the ones that were tested.
 
 ## Not part of the set-up
 
