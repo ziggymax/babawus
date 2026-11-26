@@ -484,6 +484,46 @@ fn a_file_that_does_not_fit_stops_the_run_and_changes_nothing() {
 }
 
 #[test]
+fn versions_beyond_the_limit_are_removed_first_to_make_room() {
+    // N was lowered to 1 while two older versions were kept, and the stick is too full for the
+    // new copy until the extra one is gone (issue 177).
+    let mut setup = Setup::changed();
+    setup.keep = 1;
+    for day in ["01", "02"] {
+        let version = format!("{VERSIONS}/report[2026-10-{day}_120000].pdf");
+        setup.medium.add_file(version, b"12345", time(0));
+    }
+    setup.medium.set_capacity(14);
+
+    let visit = setup.visit();
+
+    assert_eq!(
+        visit,
+        Ok(Visit::Copied(Pruned {
+            removed: 2,
+            failed: false
+        }))
+    );
+    assert_eq!(setup.newest(), b"new");
+    assert_eq!(setup.versions(), ["report[2026-11-03_175400].pdf"]);
+}
+
+#[test]
+fn versions_within_the_limit_are_not_removed_to_make_room() {
+    let setup = Setup::changed();
+    for day in ["01", "02"] {
+        let version = format!("{VERSIONS}/report[2026-10-{day}_120000].pdf");
+        setup.medium.add_file(version, b"12345", time(0));
+    }
+    setup.medium.set_capacity(14);
+
+    assert_eq!(setup.visit(), Err(Stop::MediumFull));
+
+    assert_eq!(setup.newest(), b"old");
+    assert_eq!(setup.versions().len(), 2);
+}
+
+#[test]
 fn running_out_of_space_while_writing_stops_the_run_safely() {
     let setup = Setup::changed();
     let temp = format!("{TEMP}/copy-1");

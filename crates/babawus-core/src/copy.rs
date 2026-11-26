@@ -198,7 +198,7 @@ impl<'a> FileCopier<'a> {
     }
 
     /// Backs up the file `source` to `target`, which is relative to the root of the medium, and
-    /// prunes its version folder. `progress` gets the number of bytes of this file that have
+    /// prunes its version folder, before the copy as well as after it. `progress` gets the number of bytes of this file that have
     /// reached the medium, and starts again from 0 if the copy has to be repeated.
     pub fn visit(
         &mut self,
@@ -231,6 +231,13 @@ impl<'a> FileCopier<'a> {
         if self.cancel.load(Ordering::Relaxed) {
             return Ok(Visit::Cancelled);
         }
+        // Versions beyond the limit go first, so that a lowered limit makes room for the new
+        // copy. They would be removed after it anyway (issue 177).
+        let before = if existing.is_some() {
+            self.prune(&target)?
+        } else {
+            Pruned::default()
+        };
         let free = self.medium.free_space(&self.root);
         if free.map_err(|error| self.stop(&error))? < source_metadata.len {
             return Err(Stop::MediumFull);
@@ -268,7 +275,11 @@ impl<'a> FileCopier<'a> {
             self.discard(&temp);
             return self.skip_or_stop(&error).map(Visit::Skipped);
         }
-        self.prune(&target).map(Visit::Copied)
+        let after = self.prune(&target)?;
+        Ok(Visit::Copied(Pruned {
+            removed: before.removed + after.removed,
+            failed: before.failed || after.failed,
+        }))
     }
 
     /// Creates the folder `target`, which is relative to the root of the medium, so that empty
