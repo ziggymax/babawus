@@ -81,7 +81,7 @@ From Babawus 1.2.0, these Linux distributions are supported, each with the deskt
 | Ubuntu 24.04 LTS and 26.04 LTS | GNOME | `.deb` |
 | Fedora 45 | GNOME | `.rpm` |
 
-Until 1.2.0 is released, the latest release, 1.1.1, runs on Linux Mint 22.x only. Windows is planned; macOS is not.
+Windows is planned; macOS is not.
 
 **How the packages are tested.**
 

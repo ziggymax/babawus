@@ -848,3 +848,10 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
     - **Decided (2026-11-26):** the metainfo names one screenshot, the README's `assets/screenshot-main.png` on GitHub's main branch, so that it follows the README's. GNOME Software fetches it over the network.
     - **Decided (2026-11-26):** the summary and description are in English only, like the `.deb`'s description and the `.rpm`'s summary.
     - **Decided (2026-11-26):** the metainfo lists Babawus's releases from 1.2.0 on, each with its version and date. The pull request that raises the version to a release adds its entry, as a fixed step in "A release, step by step" in TestSetup.md, and a test checks that a release version has its entry. Interim versions, such as 1.2.0-alpha.2, get none.
+
+## Decisions on releasing 1.2.0 (T-142 to T-146)
+
+176. **How 1.2.0 is released.** The first release made as "A release, step by step" in TestSetup.md says, on the packages CI built, with the smoke test and the release checklist on three guests.
+    - **Decided (2026-11-26):** the release is five tasks, as 1.1.1's were: T-142 raises the version, and in the same pull request brings the README's "Supported platforms" up to date and adds the metainfo's first release; T-143 to T-145 run the smoke test and the checklist, one issue per distribution; T-146 tags T-142's commit and makes the GitHub release.
+    - **Decided (2026-11-26):** the metainfo gives 1.2.0's date as 2026-11-26, the day the release is planned for. The tagged commit carries it, so it isn't changed afterwards.
+    - **Decided (2026-11-26):** the README's note "Until 1.2.0 is released, the latest release, 1.1.1, runs on Linux Mint 22.x only" goes in T-142, since the tagged commit is the one the README is read from.
