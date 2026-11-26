@@ -4,10 +4,11 @@
 # then attached to its GitHub release (TestSetup.md, "A release, step by step").
 #
 #   vms/fetch-packages.sh              main's newest commit on GitHub
-#   vms/fetch-packages.sh <commit>     that commit, such as a pull request's
+#   vms/fetch-packages.sh <commit>     that commit, such as a pull request's newest
 #
 # They go into target/github-packages/<commit>/, and the folder is printed last, for
-# vms/smoke.py --packages. CI keeps them for 90 days for main, and 7 for a pull request.
+# vms/smoke.py --packages. CI keeps only the newest packages of each branch (T-134), so an older
+# commit's are gone; the local copy is what the smoke test, the checklist and the release use.
 set -eu
 repo=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo"
@@ -32,7 +33,7 @@ mkdir -p "$out"
 echo "==> Downloading the packages of CI run $run, for $commit" >&2
 if ! gh run download "$run" --name packages --dir "$out"; then
     rm -rf "$out"
-    echo "CI run $run has no packages: it ran before T-129, or they have expired" >&2
+    echo "CI run $run has no packages: a newer run on its branch replaced them, or it ran before T-129" >&2
     exit 1
 fi
 echo "==> Checking their SHA-256 sums" >&2
