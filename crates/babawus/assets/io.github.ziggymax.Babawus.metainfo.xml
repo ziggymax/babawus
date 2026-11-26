@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  What software centres show about Babawus: GNOME Software reads it for the installed Babawus
+  (issue 175, T-141). Ubuntu's App Center doesn't read it in a local .deb.
+
+  The summary and the description are those of the packages, in crates/babawus/Cargo.toml, and
+  tests/metainfo.rs checks that they stay the same. The pull request that raises the version to a
+  release adds its <release> at the top of <releases>, newest first ("A release, step by step"
+  in TestSetup.md); interim versions get none.
+-->
+<component type="desktop-application">
+  <id>io.github.ziggymax.Babawus</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Babawus</name>
+  <summary>Basic backup with USB storage</summary>
+  <developer id="io.github.ziggymax">
+    <name>Steen Kroeyer</name>
+  </developer>
+
+  <description>
+    <p>Babawus backs up your important files to a USB stick, with one button.</p>
+    <p>It copies only what has changed, keeps older versions of each file, and says in plain words whether the backup worked. One stick can hold the backups of several computers and accounts.</p>
+    <p>Preparing a stick and choosing what is backed up are advanced functions, under Advanced in the menu. Sticks are formatted as exFAT, which also works on Windows and Mac, or Ext4.</p>
+  </description>
+
+  <launchable type="desktop-id">io.github.ziggymax.Babawus.desktop</launchable>
+  <icon type="stock">io.github.ziggymax.Babawus</icon>
+  <categories>
+    <category>Utility</category>
+    <category>Archiving</category>
+  </categories>
+
+  <url type="homepage">https://github.com/ziggymax/babawus</url>
+  <url type="bugtracker">https://github.com/ziggymax/babawus/issues</url>
+  <url type="vcs-browser">https://github.com/ziggymax/babawus</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Babawus with two backup sticks plugged in</caption>
+      <image>https://raw.githubusercontent.com/ziggymax/babawus/main/assets/screenshot-main.png</image>
+    </screenshot>
+  </screenshots>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+  </releases>
+</component>

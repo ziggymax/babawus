@@ -1,7 +1,8 @@
 #!/bin/sh
 # Builds Babawus's packages in the containers, and checks that each one installs, with all its
-# dependencies, in a clean image of each distribution it is for, as a user would install it, and
-# that every library /usr/bin/babawus needs is found (T-121, T-122).
+# dependencies, in a clean image of each distribution it is for, as a user would install it, that
+# every library /usr/bin/babawus needs is found (T-121, T-122), and that its AppStream metainfo
+# is valid (issue 175).
 #
 #   containers/package.sh          every package
 #   containers/package.sh deb      only this one
@@ -80,9 +81,14 @@ install_package() {
     case $file in
         *.deb)
             install='/setup/apt-setup.sh && apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /packages/*.deb > /dev/null'
+            validator='DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends appstream > /dev/null'
             query='dpkg -L babawus | while read -r f; do [ -d "$f" ] || echo "$f"; done'
             ;;
-        *.rpm) install='dnf install -y -q /packages/*.rpm' query='rpm -ql babawus' ;;
+        *.rpm)
+            install='dnf install -y -q /packages/*.rpm'
+            validator='dnf install -y -q --setopt=install_weak_deps=False appstream'
+            query='rpm -ql babawus'
+            ;;
         *) echo "Unknown package: $file" >&2; exit 2 ;;
     esac
     # Without --policy, which the CI runner's older podman doesn't have (T-133).
@@ -102,6 +108,9 @@ install_package() {
             fi
             echo 'All found'
             ls /usr/share/babawus/languages/*.toml > /dev/null
+            echo '--- AppStream:'
+            $validator
+            appstreamcli validate --no-net /usr/share/metainfo/io.github.ziggymax.Babawus.metainfo.xml
         "
 }
 
