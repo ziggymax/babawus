@@ -175,6 +175,30 @@ sudo udevadm control --reload && sudo udevadm trigger --subsystem-match=usb
 
 Then `vms/driver.py sticks` lists the sticks on the host, `vms/driver.py pass <name> <serial>` passes one through, and `vms/driver.py unpass <name>` gives it back. The test sticks A and B are both Kingston DataTraveler 3.0; A is serial `08606E694BE4E320B7282A6C`.
 
+### The guests' SSH host keys
+
+The driver keeps the guests' SSH host keys in a file of its own, `~/.local/share/libvirt/babawus-known_hosts`, apart from `~/.ssh/known_hosts`. A guest's key is added the first time the driver reaches it, by its address on the host, such as `[127.0.0.1]:2601`. After that, a different key at that address is refused, as a guard against talking to the wrong machine. So the file needs a change whenever a guest's key changes or its port is freed:
+
+- **A guest is installed again** on its port: remove the old key before the driver first reaches the new guest.
+- **A guest is removed**, or its port moves: remove its key, so that a later guest on that port isn't refused.
+
+To remove the key of the guest on port 2603, for example:
+
+```bash
+ssh-keygen -R '[127.0.0.1]:2603' -f ~/.local/share/libvirt/babawus-known_hosts
+```
+
+`ssh-keygen` keeps the file as it was in `babawus-known_hosts.old`, which can be deleted. The entries are hashed, so `ssh-keygen -F '[127.0.0.1]:2603' -f ~/.local/share/libvirt/babawus-known_hosts` is the way to see whether a port has one.
+
+### Removing a guest
+
+As the Ubuntu 24.04 and Debian 13 guests were removed (T-133), with your yes, since it can't be undone:
+
+1. Turn it off and remove it from libvirt, with its snapshots: `vms/driver.py destroy <name>`, then `virsh -c qemu:///session undefine babawus-<name> --snapshots-metadata`. The `clean` snapshot is inside the disk, so it goes with it.
+2. Delete its disk, `~/.local/share/libvirt/images/babawus-<name>.qcow2`, and its installer ISO if nothing else uses it.
+3. Remove its SSH host key, as above.
+4. Delete its file in `vms/`, take it out of `GUESTS` in `vms/smoke.py`, and update the table above and TestSetup.md.
+
 ### What was learned
 
 - **passt doesn't work in the user session on Ubuntu 26.04.** Its AppArmor profile lets neither libvirt nor the user signal it, so it outlived its guest and kept port 2601 until `sudo kill`, and the guest got no DHCP answer from it. The guests use QEMU's own network, and the driver forwards SSH itself (issue 170).
