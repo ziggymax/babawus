@@ -4,7 +4,7 @@
 # smoke test copies them into that distribution's VM and runs them there, since a container has
 # no loop devices or udisks2.
 #
-#   containers/build-tests.sh debian-13
+#   containers/build-tests.sh fedora-45
 #
 # The test programs know the folder they were built in, through CARGO_TARGET_TMPDIR, as
 # /src/target/containers/<name>/target/tmp, which the smoke test makes in the VM.

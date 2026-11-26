@@ -16,7 +16,7 @@ containers/package.sh leaves them, or from the folder given. A log and a screens
 guest go to target/smoke/.
 
     vms/smoke.py                      every guest
-    vms/smoke.py debian-13 ...        only these
+    vms/smoke.py fedora-45 ...        only these
 """
 
 import argparse
@@ -35,18 +35,17 @@ REPO = HERE.parent
 OUT = REPO / "target/smoke"
 
 # Each guest, with the container its tests are built in and the package it installs. Linux Mint
-# 22 is built on Ubuntu 24.04, so it shares that container.
+# 22 is built on Ubuntu 24.04, so it shares that container, and it stands for Ubuntu 24.04, which
+# has no guest of its own (T-133).
 GUESTS = {
     "mint-22.3": ("ubuntu-24.04", "deb"),
-    "ubuntu-24.04": ("ubuntu-24.04", "deb"),
     "ubuntu-26.04": ("ubuntu-26.04", "deb"),
-    "debian-13": ("debian-13", "deb"),
     "fedora-45": ("fedora-45", "rpm"),
 }
 
 # How each kind of package is installed, and the tools the tests on real file systems use.
 INSTALL = {
-    "deb": "sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive "
+    "deb": "sudo DEBIAN_FRONTEND=noninteractive "
            "apt-get install -y -qq -o DPkg::Lock::Timeout=600 {}",
     "rpm": "sudo dnf install -y -q {}",
 }
@@ -143,7 +142,20 @@ def revert(guest, _package, _tests):
     guest.run(f"sudo date -s @{int(time.time())}")
 
 
+def update_package_lists(guest):
+    """Reads apt's package lists again, as a user's computer would have them fresh. A mirror in
+    the middle of a sync refuses them for a few minutes, so it is tried again (T-133)."""
+    for attempt in range(4):
+        if attempt:
+            time.sleep(60)
+        if guest.run("sudo apt-get update -qq", check=False).returncode == 0:
+            return
+    raise Failed("apt-get update failed 4 times, a minute apart; see the log")
+
+
 def install(guest, package, _tests):
+    if GUESTS[guest.name][1] == "deb":
+        update_package_lists(guest)
     guest.copy([package], "/tmp/")
     guest.run(INSTALL[GUESTS[guest.name][1]].format(shlex.quote(f"/tmp/{package.name}")))
     guest.run("command -v babawus")

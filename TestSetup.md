@@ -30,7 +30,6 @@ Each supported distribution has a container image, built from `containers/apt.Co
 | --- | --- | --- |
 | Ubuntu 24.04 (and Linux Mint 22, which is built on it) | `ubuntu:24.04` | `.deb` |
 | Ubuntu 26.04 | `ubuntu:26.04` | `.deb` |
-| Debian 13 | `debian:13` | `.deb` |
 | Fedora 45 | `fedora:45` | `.rpm` |
 
 - `containers/check.sh` runs clippy and the unit tests in each container.
@@ -45,12 +44,14 @@ Containers have no desktop and no USB, so they can't try the window or a stick. 
 CI runs on every pull request and every push to main, with the same scripts as the host:
 
 - **check:** fmt, clippy, the Windows build of `babawus-core`, and all tests, including those on real file systems, directly on an Ubuntu 24.04 runner, where a polkit rule lets the runner use udisks2.
-- **check (ubuntu-26.04, debian-13, fedora-45):** `containers/check.sh` for each of these. The Fedora job also builds the `.rpm` and installs it in a clean Fedora.
-- **package (deb):** builds the `.deb` in the Ubuntu 24.04 container and installs it on Ubuntu 24.04 and 26.04 and Debian 13.
+- **check (ubuntu-26.04, fedora-45):** `containers/check.sh` for each of these. The Fedora job also builds the `.rpm` and installs it in a clean Fedora.
+- **package (deb):** builds the `.deb` in the Ubuntu 24.04 container and installs it on Ubuntu 24.04 and 26.04.
+
+The Ubuntu containers set apt up with `containers/apt-setup.sh`: a short timeout and retries, and in CI the runner's own mirror (`UBUNTU_MIRROR`) in place of Ubuntu's, which on a slow day took a job past its 30 minutes (T-133).
 
 ## Packages
 
-- **One `.deb`** serves Linux Mint, both Ubuntus and Debian. It is built on Ubuntu 24.04, the oldest of them, so that it works on the newer ones too (issue 169).
+- **One `.deb`** serves Linux Mint and both Ubuntus. It is built on Ubuntu 24.04, the oldest of them, so that it works on the newer ones too (issue 169). Debian is no longer supported (T-133).
 - **One `.rpm`** serves Fedora, with Fedora's package names for its dependencies.
 - Both install Babawus's MIT licence and `THIRD-PARTY-LICENSES`, the licences of the crates it is built from, made with `cargo-about` (issue 171).
 - An interim version such as 1.2.0-alpha.1 is numbered `1.2.0~alpha.1` in both, so that it sorts before 1.2.0.
@@ -59,7 +60,7 @@ For a release, GitHub builds both packages, and the smoke test and the checklist
 
 ## The VMs
 
-There is one VM per distribution: Linux Mint 22 with Cinnamon, Ubuntu 24.04, Ubuntu 26.04, Debian 13 and Fedora 45, each with the desktop it ships. All but Mint use GNOME on Wayland. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint 22.3 followed, installed anew, since VirtualBox and its Mint VM were removed from the host on 2026-11-25 (T-127); the driver drives it unchanged, on Cinnamon on X11. Ubuntu 24.04, Debian 13 and Fedora 45 came last, installed through the driver the same way (T-124).
+There are three VMs, each with the desktop its distribution ships: Linux Mint 22 with Cinnamon on X11, Ubuntu 26.04 and Fedora 45, both with GNOME on Wayland. Two VMs are enough for the `.deb` (T-133). Mint is built on Ubuntu 24.04's own archive, so it tries the `.deb` on 24.04's exact libraries, and Ubuntu 26.04 on the newest ones; that the package installs on clean Ubuntu 24.04 and 26.04 is checked in the containers on every pull request. Ubuntu 26.04 came first, to prove the set-up (T-126). Mint 22.3 followed, installed anew, since VirtualBox and its Mint VM were removed from the host on 2026-11-25 (T-127); the driver drives it unchanged, on Cinnamon on X11. Fedora 45 came last, installed through the driver the same way (T-124), with guests for Ubuntu 24.04 and Debian 13, which T-133 removed again.
 
 **libvirt in the user session.** The VMs run under KVM, managed by libvirt in the user's own session (`qemu:///session`), not the system one. Nothing about them runs as root, and the user needs no membership of the `libvirt` group, which is close to root on a computer that matters. The user is in the `kvm` group, which is all KVM needs. The user session has two limits:
 
@@ -112,12 +113,12 @@ Claude uses the driver to drive the window in every guest, and the smoke test us
 **The smoke test**, `vms/smoke.py`, tries the packages on every guest, one after another, without Claude (T-128). For each guest it:
 
 1. reverts it to `clean`, and sets its clock, which stood still in the snapshot;
-2. installs the package as a user would (`apt-get install ./babawus….deb` or `dnf install ./babawus….rpm`);
+2. installs the package as a user would (`apt-get install ./babawus….deb` or `dnf install ./babawus….rpm`), after reading apt's package lists again, up to four times a minute apart, since a mirror in the middle of a sync refuses them for a while;
 3. starts Babawus with `--debug=sticks`, plugs in an emulated exFAT stick labelled `SMOKE`, checks that Babawus lists it, saves a screenshot, pulls the stick out, and checks that Babawus no longer lists it;
 4. installs the tools that the tests on real file systems use, and a polkit rule that lets `tester` use udisks2 from SSH, outside the desktop session;
 5. runs the tests on real file systems, built in that distribution's container by `containers/build-tests.sh` (Mint's in Ubuntu 24.04's).
 
-The tools and the rule come only after Babawus has been tried, so that they can't hide a dependency missing from a package, and the `clean` snapshot has neither, so that the checklist runs with no rights a user wouldn't have (issue 170). It takes the packages from `target/containers/packages/`, where `containers/package.sh` leaves them, or from the folder given with `--packages`. Each guest is left running as the test left it, and its log and screenshot go to `target/smoke/`. All five guests take about 4 minutes.
+The tools and the rule come only after Babawus has been tried, so that they can't hide a dependency missing from a package, and the `clean` snapshot has neither, so that the checklist runs with no rights a user wouldn't have (issue 170). It takes the packages from `target/containers/packages/`, where `containers/package.sh` leaves them, or from the folder given with `--packages`. Each guest is left running as the test left it, and its log and screenshot go to `target/smoke/`. The three guests take about 3 minutes.
 
 **`--debug`** lets a test ask Babawus what it sees, rather than compare screenshots, which differ between desktops. `babawus --debug=sticks` prints a line to standard error each time the start screen reads the list of sticks, such as `Babawus debug sticks: listed "SMOKE"`. More topics can be added to the same option, as a comma-separated list; an unknown topic is reported and ignored. It is for testing, so the Help and the README don't mention it (issue 170).
 

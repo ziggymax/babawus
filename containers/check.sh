@@ -3,7 +3,7 @@
 # (T-119), with podman. CI runs the same script, one distribution per job.
 #
 #   containers/check.sh                 every distribution
-#   containers/check.sh debian-13 ...   only these
+#   containers/check.sh fedora-45 ...   only these
 #   containers/check.sh --list          the names
 #
 # The tests on real file systems need udisks2 and loop devices, so they don't run here, only on

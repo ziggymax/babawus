@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-132.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-134 (T-132 is the smaller windows, waiting on its own branch).
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 

@@ -13,7 +13,7 @@ set -eu
 # Each package: its format, the distribution it is built on, and those it is installed on. The
 # .deb is built on the oldest, so that it works on the newer ones too (issue 169).
 PACKAGES="
-deb ubuntu-24.04 ubuntu-24.04 ubuntu-26.04 debian-13
+deb ubuntu-24.04 ubuntu-24.04 ubuntu-26.04
 rpm fedora-45 fedora-45
 "
 
@@ -79,15 +79,17 @@ install_package() {
     image=$(distribution_image "$name")
     case $file in
         *.deb)
-            install='apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /packages/*.deb > /dev/null'
+            install='/setup/apt-setup.sh && apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /packages/*.deb > /dev/null'
             query='dpkg -L babawus | while read -r f; do [ -d "$f" ] || echo "$f"; done'
             ;;
         *.rpm) install='dnf install -y -q /packages/*.rpm' query='rpm -ql babawus' ;;
         *) echo "Unknown package: $file" >&2; exit 2 ;;
     esac
-    podman pull --quiet --policy=newer "$image" > /dev/null
+    # Without --policy, which the CI runner's older podman doesn't have (T-133).
+    podman pull --quiet "$image" > /dev/null
     podman run --rm --security-opt label=disable \
-        -v "$(dirname "$file"):/packages:ro" "$image" sh -c "
+        -v "$(dirname "$file"):/packages:ro" -v "$here:/setup:ro" \
+        -e UBUNTU_MIRROR="${UBUNTU_MIRROR:-}" "$image" sh -c "
             set -e
             $install
             echo '--- Installed files:'
