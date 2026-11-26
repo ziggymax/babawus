@@ -1,29 +1,45 @@
 # Babawus release checklist
 
-Run this on real USB sticks before each release. It covers what the automated tests can't: the GUI, formatting, pulling out a stick, ejecting, and installing the package (see "Testing" in [Requirements.md](Requirements.md)).
+Run this before each release, in full, on each supported distribution: Linux Mint 22.3, Ubuntu 26.04 and Fedora 45, each in its test VM (issue 174). It covers what the automated tests can't: the GUI, formatting, pulling out a stick, ejecting, and installing the package (see "Testing" in [Requirements.md](Requirements.md), and "Testing" in [TestSetup.md](../TestSetup.md)). Claude drives the window and checks the rest over SSH; you do what needs hands, and type passwords.
 
-**To record a run**, open a GitHub issue titled "Release <version> checklist", for example "Release 1.0.0 checklist", and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks-Open.md](Tasks-Open.md) before the release goes ahead (see issues 94–96).
+**To record a run**, open a GitHub issue for each distribution, titled "Release <version> checklist on <distribution>", for example "Release 1.2.0 checklist on Fedora 45", and paste everything from "Before you start" down into it. Tick each box when its step shows what it should. Note anything odd under the step, even if the step passed. A failed step gets a task in [Tasks-Open.md](Tasks-Open.md) before the release goes ahead (see issues 94–96).
 
 Each step says what to do, then **→** what should be seen. Texts in quotes are what Babawus shows in English. Run the whole list in English, except where a step says otherwise.
 
+## What differs per distribution
+
+The steps below are the same on every distribution, except where they point to this table.
+
+| | Linux Mint 22.3 | Ubuntu 26.04 | Fedora 45 |
+| --- | --- | --- | --- |
+| Test VM (`vms/driver.py`) | `mint-22.3` | `ubuntu-26.04` | `fedora-45` |
+| Desktop, and what `echo $XDG_SESSION_TYPE` prints | Cinnamon, `x11` | GNOME, `wayland` | GNOME, `wayland` |
+| Package | `babawus_<version>-1_amd64.deb` | `babawus_<version>-1_amd64.deb` | `babawus-<version>-1.x86_64.rpm` |
+| Is it installed? | `dpkg -s babawus` | `dpkg -s babawus` | `rpm -q babawus` |
+| **Install** it as a user would | Double-click the `.deb` in the file manager: Captain opens. Press "Install Package" | Double-click the `.deb` in the file manager: App Center opens, with "Potentially unsafe" for a package from outside it. Press "Install" | In a terminal: `sudo dnf install ./babawus-<version>-1.x86_64.rpm`. (GNOME Software can't open a local `.rpm`; see issue 174) |
+| **Find** Babawus | The menu in the lower left: search for "Backup" | Press the Super key, and type "Backup" | Press the Super key, and type "Backup" |
+| Make a **second account** | "Users and Groups", as a "Standard" account | Settings → System → Users → "Unlock…" → "Add User", as a "Standard" account | As on Ubuntu |
+| Where a stick is **mounted** | `/media/$USER/<name>` | `/run/media/$USER/<name>` | `/run/media/$USER/<name>` |
+| **Uninstall** | `sudo apt remove babawus` | `sudo apt remove babawus` | `sudo dnf remove babawus` |
+
 ## Before you start
 
-- [ ] A computer with the supported platform: Linux Mint 22.x, Cinnamon, X11. → `echo $XDG_SESSION_TYPE` prints `x11`.
-- [ ] Two USB sticks whose contents may be lost, called **stick A** and **stick B** below. → Both show up in the file manager when plugged in.
-- [ ] Two accounts on the computer: yours, with administrator rights, and a **second account** without them (created in Users and Groups as a "Standard" account).
+- [ ] The distribution's test VM, reverted to its `clean` snapshot: `vms/driver.py revert <VM>`. Nothing from a smoke test may be left in it, such as the polkit rule that lets the tests use udisks2 without a password. → `echo $XDG_SESSION_TYPE` prints what the table says.
+- [ ] Two USB sticks whose contents may be lost, called **stick A** and **stick B** below. In a test VM, they are emulated sticks, image files on the host made with `vms/driver.py stick <file> 16G` and plugged in and pulled out with `vms/driver.py plug` and `unplug`; a real stick can be passed through instead with `vms/driver.py pass` (see "Sticks" in [TestSetup.md](../TestSetup.md)). → Both show up in the file manager when plugged in.
+- [ ] Two accounts on the computer: yours, with administrator rights, and a **second account** without them (see the table).
 - [ ] A folder `~/BabawusTest` in your account, holding:
   - `Letters/anna.txt` and `Letters/old/draft.txt`, any small text;
   - `Letters/notes.tmp`;
   - `meeting: notes.txt`, whose name exFAT can't store;
   - `Photos/big.bin`, about 2 GB, so that a copy takes long enough to pull out a stick: `head -c 2G /dev/urandom > ~/BabawusTest/Photos/big.bin`;
   - `secret.txt` that can't be read: `chmod 000 ~/BabawusTest/secret.txt`.
-- [ ] The package for this release, built by CI for main's commit, and fetched with `vms/fetch-packages.sh` on the host. → It prints the folder, `target/github-packages/<commit>/`, after "babawus_<version>-1_amd64.deb: OK". This very file is the one released (TestSetup.md, "A release, step by step").
-- [ ] Babawus is not installed yet: `dpkg -s babawus` → "package 'babawus' is not installed". (If it is, uninstall it first with `sudo apt remove babawus`.)
+- [ ] The package for this release, built by CI for main's commit, and fetched with `vms/fetch-packages.sh` on the host. → It prints the folder, `target/github-packages/<commit>/`, after "babawus_<version>-1_amd64.deb: OK" and "babawus-<version>-1.x86_64.rpm: OK". Copy the distribution's package into the VM's Downloads folder: `vms/driver.py copy <VM> <file> Downloads/`. This very file is the one released (TestSetup.md, "A release, step by step").
+- [ ] Babawus is not installed yet (see the table). → Not installed. (If it is, uninstall it first.)
 
 ## Installing
 
-- [ ] Double-click the `.deb` in the file manager. → The installer shows "Basic Backup With Usb Storage" (it capitalises every word), and below it three short paragraphs about Babawus. Install it. → It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
-- [ ] Open the application menu and search for "Backup". → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see issue 101).
+- [ ] Install the package from Downloads, as the table says. → On Mint, Captain shows "Basic Backup With Usb Storage" (it capitalises every word), and on Ubuntu, App Center shows "babawus" and "Basic backup with USB storage"; below it, three short paragraphs about Babawus. It installs after asking for your password. The dependencies (`udisks2`, `exfatprogs`, `e2fsprogs`, `acl`) are already there or come with it.
+- [ ] Find Babawus, as the table says. → An entry "Backup" with the Babawus elephant icon is there, straight away, without logging out first (see issue 101). Right after installing, the search may need a few seconds to find it.
 - [ ] Start it from the menu. → A window titled "Backup" opens. With no stick plugged in, it says "Plug in your backup stick".
 - [ ] Start it again from the menu while it is open. → No second window: the open one comes to the front.
 - [ ] In a terminal, run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml`.
@@ -58,7 +74,7 @@ These steps follow [AddingALanguage.md](../AddingALanguage.md), with a made-up F
 - [ ] Tick "I understand that everything on this stick will be erased". → "Erase and format" turns red, and can be pressed.
 - [ ] Press "Erase and format". → "Formatting BACKUP-A…", with no way back and the window can't be closed. After a few seconds: "BACKUP-A is ready", with a green tick.
 - [ ] Press "Back". → The start screen, with stick A selected, showing "Not set up for you" and an amber "!", and a greyed-out green "Start backup" below stick A's row, whose tooltip says why.
-- [ ] Format stick B the same way, but choose Ext4. → "Ext4 asks for your password while formatting." shows below Ext4. It asks for your password, takes longer (about a minute for 16 GB), then "… is ready". (On the development VM it doesn't ask: see "Polkit" in DevEnvSetup.md.)
+- [ ] Format stick B the same way, but choose Ext4. → "Ext4 asks for your password while formatting." shows below Ext4. It asks for your password, takes longer (about a minute for 16 GB), then "… is ready".
 - [ ] Without administrator rights: close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only their Eject buttons: no "Start backup" and no buttons in the details, also with Advanced on.
 - [ ] Pull out both sticks and plug them back in. → Both show "Not set up for you".
 - [ ] Turn Advanced on, and press "Prepare…". → Ext4 is greyed out, with "Only an administrator can choose Ext4, …" below it.
@@ -127,7 +143,11 @@ These steps follow [AddingALanguage.md](../AddingALanguage.md), with a made-up F
 - [ ] Run `babawus --checklastbackup`. → Nothing shows, and the command ends at once.
 - [ ] Make the note 9 days old: `sed -i "s/^last_backup = .*/last_backup = \"$(date -d '9 days ago' '+%Y-%m-%d %H:%M:%S %z')\"/" ~/.local/state/babawus/last_backup`. Run `babawus --checklastbackup`. → A small window with the elephant: "Your last backup was 9 days ago.", "Do you want to back up now?", "Not now" and "Back up now". Press "Not now". → Babawus closes.
 - [ ] Run it again, and press "Back up now". → The normal window opens. Back up to stick A. → The note has today's time again, and `run_check_days = 8`, from stick A's setup.
-- [ ] Add "Babawus reminder" in "Startup Applications" as [UserGuide.md](../UserGuide.md) says, make the note 9 days old again, and log out and in. → The reminder shows after login. Remove the entry from "Startup Applications" afterwards, unless you want to keep it.
+- [ ] Start Babawus, open the menu, and look for "Remind me at login". → It isn't there. Turn on Advanced. → "Remind me at login" is in the menu, between Advanced and Help, not ticked.
+- [ ] Tick it, and close Babawus. → `ls ~/.config/autostart` shows `io.github.ziggymax.Babawus-reminder.desktop`.
+- [ ] Make the note 9 days old again, and log out and in (in a test VM: `sudo systemctl reboot`, as it logs in by itself). → The reminder shows after login. On Fedora, GNOME opens the overview first, with the reminder as a window in it: press Esc, and it is on the desktop. Press "Not now".
+- [ ] Start Babawus, turn on Advanced, and untick "Remind me at login". → The entry is gone from `~/.config/autostart`.
+- [ ] **Linux Mint only:** add "Babawus reminder" in "Startup Applications" as [UserGuide.md](../UserGuide.md) says. Start Babawus and turn on Advanced. → "Remind me at login" is ticked. Untick it. → In "Startup Applications", "Babawus reminder" is still listed, switched off. Remove it there.
 
 ## Cancelling and closing
 
@@ -145,22 +165,22 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 ## Ejecting
 
 - [ ] After a backup that counts ("All good" or "Some files were skipped"), press "Eject BACKUP-A". → "Ejecting BACKUP-A…", then a pop-up: "You can pull out BACKUP-A now.", with OK. The stick's light goes out, and it leaves the file manager. Press OK. → The start screen, without the stick.
-- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again. #33" Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See issue 129.)
+- [ ] Plug it in, open a terminal and `cd` into the stick (for example `cd /media/$USER/BACKUP-A`, or where the table says). Then press stick A's Eject button in the list. → A pop-up: "BACKUP-A is still in use by a program, for example a terminal or a file being copied. Close it, or wait until it has finished, and try again. #33" Press OK. → It stays in the list. (A file manager window showing the stick doesn't keep it in use: it just closes when the stick is ejected. See issue 129.)
 - [ ] In the terminal, leave the stick (`cd ~`), and press "Eject" again. → A pop-up: "You can pull out BACKUP-A now." Press OK. → The start screen, without stick A.
 - [ ] With both sticks plugged in and stick A selected, press stick B's Eject button. → A pop-up: "You can pull out BACKUP-B now." Press OK. → Stick B has left the list, and stick A is still selected, with "Start backup" below it.
 
 ## Updating
 
-- [ ] Build the package again with the version raised (for example from `1.1.1` to `1.1.2` in `Cargo.toml`, not committed), and install it by double-clicking it. → It installs over the old one, as an update.
+- [ ] Build the packages again on the host with the version raised (for example from `1.2.0` to `1.2.1` in `Cargo.toml`, not committed), with `containers/package.sh`, copy the distribution's package into the VM, and install it as the table says. → It installs over the old one, as an update.
 - [ ] Start Babawus. → It runs, keeps the chosen language, and stick A and its history are as before.
 - [ ] Run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml  fr.toml`: the update kept the file added by hand.
 
 ## Uninstalling
 
-- [ ] Uninstall with `sudo apt remove babawus`. → The "Backup" entry leaves the menu.
+- [ ] Uninstall, as the table says. → The "Backup" entry leaves the menu.
 - [ ] Run `ls /usr/share/babawus/languages`. → Only `fr.toml`, the file added by hand, is left. Remove it and its folder with `sudo rm -r /usr/share/babawus`, as [UserGuide.md](../UserGuide.md) says.
 - [ ] Look at stick A. → Nothing changed on it: `.babawus` and `backup` are as before.
-- [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes in [UserGuide.md](../UserGuide.md) say.
+- [ ] Look for the settings file. → `~/.config/babawus/settings.toml` is still there, if a language was ever chosen, as the uninstall notes in [UserGuide.md](../UserGuide.md) say, and so is `~/.local/state/babawus/last_backup`.
 
 ## Afterwards
 
