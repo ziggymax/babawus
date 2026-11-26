@@ -6,7 +6,7 @@ This is the central list of outstanding work. If something still needs doing, it
 
 - **One place.** Anything that comes up as "for later" gets a task here straight away, whether it is a feature, a test, a clean-up or a small to-do.
 - **[Requirements.md](Requirements.md) says what Babawus does, [Issues-Unsettled.md](Issues-Unsettled.md) and [Issues-Resolved.md](Issues-Resolved.md) record questions and why they were decided, and this list says what is left to do.** A task links to those instead of repeating them, as "issue 132". An open question stays in Issues-Unsettled.md, with a task here to settle it.
-- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-141.
+- **IDs never change or get reused.** New tasks take the next free number, whatever section they go in. The next free number is T-142.
 - **To-dos in the code** are welcome, but each one names its task, so that nothing lives only in a comment: `// TODO(T-012): Show the free space too.`
 - **Pull requests** mention the tasks they finish, and update this list. A finished task moves word for word to [Tasks-Done.md](Tasks-Done.md), with a link to its pull request, and keeps its number. Elsewhere a task is referred to as just "T-063", so references don't go stale when it moves.
 
@@ -20,11 +20,11 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). The test VMs of 1.2.0 are done too (T-124 to T-129, T-132, T-133; issue 170): three guests, a smoke test, and CI keeping the packages a release is made from. Next is 1.2.0-alpha.2, GNOME (issue 174).
+Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). The test VMs of 1.2.0 are done too (T-124 to T-129, T-132, T-133; issue 170): three guests, a smoke test, and CI keeping the packages a release is made from. 1.2.0-alpha.2, GNOME, is done too (T-135 to T-140; issue 174). Next is the release of 1.2.0: T-141 first, then the smoke test and the checklist on every distribution, on the packages GitHub built, as "A release, step by step" in [TestSetup.md](../TestSetup.md) says; the release's own tasks are added when that work begins.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-140 | Raise the version to 1.2.0-alpha.2, and tag it on main | Todo | Issue 174 |
+| T-141 | Give the packages AppStream metadata (`io.github.ziggymax.Babawus.metainfo.xml`), so that Ubuntu's App Center, and GNOME Software where it can open the package, shows Babawus's licence, summary and icon, rather than "License: unknown" and a blank icon; checked on Ubuntu 26.04 | Todo | Issue 174 (found in T-138) |
 
 ## Needs a decision
 
