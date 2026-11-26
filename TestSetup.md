@@ -129,11 +129,33 @@ There is no automated test suite for the window: the logic behind each screen is
 
 ## A release, step by step
 
-1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main.
+1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main. **In the same pull request, the README's "Supported platforms" is brought up to date** (T-139, issue 174): the distributions, desktops and packages the release supports, and how its packages are tested, so that the commit that is tagged carries it. A note such as "Until 1.2.0 is released, …" goes once that release is made.
 2. CI builds the `.deb` and the `.rpm` for main's commit and keeps them, with `SHA256SUMS` (T-129). `vms/fetch-packages.sh` downloads them into `target/github-packages/<commit>/` and checks the sums.
 3. The smoke test runs on every VM, on those packages: `vms/smoke.py --packages target/github-packages/<commit>`.
 4. The release checklist runs on each distribution's VM, on the same packages.
 5. That commit is tagged, and the GitHub release gets the same three files: `gh release create v<version> --target <commit> --title "Babawus <version>" --notes-file <notes> target/github-packages/<commit>/*`. Nothing is built again, so the released files are the ones that were tested.
+
+**The release message** always has these parts, after what is new (T-139, issue 174), so that a user sees which distributions the release is for, and what its very files went through:
+
+```markdown
+## Supported platforms
+
+| Distribution | Desktop | Package |
+| --- | --- | --- |
+(the same rows as the README's "Supported platforms")
+
+## How these files were tested
+
+- Built by GitHub, in CI run <link to the run> for <commit>, which also ran the automated tests on every distribution.
+- Installed as a user would, and tried by the smoke test, on <each VM, such as Linux Mint 22.3 (Cinnamon, X11)>, on <date>.
+- The whole release checklist, by hand: <link to each distribution's checklist issue>.
+
+## Checking the download
+
+`sha256sum --check SHA256SUMS`, in the folder with the downloaded files.
+```
+
+A distribution the checklist was not run on is not listed as supported, in the README or in the message.
 
 ## Not part of the set-up
 
