@@ -9,6 +9,10 @@ How work on Babawus is done when Claude does it with the user. Claude Code reads
 - **What Babawus does** is in [Requirements.md](projectmgt/Requirements.md), which changes in the same pull request as the behaviour.
 - **To-dos in the code** name their task: `// TODO(T-012): …`.
 - "Issue 132" is an issue in the Issues files; "#132" is a GitHub issue or pull request.
+- **New tasks and issues take the next free number**, which is the highest in the files plus one, on a fresh `origin/main`. If another branch is still unmerged, count its numbers too.
+    - Highest task: `grep -ohE 'T-[0-9]+' projectmgt/Tasks-*.md | sort -t- -k2 -n | tail -1`
+    - Highest issue: `grep -ohE '^[0-9]+\.' projectmgt/Issues-*.md | sort -n | tail -1`
+- **The pull request that finished a task** is found with `git log --grep "T-120\b"`.
 
 ## A task, step by step
 
@@ -16,15 +20,14 @@ How work on Babawus is done when Claude does it with the user. Claude Code reads
 2. Ask the open design questions, at most four at a time, with the recommended option first. Record the answers as issues before building.
 3. Build the logic in `babawus-core`, with unit tests, and the window in `babawus`. Run `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test`.
 4. Check the result in the real application on the test VMs (see below).
-5. Update Requirements.md and the user's documents where the change shows. Move the task word for word from Tasks-Open.md to [Tasks-Done.md](projectmgt/Tasks-Done.md) with its pull request's link, and raise "the next free number" where a task or an issue was added.
-6. Ask "Shall I commit, push and open PR #N?", and wait for a yes. Then commit, push and open the pull request in one go. Its title names the tasks: "Count Fedora's wheel group as administrator (T-120)".
+5. Update Requirements.md and the user's documents where the change shows. Move the task word for word from Tasks-Open.md to the end of [Tasks-Done.md](projectmgt/Tasks-Done.md).
+6. Ask "Shall I commit, push and open the pull request?", and wait for a yes. Then commit, push and open it in one go. Its title names each task it finishes, written out one by one and not as a range, since that is how a task's pull request is found: "Count Fedora's wheel group as administrator (T-120)".
 7. The user merges, and says when to carry on. Claude never merges.
 
 If the user asks for a change while another is uncommitted, ask whether it goes into the same pull request or a new one.
 
 ## Pull requests and CI
 
-- **Predict the pull request's number** for the link in Tasks-Done.md, so that the link is in the commit that opens it: `gh api 'repos/ziggymax/babawus/issues?state=all&per_page=1' -q '.[0].number'` plus one. Check the number after `gh pr create`. A second push just for the link cancels the first CI run.
 - **Before pushing to an existing pull request**, check that it is still open: `gh pr view <n> --json state`. The user may have merged it meanwhile. If so, branch anew from `origin/main`, and ask before opening a new pull request.
 - **Pull requests are squash-merged.** A branch stacked on one that was merged is carried over with `git rebase --onto origin/main <old base> <branch>`, never by resolving the conflicts on GitHub, which once dropped a module without CI noticing. Ask before a force-push.
 - **Read CI** with `gh run list --branch <branch>` and `gh run view <id> --log-failed`. A new run can take a minute to show up.

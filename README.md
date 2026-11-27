@@ -124,7 +124,7 @@ Every document in the project, and who it is for, sorted by who it is for.
 | [Requirements.md](projectmgt/Requirements.md) | Developers | The authoritative description of how Babawus behaves, with the glossary, the user stories and the technical requirements |
 | [ReleasePlanning.md](projectmgt/ReleasePlanning.md) | Developers | The latest release, the plan for the next one with its interim versions, and ideas for later releases |
 | [Tasks-Open.md](projectmgt/Tasks-Open.md) | Developers | The central list of outstanding work |
-| [Tasks-Done.md](projectmgt/Tasks-Done.md) | Developers | The finished tasks, in order, each with the pull request that finished it |
+| [Tasks-Done.md](projectmgt/Tasks-Done.md) | Developers | The finished tasks, in the order they were done |
 | [Issues-Unsettled.md](projectmgt/Issues-Unsettled.md) | Developers | The design questions that are still open |
 | [Issues-Resolved.md](projectmgt/Issues-Resolved.md) | Developers | The design questions that have been decided, with the decisions and the reasons for them |
 
