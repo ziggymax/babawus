@@ -1,6 +1,10 @@
 # Babawus done tasks
 
-The tasks that are finished, in the order they were done, each with the pull request that finished it. A task moves here word for word from [Tasks-Open.md](Tasks-Open.md), and keeps its number.
+The tasks that are finished, in the order they were done. A task moves here word for word from [Tasks-Open.md](Tasks-Open.md), and keeps its number.
+
+Up to T-158, each task has a link to the pull request that finished it. From T-159 on it has none (issue 185): the pull request's title names each task it finishes, so `git log --grep "T-159\b"` finds it, with the pull request's number at the end of the title.
+
+## Up to T-158
 
 | ID | Task | Pull request |
 | --- | --- | --- |
@@ -150,3 +154,9 @@ The tasks that are finished, in the order they were done, each with the pull req
 | T-149 | Once T-145 has passed, set the day 1.2.0 is released in the metainfo's `<release>` entry, which said 2026-11-26, with issue 179's changes to the README, the user guide and the release checklist, and run the smoke test on every guest on that commit's packages. The date is 2026-11-27 (#167, 129e2cd), and the smoke test passed on all three guests on its CI packages, both of which carry that date (issue 180) | [#167](https://github.com/ziggymax/babawus/pull/167) |
 | T-146 | Release 1.2.0: the annotated tag `v1.2.0` on main at #167 (129e2cd), whose packages passed the smoke test, and a [GitHub release](https://github.com/ziggymax/babawus/releases/tag/v1.2.0) with that commit's `babawus_1.2.0-1_amd64.deb`, `babawus-1.2.0-1.x86_64.rpm` and `SHA256SUMS`, and notes reviewed by the user, with issues 178 and 181 as known issues. ReleasePlanning.md names 1.2.0 as the latest release | [#168](https://github.com/ziggymax/babawus/pull/168) |
 | T-158 | Write the way of working into `CLAUDE.md` at the top of the repository, where Claude Code reads it at the start of every session, so that the rules are kept and reviewed with the project and not only in Claude's notes on one computer; the README's document map lists it | [#170](https://github.com/ziggymax/babawus/pull/170) |
+
+## From T-159 on
+
+| ID | Task |
+| --- | --- |
+| T-159 | Cut the bookkeeping each pull request needs: a finished task moves to Tasks-Done.md without a link to its pull request, so that the number no longer has to be predicted, and the next free task and issue numbers are worked out from the files instead of being kept in a sentence in each |
