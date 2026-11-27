@@ -30,7 +30,7 @@ The next releases start bringing Babawus to more platforms: first other Linux di
 
 ### Release 1.2.1
 
-1.2.1 fixes the two known issues of 1.2.0: the underscores hidden in the log window on Ubuntu (T-148, issue 178), and the lock for one Babawus per computer, which can't be taken on Fedora (T-150, issue 181). Its tasks are under "Later versions" in [Tasks-Open.md](Tasks-Open.md) until work on it begins.
+1.2.1 fixes the two known issues of 1.2.0: the underscores hidden in the log window on Ubuntu (T-148, issue 178), and the lock for one Babawus per computer, which can't be taken on Fedora and moves to `/dev/shm` (T-150, issue 181). It also makes "Prepare a stick" fit the screen with the Ext4 message showing (T-151, issue 183). There is no interim version. It is released as 1.2.0 was: the smoke test and the whole release checklist on all three guests, the release date, then the tag and the release (T-152 to T-157, issue 182).
 
 ## Future releases
 
