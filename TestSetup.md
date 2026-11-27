@@ -129,11 +129,12 @@ There is no automated test suite for the window: the logic behind each screen is
 
 ## A release, step by step
 
-1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main. **In the same pull request, the README's "Supported platforms" is brought up to date** (T-139, issue 174): the distributions, desktops and packages the release supports, and how its packages are tested, so that the commit that is tagged carries it. A note such as "Until 1.2.0 is released, …" goes once that release is made. **The same pull request adds the release at the top of `<releases>` in `crates/babawus/assets/io.github.ziggymax.Babawus.metainfo.xml`**, `<release version="<version>" date="<the day it is released>"/>` (issue 175); `tests/metainfo.rs` fails without it. Interim versions get none.
+1. The interim versions are done and tagged on main ([ReleasePlanning.md](projectmgt/ReleasePlanning.md)), and the release's version is merged to main. **In the same pull request, the README's "Supported platforms" is brought up to date** (T-139, issue 174): the distributions, desktops and packages the release supports, and how its packages are tested, so that the commit that is tagged carries it. A note such as "Until 1.2.0 is released, …" goes once that release is made. **The same pull request adds the release at the top of `<releases>` in `crates/babawus/assets/io.github.ziggymax.Babawus.metainfo.xml`**, `<release version="<version>" date="<the day it is planned for>"/>` (issue 175); `tests/metainfo.rs` fails without it. Interim versions get none.
 2. CI builds the `.deb` and the `.rpm` for main's commit and keeps them, with `SHA256SUMS` (T-129). `vms/fetch-packages.sh` downloads them into `target/github-packages/<commit>/` and checks the sums.
 3. The smoke test runs on every VM, on those packages: `vms/smoke.py --packages target/github-packages/<commit>`.
 4. The release checklist runs on each distribution's VM, on the same packages.
-5. That commit is tagged, and the GitHub release gets the same three files: `gh release create v<version> --target <commit> --title "Babawus <version>" --notes-file <notes> target/github-packages/<commit>/*`. Nothing is built again, so the released files are the ones that were tested.
+5. Once the checklists have passed, a last pull request sets the day the release is made in the metainfo's `<release>` entry (issue 180), since the date is built into the packages. CI builds that commit's packages, they are downloaded as in step 2, and the smoke test runs on them on every VM. The checklists aren't run again, since only the date differs.
+6. That commit is tagged, and the GitHub release gets the same three files: `gh release create v<version> --target <commit> --title "Babawus <version>" --notes-file <notes> target/github-packages/<commit>/*`. Nothing is built again, so the released files are the ones that were tested.
 
 **The release message** always has these parts, after what is new (T-139, issue 174), so that a user sees which distributions the release is for, and what its very files went through:
 
@@ -147,6 +148,7 @@ There is no automated test suite for the window: the logic behind each screen is
 ## How these files were tested
 
 - Built by GitHub, in CI run <link to the run> for <commit>, which also ran the automated tests on every distribution.
+- The release checklist was run on <each VM>, on the packages of <the earlier commit>, which differ from these only in the release date in the metainfo.
 - Installed as a user would, and tried by the smoke test, on <each VM, such as Linux Mint 22.3 (Cinnamon, X11)>, on <date>.
 - The whole release checklist, by hand: <link to each distribution's checklist issue>.
 

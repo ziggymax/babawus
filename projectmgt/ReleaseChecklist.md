@@ -17,6 +17,7 @@ The steps below are the same on every distribution, except where they point to t
 | Package | `babawus_<version>-1_amd64.deb` | `babawus_<version>-1_amd64.deb` | `babawus-<version>-1.x86_64.rpm` |
 | Is it installed? | `dpkg -s babawus` | `dpkg -s babawus` | `rpm -q babawus` |
 | **Install** it as a user would | Double-click the `.deb` in the file manager: Captain opens. Press "Install Package" | Double-click the `.deb` in the file manager: App Center opens, with "Potentially unsafe" for a package from outside it. Press "Install" | In a terminal: `sudo dnf install ./babawus-<version>-1.x86_64.rpm`. (GNOME Software can't open a local `.rpm`; see issue 174) |
+| **Update** to a newer version | As Install | In a terminal: `sudo apt install ./babawus_<version>-1_amd64.deb`. (App Center only shows "Installed" for a package that is installed already; see issue 179) | As Install |
 | **Find** Babawus | The menu in the lower left: search for "Backup" | Press the Super key, and type "Backup" | Press the Super key, and type "Backup" |
 | Make a **second account** | "Users and Groups", as a "Standard" account | Settings → System → Users → "Unlock…" → "Add User", as a "Standard" account | As on Ubuntu |
 | Where a stick is **mounted** | `/media/$USER/<name>` | `/run/media/$USER/<name>` | `/run/media/$USER/<name>` |
@@ -172,7 +173,7 @@ There is no step for pulling out a stick during "Finishing…": it lasted less t
 
 ## Updating
 
-- [ ] Build the packages again on the host with the version raised (for example from `1.2.0` to `1.2.1` in `Cargo.toml`, not committed), with `containers/package.sh`, copy the distribution's package into the VM, and install it as the table says. → It installs over the old one, as an update.
+- [ ] Build the packages again on the host with the version raised (for example from `1.2.0` to `1.2.1` in `Cargo.toml`, and for `babawus` and `babawus-core` in `Cargo.lock`, which the build won't change by itself; not committed), with `containers/package.sh`, copy the distribution's package into the VM, and update to it as the table says. → It installs over the old one, as an update.
 - [ ] Start Babawus. → It runs, keeps the chosen language, and stick A and its history are as before.
 - [ ] Run `ls /usr/share/babawus/languages`. → `da.toml  de.toml  en.toml  fr.toml`: the update kept the file added by hand.
 
