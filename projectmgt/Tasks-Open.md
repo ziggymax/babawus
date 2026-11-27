@@ -20,12 +20,7 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.1.1 is released (T-113). Next is release 1.2.0, other Linux distributions (see "Step 1" in [ReleasePlanning.md](ReleasePlanning.md)), in two interim versions. 1.2.0-alpha.1, which builds, tests and packages Babawus on every distribution, is done (T-118 to T-123, T-130, T-131; issue 169). The test VMs of 1.2.0 are done too (T-124 to T-129, T-132, T-133; issue 170): three guests, a smoke test, and CI keeping the packages a release is made from. 1.2.0-alpha.2, GNOME, is done too (T-135 to T-140; issue 174). T-141, AppStream metadata, is done too (issue 175). Next is the release of 1.2.0 (issue 176), as "A release, step by step" in [TestSetup.md](../TestSetup.md) says: the version 1.2.0 (T-142, done) and T-147, found on the Mint checklist (done), then the smoke test and the checklist on every distribution, on the packages GitHub built for that commit (T-143 to T-145, done), the release date (T-149) and the release.
-
-| ID | Task | Status | Source |
-| --- | --- | --- | --- |
-| T-149 | Once T-145 has passed, set the day 1.2.0 is released in the metainfo's `<release>` entry, which says 2026-11-26, with issue 179's changes to the README, the user guide and the release checklist, and run the smoke test on every guest on that commit's packages | In progress | Issue 180 |
-| T-146 | Release 1.2.0: the annotated tag `v1.2.0` on T-149's commit, whose packages passed the smoke test, and a GitHub release with that commit's `.deb`, `.rpm` and `SHA256SUMS` and the notes with the fixed parts, reviewed by you; ReleasePlanning.md names 1.2.0 as the latest release | Todo | Issue 176 |
+Babawus 1.2.0 is released (T-146), for Linux Mint, Ubuntu and Fedora. Next is release 1.2.1, which fixes 1.2.0's two known issues, T-148 and T-150 (see "Release 1.2.1" in [ReleasePlanning.md](ReleasePlanning.md)); they move here when work on it begins.
 
 ## Needs a decision
 
