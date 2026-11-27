@@ -21,14 +21,15 @@ How work on Babawus is done when Claude does it with the user. Claude Code reads
 3. Build the logic in `babawus-core`, with unit tests, and the window in `babawus`. Run `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test`.
 4. Check the result in the real application on the test VMs (see below).
 5. Update Requirements.md and the user's documents where the change shows. Move the task word for word from Tasks-Open.md to the end of [Tasks-Done.md](projectmgt/Tasks-Done.md).
-6. Ask "Shall I commit, push and open the pull request?", and wait for a yes. Then commit, push and open it in one go. Its title names each task it finishes, written out one by one and not as a range, since that is how a task's pull request is found: "Count Fedora's wheel group as administrator (T-120)".
-7. The user merges, and says when to carry on. Claude never merges.
+6. Ask "Shall I commit, push and open the pull request?", and wait for a yes. Then commit, push and open it in one go, and set it to merge by itself once CI has passed: `gh pr merge <n> --auto --squash`. The user's yes is the approval (issue 186). The title names each task it finishes, written out one by one and not as a range, since that is how a task's pull request is found: "Count Fedora's wheel group as administrator (T-120)".
+7. When the pull request has merged, say so, and wait for the user to say when to carry on. Claude never merges in any other way: not at once, and not past a check that failed.
 
 If the user asks for a change while another is uncommitted, ask whether it goes into the same pull request or a new one.
 
 ## Pull requests and CI
 
-- **Before pushing to an existing pull request**, check that it is still open: `gh pr view <n> --json state`. The user may have merged it meanwhile. If so, branch anew from `origin/main`, and ask before opening a new pull request.
+- **Before pushing to an existing pull request**, check that it is still open: `gh pr view <n> --json state`. It may have merged meanwhile, by itself or by the user. If so, branch anew from `origin/main`, and ask before opening a new pull request.
+- **If CI fails** on a pull request set to merge by itself, turn that off first, `gh pr merge <n> --disable-auto`, so that a fix can't merge unseen. Say what failed, and ask before pushing the fix and turning it on again.
 - **Pull requests are squash-merged.** A branch stacked on one that was merged is carried over with `git rebase --onto origin/main <old base> <branch>`, never by resolving the conflicts on GitHub, which once dropped a module without CI noticing. Ask before a force-push.
 - **Read CI** with `gh run list --branch <branch>` and `gh run view <id> --log-failed`. A new run can take a minute to show up.
 - **Change a pull request's description** with `gh api -X PATCH repos/ziggymax/babawus/pulls/<n> -F body=@<file>`; `gh pr edit` fails here.

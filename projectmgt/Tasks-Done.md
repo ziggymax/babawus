@@ -160,3 +160,4 @@ Up to T-158, each task has a link to the pull request that finished it. From T-1
 | ID | Task |
 | --- | --- |
 | T-159 | Cut the bookkeeping each pull request needs: a finished task moves to Tasks-Done.md without a link to its pull request, so that the number no longer has to be predicted, and the next free task and issue numbers are worked out from the files instead of being kept in a sentence in each |
+| T-160 | Let a pull request merge by itself once CI has passed: after the user's yes, Claude opens it and sets it to auto-merge, so that the yes is the one approval and nobody waits for CI to press the button. `CLAUDE.md` says so, and what happens when CI fails |
