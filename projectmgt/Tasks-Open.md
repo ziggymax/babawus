@@ -24,7 +24,6 @@ Babawus 1.2.0 is released (T-146), for Linux Mint, Ubuntu and Fedora. Next is re
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-150 | Move the lock for one Babawus per computer to `/dev/shm/babawus.lock`, which every user can create on every distribution, since Fedora's `/run/lock` is only writable by root, and add a checklist step for a second user opening Babawus while it is open | Todo | Issue 181 |
 | T-151 | Make "Prepare a stick" fit at the window's opening size with "Only an administrator can choose Ext4, …" showing, so that the box "I understand that everything on this stick will be erased" can be seen without scrolling; checked on all three guests | Todo | Issue 183 |
 | T-152 | Raise the version to 1.2.1, with its entry in the metainfo's `<releases>` for the planned day; the update step of ReleaseChecklist.md then raises the version from `1.2.1` to `1.2.2` | Todo | Issue 182 |
 | T-153 | Run the smoke test on every guest, and the whole release checklist on Linux Mint 22.3, on the 1.2.1 packages GitHub built for T-152's commit, recorded in an issue "Release 1.2.1 checklist on Linux Mint 22.3" | Todo | Issue 182 |

@@ -1,4 +1,4 @@
-//! The lock for one Babawus per computer, between two real users in a folder like `/run/lock/`.
+//! The lock for one Babawus per computer, between two real users in a folder like `/dev/shm/`.
 //!
 //! These use sudo, so a plain `cargo test` ignores them.
 
@@ -23,7 +23,7 @@ fn run_sudo(arguments: &[&str]) {
     assert!(sudo(arguments).status().unwrap().success());
 }
 
-/// A folder with the same owner and mode as `/run/lock/`, removed afterwards.
+/// A folder with the same owner and mode as `/dev/shm/`, removed afterwards.
 struct SharedFolder(PathBuf);
 
 impl SharedFolder {
