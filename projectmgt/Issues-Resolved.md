@@ -868,6 +868,7 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 178. **Underscores don't show in the log window on Ubuntu.** Found on the Ubuntu 26.04 checklist for 1.2.0 (T-144, #165): in "Log of …", on every line but the last, `NAME_INVALID_CHARS` reads "NAME INVALID CHARS". The monospace font there, DejaVu Sans Mono, draws its underscore just below the line, and the next line's background, the shading or the highlight, is painted over it. On Linux Mint, whose monospace font differs, they show.
     - **Decided (2026-11-26):** it doesn't hold up 1.2.0, since it is only how an Advanced window shows the log, and the log file is right. It is fixed in 1.2.1 (T-148), and the 1.2.0 release notes name it as a known issue.
     - **Found (2026-11-27, T-145, #166):** Fedora 45 isn't affected: its monospace font, Noto Sans Mono, shows the underscores on every line. So the known issue is Ubuntu's.
+    - **Fixed (2026-11-27, T-148):** each line of the log window has 2 pixels of room below it, inside its own background, so that the next line's shading or highlight starts below the underscore. Checked on all three guests with the log of each one's 1.2.0 checklist stick: the underscores show on every line, shaded, highlighted or plain.
 
 ## Decisions on updating on Ubuntu (T-146)
 

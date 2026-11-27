@@ -28,6 +28,10 @@ const SETTLE: Duration = Duration::from_millis(300);
 const RUN_POSITION: f64 = 0.2;
 /// How long the window waits for a new text to be laid out before scrolling in it.
 const LAID_OUT: Duration = Duration::from_millis(150);
+/// Room below each line, inside its own background. Some fixed-width fonts, such as DejaVu Sans
+/// Mono on Ubuntu, draw the underscore just below the line, where the next line's shading or
+/// highlight would be painted over it (T-148, issue 178).
+const BELOW_LINES: i32 = 2;
 
 const HIGHLIGHT: &str = "highlight";
 /// A fixed-width font for the whole log. The text view's own setting for it relies on the
@@ -73,6 +77,7 @@ impl LogWindow {
             .cursor_visible(false)
             .monospace(true)
             .wrap_mode(WrapMode::None)
+            .pixels_below_lines(BELOW_LINES)
             .left_margin(12)
             .right_margin(12)
             .top_margin(8)
