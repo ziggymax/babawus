@@ -120,6 +120,7 @@ Every document in the project, and who it is for, sorted by who it is for.
 | [ReleaseChecklist.md](projectmgt/ReleaseChecklist.md) | Testers | The checklist run by hand on each distribution before each release |
 | [DevEnvSetup.md](DevEnvSetup.md) | Developers | The steps for setting up the host and the test VMs, the commands for building and testing, and what was learned along the way |
 | [TestSetup.md](TestSetup.md) | Developers | How Babawus is built, tested and released on every distribution: the containers, CI, the packages, the VMs, the driver and the smoke test, and why |
+| [CLAUDE.md](CLAUDE.md) | Developers | How work on Babawus is done with Claude: where things are written down, a task step by step, pull requests, and checking on the test VMs |
 | [Requirements.md](projectmgt/Requirements.md) | Developers | The authoritative description of how Babawus behaves, with the glossary, the user stories and the technical requirements |
 | [ReleasePlanning.md](projectmgt/ReleasePlanning.md) | Developers | The latest release, the plan for the next one with its interim versions, and ideas for later releases |
 | [Tasks-Open.md](projectmgt/Tasks-Open.md) | Developers | The central list of outstanding work |
