@@ -3,10 +3,13 @@
 //! running. See "Platform layer" and "One Babawus at a time" in Requirements.md.
 //!
 //! The computer lock uses the real file system, because the point of it is what the system does: it releases
-//! the lock when the process ends, even after a crash. The lock file stays behind, and the system
-//! empties `/run/lock/` when it starts.
+//! the lock when the process ends, even after a crash. The lock file stays behind, and `/dev/shm/`
+//! lives in memory, so it is empty after each start of the system. When the user who made the
+//! file logs out, logind may remove it (`RemoveIPC`), even while another user's Babawus holds
+//! it; a second Babawus can then open, which only loses the message, since each medium has a lock
+//! of its own (issue 181).
 //!
-//! All users share the file, and `/run/lock/` is a shared folder. There, the system refuses to
+//! All users share the file, and `/dev/shm/` is a shared folder. There, the system refuses to
 //! open another user's file with the option to create it (`fs.protected_regular`), so the file is
 //! opened first, and only created if it isn't there.
 

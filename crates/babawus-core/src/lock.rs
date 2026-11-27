@@ -5,7 +5,7 @@
 //! over.
 //!
 //! Between creating the lock file and writing to it, the lock looks left over. Only another
-//! Babawus on this computer could see that, and the lock in `/run/lock/` normally rules that out.
+//! Babawus on this computer could see that, and the lock in `/dev/shm/` normally rules that out.
 //! In case that lock can't be used, a new lock is read back, and only counts if it is still ours.
 
 use std::collections::BTreeSet;

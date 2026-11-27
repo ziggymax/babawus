@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 const SETTINGS_FILE: &str = "babawus/settings.toml";
 const LAST_BACKUP_FILE: &str = "babawus/last_backup";
-const COMPUTER_LOCK_FILE: &str = "/run/lock/babawus.lock";
+const COMPUTER_LOCK_FILE: &str = "/dev/shm/babawus.lock";
 const INSTALLED_LANGUAGES_FOLDER: &str = "/usr/share/babawus/languages";
 
 /// The user's home folder: `$HOME`, or else the one in the user database.
@@ -42,7 +42,9 @@ pub fn last_backup_file() -> PathBuf {
     .join(LAST_BACKUP_FILE)
 }
 
-/// The lock file that lets only one Babawus run on this computer, in the shared `/run/lock/`.
+/// The lock file that lets only one Babawus run on this computer, in the shared `/dev/shm/`,
+/// which every user can write to on every distribution, where Fedora's `/run/lock/` is only
+/// writable by root (T-150, issue 181).
 pub fn computer_lock_file() -> PathBuf {
     PathBuf::from(COMPUTER_LOCK_FILE)
 }
@@ -90,12 +92,12 @@ mod tests {
     }
 
     #[test]
-    fn the_files_are_where_earlier_versions_kept_them() {
+    fn the_files_are_where_they_belong() {
         let home = home_folder();
         assert!(home.is_absolute());
         assert!(settings_file().ends_with("babawus/settings.toml"));
         assert!(last_backup_file().ends_with("babawus/last_backup"));
-        assert_eq!(computer_lock_file(), Path::new("/run/lock/babawus.lock"));
+        assert_eq!(computer_lock_file(), Path::new("/dev/shm/babawus.lock"));
         assert_eq!(
             installed_languages_folder(),
             Path::new("/usr/share/babawus/languages")

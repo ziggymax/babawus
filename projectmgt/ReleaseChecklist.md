@@ -20,6 +20,7 @@ The steps below are the same on every distribution, except where they point to t
 | **Update** to a newer version | As Install | In a terminal: `sudo apt install ./babawus_<version>-1_amd64.deb`. (App Center only shows "Installed" for a package that is installed already; see issue 179) | As Install |
 | **Find** Babawus | The menu in the lower left: search for "Backup" | Press the Super key, and type "Backup" | Press the Super key, and type "Backup" |
 | Make a **second account** | "Users and Groups", as a "Standard" account | Settings → System → Users → "Unlock…" → "Add User", as a "Standard" account | As on Ubuntu |
+| **Switch** to another account without logging out | The menu's "Log out" button, then "Switch User" | The system menu in the top right, the power button, then "Switch User…" | As on Ubuntu |
 | Where a stick is **mounted** | `/media/$USER/<name>` | `/run/media/$USER/<name>` | `/run/media/$USER/<name>` |
 | **Uninstall** | `sudo apt remove babawus` | `sudo apt remove babawus` | `sudo dnf remove babawus` |
 
@@ -77,6 +78,7 @@ These steps follow [AddingALanguage.md](../AddingALanguage.md), with a made-up F
 - [ ] Press "Erase and format". → "Formatting BACKUP-A…", with no way back and the window can't be closed. After a few seconds: "BACKUP-A is ready", with a green tick.
 - [ ] Press "Back". → The start screen, with stick A selected, showing "Not set up for you" and an amber "!", and a greyed-out green "Start backup" below stick A's row, whose tooltip says why.
 - [ ] Format stick B the same way, but choose Ext4. → "Ext4 asks for your password while formatting." shows below Ext4. It asks for your password, takes longer (about a minute for 16 GB), then "… is ready".
+- [ ] One Babawus per computer: with Babawus open in your account, switch to the second account without logging out (see the table), and start Babawus there. → No second window, but a message with Babawus's logo: "Babawus is already open for <your user name> on this computer." and "Ask them to close it, or switch to their account. #4", with an OK button. Press OK. → It closes. In a terminal, `ls -l /dev/shm/babawus.lock`. → `-rw-rw-rw-`, owned by your account (issue 181). Switch back to your account.
 - [ ] Without administrator rights: close Babawus, because only one runs per computer, log out, leaving both sticks plugged in, log in to the second account, and start Babawus. → Both sticks show "Open for another account", with an amber "!", a grey stick, and only their Eject buttons: no "Start backup" and no buttons in the details, also with Advanced on.
 - [ ] Pull out both sticks and plug them back in. → Both show "Not set up for you".
 - [ ] Turn Advanced on, and press "Prepare…". → Ext4 is greyed out, with "Only an administrator can choose Ext4, …" below it.
