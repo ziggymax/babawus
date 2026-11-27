@@ -98,7 +98,7 @@ Download the package for your distribution from the release on GitHub, and insta
 - **Ubuntu:** double-click the `.deb`. App Center opens, warning that the package comes from outside it; choose "Install".
 - **Fedora:** in a terminal, in the folder with the package, run `sudo dnf install ./babawus-<version>-1.x86_64.rpm`. (Fedora's Software can't install a package file that was downloaded.)
 
-Install a newer version the same way: it replaces the old one, and keeps the chosen language and everything on the sticks. Then start Babawus as [UserGuide.md](UserGuide.md) says: it is called "Backup" in the desktop's menus.
+Install a newer version the same way, except on Ubuntu, whose App Center only shows "Installed" for a package that is installed already: there, in a terminal, in the folder with the package, run `sudo apt install ./babawus_<version>-1_amd64.deb`. A newer version replaces the old one, and keeps the chosen language and everything on the sticks. Then start Babawus as [UserGuide.md](UserGuide.md) says: it is called "Backup" in the desktop's menus.
 
 To uninstall Babawus, run `sudo apt remove babawus` on Linux Mint and Ubuntu, or `sudo dnf remove babawus` on Fedora. Your backups on the sticks are not touched. A few small files stay behind on the computer; [UserGuide.md](UserGuide.md) lists them and how to remove them.
 

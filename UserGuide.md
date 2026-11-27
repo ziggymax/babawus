@@ -1,6 +1,6 @@
 # Babawus user guide
 
-This guide holds the practical details behind the [README](README.md): how to start Babawus on each desktop, how to set up the reminder at login, how your files are kept on the stick, where to find the log, and what is left behind when Babawus is uninstalled.
+This guide holds the practical details behind the [README](README.md): how to start Babawus on each desktop, how to set up the reminder at login, how your files are kept on the stick, where to find the log, how to update Babawus, and what is left behind when it is uninstalled.
 
 ## Starting Babawus
 
@@ -56,6 +56,12 @@ There are two ways to read it:
 - **In a text editor.** Open the file with any text editor. The folder `.babawus` is hidden, so show hidden files in the file manager first.
 
 The format is described under "Format of the log" in [Requirements.md](projectmgt/Requirements.md).
+
+## Updating
+
+To update Babawus, install the newer package as the [README](README.md) says. On Linux Mint, double-click the `.deb`. On Ubuntu, App Center can't update a package that is installed already: it only shows a greyed-out "Installed". Instead, in a terminal, in the folder with the package, run `sudo apt install ./babawus_<version>-1_amd64.deb`. On Fedora, run `sudo dnf install ./babawus-<version>-1.x86_64.rpm`, as when installing.
+
+The newer version replaces the old one. The chosen language, the reminder at login and everything on the sticks stay as they were.
 
 ## Uninstalling
 
