@@ -895,3 +895,8 @@ The user asked on 2026-11-13, after trying the build with T-053 to T-057, for tw
 
 183. **"Prepare a stick" can be taller than the screen.** Found on the Fedora 45 checklist for 1.2.0 (T-145, #166): as a standard account, with "Only an administrator can choose Ext4, …" below Ext4, the page was taller than the window at its opening size on the 1280 × 800 screen, and the box "I understand that everything on this stick will be erased" scrolled out of sight, so that it had to be reached with Tab or by scrolling. T-132 had made the page fit at 680 high without that message.
     - **Decided (2026-11-27):** fixed in 1.2.1 (T-151): the page fits at the window's opening size with the Ext4 message showing, checked on all three guests.
+
+## Decisions on the way of working
+
+184. **The way of working was written down only in Claude's notes.** A look at the project as a whole (2026-11-27) found that the rules each task follows, such as branching, recording decisions before building, checking on every guest and asking before each pull request, lived in Claude's memory on the host, outside the repository: not reviewed, not versioned, and gone with a new computer.
+    - **Decided (2026-11-27):** they go into `CLAUDE.md` at the top of the repository (T-158), which Claude Code reads at the start of every session. It says how the work is done and points to the other documents rather than repeating them. Claude's notes keep only what belongs to the host, such as how the guests are reached.
