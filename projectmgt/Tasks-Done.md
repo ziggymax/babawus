@@ -169,3 +169,4 @@ Up to T-158, each task has a link to the pull request that finished it. From T-1
 | T-163 | In the log window, make the highlighted run, and the shading of every other run, readable on a dark desktop theme as well as on a light one; checked on all three guests with a dark and a light theme |
 | T-164 | Make the log window scroll to the highlighted run when its lines aren't all in view, as on Fedora 45 with a log of 33 lines; checked on all three guests |
 | T-165 | Make Babawus open dark on Ubuntu 26.04 when it is started while the dark style is on, as it does on Fedora 45; checked on all three guests |
+| T-166 | In DevEnvSetup.md, explain how the test VMs work underneath: how a guest is reset to its `clean` snapshot and what that snapshot holds, how an emulated stick is made and plugged in and pulled out through libvirt, and how a real stick is passed through |

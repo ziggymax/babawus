@@ -24,7 +24,6 @@ Babawus 1.2.0 is released (T-146), for Linux Mint, Ubuntu and Fedora. Next is re
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
-| T-166 | In DevEnvSetup.md, explain how the test VMs work underneath: how a guest is reset to its `clean` snapshot and what that snapshot holds, how an emulated stick is made and plugged in and pulled out through libvirt, and how a real stick is passed through | Todo | Issue 192 |
 | T-167 | Give every guest the accounts `tester` (administrator) and `standard` (no administrator rights), with test passwords in `vms/accounts.toml`, through one post-install step shared by all guests (accounts, SSH, `sudo`, automatic login, the desktop's settings); let the driver log in as either account through the display manager's automatic login, and type an account's password from the file; apply it to the existing guests | Todo | Issue 192 |
 | T-168 | Update a guest before release testing with one command: back to `clean`, upgrade the system, check that Babawus isn't installed, restart and log in, and save it as the new `clean`, keeping the one before as `clean-previous` and writing down the package versions | Todo | Issue 192 |
 | T-169 | Build the Ubuntu 26.04 guest from scratch with `vms/build.py`: download and check the ISO, install with autoinstall, run T-167's step and T-168's update, make the stick images the tests start from, and take `clean` | Todo | Issue 192 |
