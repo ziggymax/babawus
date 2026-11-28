@@ -173,8 +173,8 @@ Either = "{first} or {last}"
 Loading = "Reading the stick…"
 
 FormatHeading = "Prepare a stick"
-FormatIntro = "Formatting erases a stick and sets it up for backups with Babawus. Choose the stick:"
-FormatNoDrives_39 = "No stick that Babawus may format is plugged in."
+FormatIntro = "Formatting erases this stick and sets it up for backups with Babawus:"
+FormatNoDrives_39 = "This stick is no longer plugged in, or Babawus may no longer format it."
 FormatNoFileSystem = "No file system"
 FormatNoLabel = "No name"
 FormatWithBackups = "{volume}, with Babawus backups"
@@ -524,7 +524,7 @@ Choose what to back up under {MenuAdvanced}, with "{ChangeSetup}" and "{SetupCho
 If it happens again, see #6.
 
 #39
-Babawus only formats USB sticks, never the computer's own disks. Plug in the stick to prepare.
+The stick was pulled out, or something else on the computer started using it. Go back, plug the stick in again, select it in the list, and press "{Prepare}" again.
 
 #40
 Formatting as Ext4 needs an account with sudo rights and the password for that account. Choose exFAT instead, or prepare the stick from an administrator's account.

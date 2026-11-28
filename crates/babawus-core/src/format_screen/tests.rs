@@ -97,6 +97,28 @@ fn each_drive_says_what_is_on_it() {
 }
 
 #[test]
+fn the_drive_to_format_is_found_by_its_id() {
+    let choice = drive_choice(&snapshot(), OTHER_ID, &babawus(), en());
+
+    assert_eq!(
+        choice,
+        Some(DriveChoice {
+            id: OTHER_ID.to_owned(),
+            name: "15.5 GB".to_owned(),
+            contents: "No file system".to_owned(),
+        })
+    );
+}
+
+#[test]
+fn a_drive_that_has_gone_or_may_not_be_formatted_is_not_found() {
+    assert_eq!(drive_choice(&snapshot(), "gone", &babawus(), en()), None);
+    let mut in_use = snapshot();
+    in_use.blocks[3].hint_system = true;
+    assert_eq!(drive_choice(&in_use, OTHER_ID, &babawus(), en()), None);
+}
+
+#[test]
 fn a_volume_with_no_label_says_so() {
     let mut snapshot = snapshot();
     snapshot.volumes.push(volume(SDC1, OTHER, "", "vfat", true));

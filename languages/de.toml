@@ -170,8 +170,8 @@ Either = "{first} oder {last}"
 Loading = "Der Stick wird gelesen …"
 
 FormatHeading = "Einen Stick vorbereiten"
-FormatIntro = "Beim Formatieren wird ein Stick gelöscht und für Sicherungen mit Babawus eingerichtet. Wähle den Stick:"
-FormatNoDrives_39 = "Es ist kein Stick eingesteckt, den Babawus formatieren darf."
+FormatIntro = "Beim Formatieren wird dieser Stick gelöscht und für Sicherungen mit Babawus eingerichtet:"
+FormatNoDrives_39 = "Dieser Stick ist nicht mehr eingesteckt, oder Babawus darf ihn nicht mehr formatieren."
 FormatNoFileSystem = "Kein Dateisystem"
 FormatNoLabel = "Kein Name"
 FormatWithBackups = "{volume}, mit Babawus-Sicherungen"
@@ -521,7 +521,7 @@ Wähle unter "{MenuAdvanced}" mit "{ChangeSetup}" und "{SetupChoose}", was gesic
 Wenn es wieder passiert, siehe #6.
 
 #39
-Babawus formatiert nur USB-Sticks, nie die eigenen Laufwerke des Computers. Steck den Stick ein, der vorbereitet werden soll.
+Der Stick wurde abgezogen, oder etwas anderes auf dem Computer benutzt ihn jetzt. Geh zurück, steck den Stick wieder ein, wähle ihn in der Liste aus und drücke noch einmal „{Prepare}“.
 
 #40
 Zum Formatieren mit Ext4 braucht man ein Konto mit sudo-Rechten und das Passwort dieses Kontos. Wähle stattdessen exFAT, oder bereite den Stick von einem Administratorkonto aus vor.

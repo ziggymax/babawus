@@ -1,12 +1,14 @@
 //! What the start screen shows for each medium. See "Start Babawus and see status" in
 //! Requirements.md. The UI only puts these texts and marks on the screen.
 
+use std::collections::HashSet;
 use std::time::SystemTime;
 
+use crate::format_screen::{contents_text, drive_name};
 use crate::fs::FileSystem;
 use crate::language::Language;
 use crate::log::read_runs;
-use crate::media::{Medium, Snapshot, Status, Viewer};
+use crate::media::{Drive, Medium, Snapshot, Status, Viewer, Volume};
 use crate::platform;
 use crate::text::{Text, size};
 use crate::time::ClockTime;
@@ -220,8 +222,8 @@ pub struct Shown<'a> {
     pub medium: &'a Medium,
     /// Nothing while the medium is being checked.
     pub checked: Option<&'a Checked>,
-    /// Babawus may format at least one drive, so "Prepare…" can open the format view, which
-    /// lists them all. See "Formatting a medium" and issue 78.
+    /// Babawus may format the medium's drive, so "Prepare…" can open the format view for it.
+    /// See "Formatting a medium" and issues 78 and 183.
     pub formattable: bool,
 }
 
@@ -302,7 +304,104 @@ pub fn details(
     }
 }
 
-/// A USB stick that is plugged in, but isn't in the list. See issue 121.
+/// A stick in the list that can't be backed up to as it is, but that Babawus may format: none
+/// of its file systems is opened, or it has none. It is listed so that it can be selected and
+/// then prepared, as every stick is selected on the start screen (issue 183).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Unprepared {
+    pub drive: Drive,
+    /// Its file systems, none of which is opened.
+    pub volumes: Vec<Volume>,
+}
+
+impl Unprepared {
+    /// What the list calls it: the first name its file systems have, or else its size, which
+    /// is short enough for the list and tells two sticks apart better than their maker does.
+    pub fn label(&self, language: Language) -> String {
+        self.volumes
+            .iter()
+            .map(|volume| volume.label.trim())
+            .find(|label| !label.is_empty())
+            .map_or_else(|| size(self.drive.size, language), str::to_owned)
+    }
+
+    fn status(&self) -> Text {
+        if self.volumes.is_empty() {
+            Text::NotBackupMedium
+        } else {
+            Text::StickNotOpened
+        }
+    }
+}
+
+/// The sticks that Babawus may format and that have no row as a medium, in the order of their
+/// drives. They come after the media in the list.
+pub fn unprepared(snapshot: &Snapshot) -> Vec<Unprepared> {
+    let listed: Vec<String> = snapshot
+        .media()
+        .into_iter()
+        .map(|medium| medium.drive.object_path)
+        .collect();
+    snapshot
+        .formattable()
+        .into_iter()
+        .filter(|target| !listed.contains(&target.drive.object_path))
+        .map(|target| Unprepared {
+            volumes: snapshot
+                .volumes
+                .iter()
+                .filter(|volume| volume.drive == target.drive.object_path)
+                .cloned()
+                .collect(),
+            drive: target.drive,
+        })
+        .collect()
+}
+
+/// The row for a stick that can't be used yet.
+pub fn unprepared_row(stick: &Unprepared, language: Language) -> Row {
+    Row {
+        label: stick.label(language),
+        babawus: false,
+        checking: false,
+        tooltip: stick.status().get(language).to_owned(),
+        eject_tooltip: Text::EjectTooltip.get(language).to_owned(),
+    }
+}
+
+/// The details of a stick that can't be used yet: why not, and what to do. The only action is
+/// "Prepare…", while `advanced` is on.
+pub fn unprepared_details(stick: &Unprepared, language: Language, advanced: bool) -> Details {
+    let volumes: Vec<&Volume> = stick.volumes.iter().collect();
+    let about = [
+        drive_name(&stick.drive, language),
+        contents_text(&volumes, &HashSet::new(), language),
+    ];
+    let explanation = if stick.volumes.is_empty() {
+        Text::ExplainNotBackupMedium
+    } else {
+        Text::StickNotOpenedAdvice
+    };
+    let buttons = advanced
+        .then(|| Button {
+            action: Action::Prepare,
+            tooltip: Action::Prepare.tooltip().get(language).to_owned(),
+        })
+        .into_iter()
+        .collect();
+    Details {
+        label: stick.label(language),
+        mark: Some(Mark::Unusable),
+        status: stick.status().get(language).to_owned(),
+        about: about.join(" · "),
+        last_backup: None,
+        explanation: Some(explanation.get(language).to_owned()),
+        start_backup: None,
+        buttons,
+    }
+}
+
+/// A USB stick that is plugged in, but isn't a medium in the list. See issue 121.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Unlisted {
     /// It has a file system that isn't opened, which plugging it back in opens.
@@ -387,6 +486,32 @@ pub fn selection<'a>(
     });
     match (ready.next(), ready.next()) {
         (Some((medium, _)), None) => Some(medium),
+        _ => None,
+    }
+}
+
+/// The row to select when the list changes, named by the udisks2 object path of a medium's
+/// file system, or of the drive of a stick that can't be used yet. `selected` is the row
+/// selected so far. A medium is selected as [`selection`] says. A stick that can't be used yet
+/// stays selected while it is in the list, and is selected when it is all there is in the list,
+/// so that what to do about it shows at once.
+pub fn selected_row(
+    media: &[(Medium, Option<Checked>)],
+    unprepared: &[Unprepared],
+    selected: Option<&str>,
+) -> Option<String> {
+    if let Some(selected) = selected
+        && unprepared
+            .iter()
+            .any(|stick| stick.drive.object_path == selected)
+    {
+        return Some(selected.to_owned());
+    }
+    if let Some(medium) = selection(media, selected) {
+        return Some(medium.volume.object_path.clone());
+    }
+    match (media, unprepared) {
+        ([], [only]) => Some(only.drive.object_path.clone()),
         _ => None,
     }
 }

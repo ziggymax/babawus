@@ -1,6 +1,6 @@
-//! The format view: choose a drive, a label and a file system, confirm, then wait while it is
-//! formatted, and see how it went. See "Format USB media" in Requirements.md and issues
-//! 78-81. What to show comes from [`babawus_core::format_screen`]; this module only puts it on
+//! The format view: for the stick selected on the start screen, choose a label and a file
+//! system, confirm, then wait while it is formatted, and see how it went. See "Format USB media"
+//! in Requirements.md and issues 78-81 and 183. What to show comes from [`babawus_core::format_screen`]; this module only puts it on
 //! the screen. The window keeps what the user has chosen in the widgets themselves.
 
 use babawus_core::format_screen::{DriveChoice, ResultShown, ext4_allowed, ext4_note};
@@ -11,13 +11,16 @@ use babawus_core::verdict_screen::VerdictMark;
 use babawus_core::versions::Format;
 use gtk4::prelude::*;
 use gtk4::{
-    Align, Box, Button, CheckButton, Entry, Image, Label, ListBox, ListBoxRow, Orientation,
-    PolicyType, ScrolledWindow, SelectionMode, Separator, Spinner, Stack,
+    Align, Box, Button, CheckButton, Entry, Image, Label, Orientation, PolicyType, ScrolledWindow,
+    Separator, Spinner, Stack,
 };
 
 use crate::icons;
 
 const MARGIN: i32 = 32;
+/// Above the heading. Less than at the sides, so that the page fits the window at its opening
+/// size with every line showing (issue 183).
+const MARGIN_TOP: i32 = 16;
 const SPACING: i32 = 12;
 
 /// Which part of the format view is showing.
@@ -35,7 +38,11 @@ pub struct FormatPage {
 
     // Choosing.
     intro: Label,
-    pub drives: ListBox,
+    /// The stick that will be formatted, highlighted: its name, and what is on it now.
+    target: Box,
+    target_name: Label,
+    target_contents: Label,
+    /// Shown instead when the stick has gone, or may no longer be formatted.
     no_drives: Label,
     label_heading: Label,
     pub label: Entry,
@@ -100,11 +107,16 @@ impl FormatPage {
         let title = label(Some("babawus-title"));
 
         let intro = label(None);
-        let drives = ListBox::builder()
-            .selection_mode(SelectionMode::Single)
-            .build();
-        drives.add_css_class("boxed-list");
-        drives.set_show_separators(true);
+        let target_name = label(Some("babawus-next-step"));
+        let target_contents = label(None);
+        let target_text = Box::new(Orientation::Vertical, 2);
+        target_text.set_hexpand(true);
+        target_text.append(&target_name);
+        target_text.append(&target_contents);
+        let target = Box::new(Orientation::Horizontal, SPACING);
+        target.add_css_class("babawus-format-target");
+        target.append(&icons::image(&icons::stick(false), 32));
+        target.append(&target_text);
         let no_drives = label(Some("babawus-status"));
         let label_heading = label(Some("babawus-next-step"));
         let label_entry = Entry::builder()
@@ -134,10 +146,13 @@ impl FormatPage {
         let understood = CheckButton::new();
         let choose = column();
         choose.append(&intro);
-        choose.append(&drives);
+        choose.append(&target);
         choose.append(&no_drives);
-        choose.append(&label_heading);
-        choose.append(&label_entry);
+        // The field is beside its heading, not below it, to save the page a line (issue 183).
+        let label_row = Box::new(Orientation::Horizontal, SPACING);
+        label_row.append(&label_heading);
+        label_row.append(&label_entry);
+        choose.append(&label_row);
         choose.append(&label_problem);
         choose.append(&file_system_heading);
         choose.append(&choice(&exfat, &exfat_detail));
@@ -176,7 +191,7 @@ impl FormatPage {
         parts.add_named(&result_part, Some("result"));
 
         let page = column();
-        page.set_margin_top(MARGIN);
+        page.set_margin_top(MARGIN_TOP);
         page.set_margin_bottom(SPACING);
         page.set_margin_start(MARGIN);
         page.set_margin_end(MARGIN);
@@ -215,7 +230,9 @@ impl FormatPage {
             parts,
             title,
             intro,
-            drives,
+            target,
+            target_name,
+            target_contents,
             no_drives,
             label_heading,
             label: label_entry,
@@ -276,45 +293,15 @@ impl FormatPage {
             .set_tooltip_text(Some(Text::BackTooltip.get(language)));
     }
 
-    /// Puts `choices` in the list, and selects the drive with the ID `selected` if it is there.
-    /// Each row is named by its drive ID.
-    pub fn set_drives(&self, choices: &[DriveChoice], selected: Option<&str>) {
-        self.drives.remove_all();
-        for choice in choices {
-            let name = label(Some("babawus-next-step"));
-            name.set_label(&choice.name);
-            let contents = label(Some("dim-label"));
-            contents.set_label(&choice.contents);
-            let text = Box::new(Orientation::Vertical, 2);
-            text.set_hexpand(true);
-            text.append(&name);
-            text.append(&contents);
-            let content = Box::builder()
-                .orientation(Orientation::Horizontal)
-                .spacing(SPACING)
-                .margin_top(8)
-                .margin_bottom(8)
-                .margin_start(8)
-                .margin_end(8)
-                .build();
-            content.append(&icons::image(&icons::stick(false), 32));
-            content.append(&text);
-            let row = ListBoxRow::builder().child(&content).build();
-            row.set_widget_name(&choice.id);
-            self.drives.append(&row);
-            if Some(choice.id.as_str()) == selected {
-                self.drives.select_row(Some(&row));
-            }
+    /// Shows the stick that will be formatted, or that there is none any more.
+    pub fn set_target(&self, choice: Option<&DriveChoice>) {
+        if let Some(choice) = choice {
+            self.target_name.set_label(&choice.name);
+            self.target_contents.set_label(&choice.contents);
         }
-        self.drives.set_visible(!choices.is_empty());
-        self.no_drives.set_visible(choices.is_empty());
-    }
-
-    /// The udisks2 drive ID of the chosen drive.
-    pub fn chosen_drive(&self) -> Option<String> {
-        self.drives
-            .selected_row()
-            .map(|row| row.widget_name().to_string())
+        self.intro.set_visible(choice.is_some());
+        self.target.set_visible(choice.is_some());
+        self.no_drives.set_visible(choice.is_none());
     }
 
     pub fn format(&self) -> Format {

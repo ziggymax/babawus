@@ -17,7 +17,7 @@ use babawus_core::autostart;
 use babawus_core::coverage_screen::{Gathered, coverage_screen};
 use babawus_core::debug::{self, Debug, Topic};
 use babawus_core::format_screen::{
-    DriveChoice, Failure, can_format, drive_choices, label_problem, result_screen, suggested_label,
+    DriveChoice, Failure, can_format, drive_choice, label_problem, result_screen, suggested_label,
     warning,
 };
 use babawus_core::fs::{FileSystem, RealFs};
@@ -33,7 +33,7 @@ use babawus_core::settings::Settings;
 use babawus_core::setup_screen::{
     self, Editor, Here, HereAction, Opened, SaveError, overview, save_error_text,
 };
-use babawus_core::start_screen::{self, Action, Checked, Shown, Unlisted};
+use babawus_core::start_screen::{self, Action, Checked, Shown, Unlisted, Unprepared};
 use babawus_core::text::{self, Text};
 use babawus_core::time::local_clock;
 use babawus_core::verdict_screen::{Context, verdict_screen};
@@ -109,6 +109,13 @@ const CSS: &str = "
 .babawus-plug-in { font-size: 16pt; }
 .babawus-verdict { font-size: 18pt; font-weight: bold; }
 .babawus-next-step { font-weight: bold; }
+/* The stick that the format view will erase (issue 183). */
+.babawus-format-target {
+    border: 1px solid alpha(currentColor, 0.5);
+    border-radius: 8px;
+    background-color: alpha(currentColor, 0.08);
+    padding: 8px;
+}
 .babawus-advanced {
     background-color: #f0a020;
     color: #3a2400;
@@ -128,7 +135,8 @@ struct Notice {
 }
 
 /// One row of the media list: the stick, its label and its Eject button, and below them
-/// "Start backup" while it is the selected Babawus stick (issue 134).
+/// "Start backup" while it is the selected Babawus stick (issue 134). The media come first,
+/// then the sticks that can't be used yet (issue 183).
 struct RowWidgets {
     row: ListBoxRow,
     stick: Image,
@@ -146,9 +154,6 @@ struct DetailsWidgets {
     empty_advice: Label,
     /// A notice on the empty page, such as "You can pull out BACKUP-A now.".
     empty_notice: Label,
-    /// "Prepare…" on the empty page, so that a blank stick can be formatted while Advanced is
-    /// on. See issue 78.
-    empty_prepare: Button,
     title: Label,
     mark: Image,
     spinner: Spinner,
@@ -209,12 +214,11 @@ enum FormatStage {
 /// The format view, from opening it until the user goes back.
 struct FormatState {
     stage: FormatStage,
-    /// The drives that may be formatted, as last listed.
-    choices: Vec<DriveChoice>,
-    /// The udisks2 drive ID of the chosen drive.
-    drive: Option<String>,
-    /// The user has typed a label, so it is no longer replaced by the suggestion.
-    label_edited: bool,
+    /// The udisks2 drive ID of the stick to format, which was selected on the start screen
+    /// (issue 183).
+    drive: String,
+    /// The stick as it is now. Nothing if it has gone, or may no longer be formatted.
+    choice: Option<DriveChoice>,
 }
 
 /// How far the configuration editor has got.
@@ -314,9 +318,12 @@ struct Window {
     advanced: Cell<bool>,
     /// The media in the list, each with what checking it found out, once that is known.
     media: RefCell<Vec<(Medium, Option<Checked>)>>,
+    /// The sticks in the list that can't be used yet, but may be formatted (issue 183).
+    unprepared: RefCell<Vec<Unprepared>>,
     /// The udisks2 drive IDs of the drives Babawus may format.
     formattable: RefCell<HashSet<String>>,
-    /// The udisks2 object path of the selected medium's file system.
+    /// The selected row: the udisks2 object path of the selected medium's file system, or of the
+    /// drive of the selected stick that can't be used yet.
     selected: RefCell<Option<String>>,
     /// Counts the checks, so that the results of an older one are dropped.
     generation: Cell<u64>,
@@ -422,7 +429,7 @@ pub fn show(app: &Application) {
     let window = ApplicationWindow::builder()
         .application(app)
         // Opens at 700 × 680 with its title bar, which fits a screen 800 high with a top bar or a
-        // panel, and is just enough for "Prepare a stick" without scrolling (issues 118, 173). A
+        // panel, and is enough for "Prepare a stick" without scrolling (issues 118, 173, 183). A
         // stick's buttons wrap onto centred lines when they don't fit on one (issue 165).
         .default_width(700)
         .default_height(680)
@@ -461,6 +468,7 @@ pub fn show(app: &Application) {
         advanced: Cell::new(false),
         media: RefCell::new(Vec::new()),
         formattable: RefCell::new(HashSet::new()),
+        unprepared: RefCell::new(Vec::new()),
         selected: RefCell::new(None),
         generation: Cell::new(0),
         updating: Cell::new(false),
@@ -562,7 +570,11 @@ fn wrapping_label() -> Label {
 /// details, a thin line, and the explanation, which starts with the status and holds every
 /// message about the stick. See `ui-review/UiReview.md` item G01 at ccbfb96.
 fn details_widgets() -> (DetailsWidgets, Overlay) {
-    let title = Label::builder().xalign(0.0).build();
+    // A long name is cut short rather than widening the window (issue 183).
+    let title = Label::builder()
+        .xalign(0.0)
+        .ellipsize(gtk4::pango::EllipsizeMode::End)
+        .build();
     title.add_css_class("babawus-title");
     let about = wrapping_label();
     about.add_css_class("dim-label");
@@ -640,7 +652,6 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     let empty_advice = centred_label();
     let empty_notice = centred_label();
 
-    let empty_prepare = Button::builder().halign(Align::Center).build();
     let empty_page = Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(SPACING)
@@ -649,7 +660,6 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
     empty_page.append(&plug_in);
     empty_page.append(&empty_advice);
     empty_page.append(&empty_notice);
-    empty_page.append(&empty_prepare);
 
     let pages = Stack::builder().vexpand(true).build();
     pages.add_named(&medium_page, Some("medium"));
@@ -678,7 +688,6 @@ fn details_widgets() -> (DetailsWidgets, Overlay) {
         plug_in,
         empty_advice,
         empty_notice,
-        empty_prepare,
         title,
         mark,
         spinner,
@@ -837,7 +846,8 @@ impl Window {
             }
         });
 
-        // Each row's Eject, with the object path of its medium's file system (issue 134).
+        // Each row's Eject, with the name of its row: the object path of its medium's file
+        // system, or of its drive (issues 134 and 183).
         let eject = gio::SimpleAction::new("eject-stick", Some(glib::VariantTy::STRING));
         let weak = Rc::downgrade(self);
         eject.connect_activate(move |_, parameter| {
@@ -853,6 +863,18 @@ impl Window {
                 .map(|(medium, _)| medium.clone());
             if let Some(medium) = medium {
                 window.eject_drive(medium.drive.id, medium.volume.label);
+                return;
+            }
+            // Or the drive of a stick that can't be used yet.
+            let stick = window
+                .unprepared
+                .borrow()
+                .iter()
+                .find(|stick| stick.drive.object_path == object_path)
+                .cloned();
+            if let Some(stick) = stick {
+                let label = stick.label(window.language.get());
+                window.eject_drive(stick.drive.id, label);
             }
         });
         self.window.add_action(&eject);
@@ -1097,14 +1119,13 @@ impl Window {
         for (&action, button) in &self.details.buttons {
             button.set_label(action.label(language));
         }
-        self.details
-            .empty_prepare
-            .set_label(Action::Prepare.label(language));
         self.format_page.set_texts(language);
         self.update_rows();
         self.show_details();
         self.show_backup();
         self.show_info();
+        // What is on the stick to format is told in the new language too.
+        self.update_format_target();
         self.show_format();
         self.show_setup();
         if self.choosing.get() {
@@ -1182,9 +1203,10 @@ impl Window {
             restore_window.window.close();
         }
         *self.media.borrow_mut() = media;
+        *self.unprepared.borrow_mut() = start_screen::unprepared(&snapshot);
         self.update_rows();
         self.show_details();
-        self.update_format_drives();
+        self.update_format_target();
 
         let generation = self.generation.get() + 1;
         self.generation.set(generation);
@@ -1233,30 +1255,48 @@ impl Window {
         self.show_details();
     }
 
-    /// Brings the list in line with the media, and selects the medium that should be.
+    /// Brings the list in line with the media and the sticks that can't be used yet, and selects
+    /// the row that should be.
     fn update_rows(&self) {
         let language = self.language.get();
         let media = self.media.borrow();
+        let unprepared = self.unprepared.borrow();
         self.updating.set(true);
         let mut rows = self.rows.borrow_mut();
-        let same_media = rows.len() == media.len()
+        let names: Vec<&str> = media
+            .iter()
+            .map(|(medium, _)| medium.volume.object_path.as_str())
+            .chain(
+                unprepared
+                    .iter()
+                    .map(|stick| stick.drive.object_path.as_str()),
+            )
+            .collect();
+        let same_rows = rows.len() == names.len()
             && rows
                 .iter()
-                .zip(media.iter())
-                .all(|(row, (medium, _))| row.row.widget_name() == medium.volume.object_path);
-        if !same_media {
+                .zip(names.iter())
+                .all(|(row, name)| row.row.widget_name() == *name);
+        if !same_rows {
             self.list.remove_all();
-            *rows = media
+            *rows = names
                 .iter()
-                .map(|(medium, _)| {
-                    let row = new_row(&medium.volume.object_path);
+                .map(|name| {
+                    let row = new_row(name);
                     self.list.append(&row.row);
                     row
                 })
                 .collect();
         }
-        for (row, (medium, checked)) in rows.iter().zip(media.iter()) {
-            let shown = start_screen::row(medium, checked.as_ref(), language);
+        let shown = media
+            .iter()
+            .map(|(medium, checked)| start_screen::row(medium, checked.as_ref(), language))
+            .chain(
+                unprepared
+                    .iter()
+                    .map(|stick| start_screen::unprepared_row(stick, language)),
+            );
+        for (row, shown) in rows.iter().zip(shown) {
             row.label.set_label(&shown.label);
             row.stick.set_paintable(Some(&icons::stick(shown.babawus)));
             row.row.set_tooltip_text(Some(&shown.tooltip));
@@ -1265,8 +1305,7 @@ impl Window {
             row.start_backup.set_label(Text::StartBackup.get(language));
         }
         let selected = self.selected.borrow().clone();
-        let selected = start_screen::selection(&media, selected.as_deref())
-            .map(|medium| medium.volume.object_path.clone());
+        let selected = start_screen::selected_row(&media, &unprepared, selected.as_deref());
         let row = selected.as_ref().and_then(|selected| {
             rows.iter()
                 .find(|row| row.row.widget_name() == selected.as_str())
@@ -1279,7 +1318,8 @@ impl Window {
         self.updating.set(false);
     }
 
-    /// Shows the details of the selected medium.
+    /// Shows the details of the selected medium, or of the selected stick that can't be used
+    /// yet.
     fn show_details(&self) {
         let language = self.language.get();
         let widgets = &self.details;
@@ -1303,42 +1343,53 @@ impl Window {
         }
         let media = self.media.borrow();
         let selected = self.selected.borrow();
-        let Some((medium, checked)) = selected.as_ref().and_then(|selected| {
+        let medium = selected.as_ref().and_then(|selected| {
             media
                 .iter()
                 .find(|(medium, _)| &medium.volume.object_path == selected)
-        }) else {
-            let (text, advice) = start_screen::empty_text(
-                self.sticks.is_some(),
-                !media.is_empty(),
-                self.unlisted.get(),
-            );
-            widgets.empty_advice.set_label(
-                advice
-                    .map(|advice| advice.get(language))
-                    .unwrap_or_default(),
-            );
-            widgets.empty_advice.set_visible(advice.is_some());
-            widgets.plug_in.set_label(text.get(language));
-            widgets
-                .empty_prepare
-                .set_visible(self.advanced.get() && !self.formattable.borrow().is_empty());
-            widgets.pages.set_visible_child_name("empty");
-            return;
+        });
+        let unprepared = self.unprepared.borrow();
+        let stick = selected.as_ref().and_then(|selected| {
+            unprepared
+                .iter()
+                .find(|stick| &stick.drive.object_path == selected)
+        });
+        let details = match (medium, stick) {
+            (Some((medium, checked)), _) => {
+                let shown = Shown {
+                    medium,
+                    checked: checked.as_ref(),
+                    formattable: self.formattable.borrow().contains(&medium.drive.id),
+                };
+                start_screen::details(
+                    &shown,
+                    SystemTime::now(),
+                    local_clock,
+                    language,
+                    self.advanced.get(),
+                )
+            }
+            (None, Some(stick)) => {
+                start_screen::unprepared_details(stick, language, self.advanced.get())
+            }
+            (None, None) => {
+                let (text, advice) = start_screen::empty_text(
+                    self.sticks.is_some(),
+                    !media.is_empty() || !unprepared.is_empty(),
+                    self.unlisted.get(),
+                );
+                widgets.empty_advice.set_label(
+                    advice
+                        .map(|advice| advice.get(language))
+                        .unwrap_or_default(),
+                );
+                widgets.empty_advice.set_visible(advice.is_some());
+                widgets.plug_in.set_label(text.get(language));
+                widgets.pages.set_visible_child_name("empty");
+                return;
+            }
         };
         widgets.pages.set_visible_child_name("medium");
-        let shown = Shown {
-            medium,
-            checked: checked.as_ref(),
-            formattable: !self.formattable.borrow().is_empty(),
-        };
-        let details = start_screen::details(
-            &shown,
-            SystemTime::now(),
-            local_clock,
-            language,
-            self.advanced.get(),
-        );
         widgets.title.set_label(&details.label);
         widgets.status.set_label(&details.status);
         widgets.spinner.set_visible(details.mark.is_none());
@@ -1379,6 +1430,7 @@ impl Window {
         widgets
             .buttons_line
             .set_visible(!details.buttons.is_empty());
+        let Some((medium, _)) = medium else { return };
         let rows = self.rows.borrow();
         let row = rows
             .iter()
@@ -2222,23 +2274,12 @@ impl Window {
     fn connect_format_signals(self: &Rc<Self>) {
         let page = &self.format_page;
         let weak = Rc::downgrade(self);
-        page.drives.connect_row_selected(move |_, _| {
+        page.label.connect_changed(move |_| {
             if let Some(window) = weak.upgrade()
                 && !window.format_updating.get()
             {
-                window.format_drive_chosen();
+                window.show_format();
             }
-        });
-        let weak = Rc::downgrade(self);
-        page.label.connect_changed(move |_| {
-            let Some(window) = weak.upgrade() else { return };
-            if window.format_updating.get() {
-                return;
-            }
-            if let Some(format) = window.format.borrow_mut().as_mut() {
-                format.label_edited = true;
-            }
-            window.show_format();
         });
         // Choosing Ext4 turns exFAT off before it turns Ext4 on, so the page is shown again for
         // Ext4 too, or its note would wait for the next change (T-035).
@@ -2265,7 +2306,7 @@ impl Window {
                 format.stage = FormatStage::Choosing;
             }
             window.format_page.understood.set_active(false);
-            window.update_format_drives();
+            window.update_format_target();
         });
         let weak = Rc::downgrade(self);
         page.back.connect_clicked(move |_| {
@@ -2273,61 +2314,52 @@ impl Window {
                 window.close_format();
             }
         });
-        let weak = Rc::downgrade(self);
-        self.details.empty_prepare.connect_clicked(move |_| {
-            if let Some(window) = weak.upgrade() {
-                window.open_format();
-            }
-        });
     }
 
-    /// Opens the format view, with the selected medium's drive chosen if it may be formatted.
+    /// Opens the format view for the stick selected on the start screen, if it may be formatted
+    /// (issue 183).
     fn open_format(self: &Rc<Self>) {
-        if self.sticks.is_none() || self.format.borrow().is_some() {
+        let Some(sticks) = &self.sticks else { return };
+        if self.format.borrow().is_some() {
             return;
         }
+        let selected = self.selected.borrow().clone();
         let drive = self
             .selected_medium()
             .map(|medium| medium.drive.id)
+            .or_else(|| {
+                self.unprepared
+                    .borrow()
+                    .iter()
+                    .find(|stick| Some(&stick.drive.object_path) == selected.as_ref())
+                    .map(|stick| stick.drive.id.clone())
+            })
             .filter(|id| self.formattable.borrow().contains(id));
+        let Some(drive) = drive else { return };
         *self.notice.borrow_mut() = None;
+        let label = suggested_label(&sticks.snapshot(), &drive);
         *self.format.borrow_mut() = Some(FormatState {
             stage: FormatStage::Choosing,
-            choices: Vec::new(),
-            drive: None,
-            label_edited: false,
+            drive,
+            choice: None,
         });
         let page = &self.format_page;
         self.format_updating.set(true);
         page.exfat.set_active(true);
         page.understood.set_active(false);
-        page.label.set_text("");
+        page.label.set_text(&label);
         self.format_updating.set(false);
-        self.update_format_drives_selecting(drive.as_deref());
+        self.update_format_target();
         self.show_screen("format");
     }
 
-    /// Lists the drives that may be formatted again, keeping the chosen one if it is still
-    /// there.
-    fn update_format_drives(&self) {
-        let chosen = self
-            .format
-            .borrow()
-            .as_ref()
-            .and_then(|format| format.drive.clone());
-        self.update_format_drives_selecting(chosen.as_deref());
-    }
-
-    fn update_format_drives_selecting(&self, selected: Option<&str>) {
-        let choosing = self
-            .format
-            .borrow()
-            .as_ref()
-            .is_some_and(|format| matches!(format.stage, FormatStage::Choosing));
+    /// Reads the stick to format again: what is on it may have changed, or it may have gone.
+    fn update_format_target(&self) {
         let Some(sticks) = &self.sticks else { return };
-        if !choosing {
-            return;
-        }
+        let drive = match self.format.borrow().as_ref() {
+            Some(format) if matches!(format.stage, FormatStage::Choosing) => format.drive.clone(),
+            _ => return,
+        };
         let babawus: HashSet<String> = self
             .media
             .borrow()
@@ -2339,45 +2371,16 @@ impl Window {
             })
             .map(|(medium, _)| medium.volume.object_path.clone())
             .collect();
-        let choices = drive_choices(&sticks.snapshot(), &babawus, self.language.get());
-        self.format_updating.set(true);
-        self.format_page.set_drives(&choices, selected);
-        self.format_updating.set(false);
+        let choice = drive_choice(&sticks.snapshot(), &drive, &babawus, self.language.get());
+        self.format_page.set_target(choice.as_ref());
         if let Some(format) = self.format.borrow_mut().as_mut() {
-            format.choices = choices;
-        }
-        self.format_drive_chosen();
-    }
-
-    /// The chosen drive may have changed. A different drive needs confirming again, and gets
-    /// the suggested label unless the user has typed one.
-    fn format_drive_chosen(&self) {
-        let chosen = self.format_page.chosen_drive();
-        let suggestion = {
-            let mut format = self.format.borrow_mut();
-            let Some(format) = format.as_mut() else {
-                return;
-            };
-            if format.drive == chosen {
-                None
-            } else {
-                format.drive = chosen.clone();
-                let suggestion = match (&self.sticks, &chosen) {
-                    (Some(sticks), Some(id)) if !format.label_edited => {
-                        Some(suggested_label(&sticks.snapshot(), id))
-                    }
-                    _ => None,
-                };
-                Some(suggestion)
+            // A stick that went and came back needs confirming again.
+            if choice.is_none() && format.choice.is_some() {
+                self.format_updating.set(true);
+                self.format_page.understood.set_active(false);
+                self.format_updating.set(false);
             }
-        };
-        if let Some(suggestion) = suggestion {
-            self.format_updating.set(true);
-            self.format_page.understood.set_active(false);
-            if let Some(label) = suggestion {
-                self.format_page.label.set_text(&label);
-            }
-            self.format_updating.set(false);
+            format.choice = choice;
         }
         self.show_format();
     }
@@ -2400,7 +2403,7 @@ impl Window {
                 return;
             };
             let ready = matches!(format.stage, FormatStage::Choosing)
-                && can_format(format.drive.is_some(), &label, page.understood.is_active());
+                && can_format(format.choice.is_some(), &label, page.understood.is_active());
             if !ready {
                 return;
             }
@@ -2409,7 +2412,6 @@ impl Window {
             };
             format.drive.clone()
         };
-        let Some(drive) = drive else { return };
         self.show_format();
         let weak = Rc::downgrade(self);
         glib::spawn_future_local(async move {
@@ -2445,10 +2447,7 @@ impl Window {
         match &format.stage {
             FormatStage::Choosing => {
                 let label = page.label.text();
-                let choice = format
-                    .drive
-                    .as_ref()
-                    .and_then(|id| format.choices.iter().find(|choice| &choice.id == id));
+                let choice = format.choice.as_ref();
                 let warning = choice.map(|choice| warning(choice, language));
                 let problem = label_problem(&label, language);
                 let can = can_format(choice.is_some(), &label, page.understood.is_active());
@@ -2811,7 +2810,12 @@ fn action_row() -> Box {
 /// A new row of the media list, named by the udisks2 object path of the medium's file system.
 fn new_row(object_path: &str) -> RowWidgets {
     let stick = icons::image(&icons::stick(false), STICK_SIZE);
-    let label = Label::builder().xalign(0.0).hexpand(true).build();
+    // A long name is cut short rather than widening the list (issue 183).
+    let label = Label::builder()
+        .xalign(0.0)
+        .hexpand(true)
+        .ellipsize(gtk4::pango::EllipsizeMode::End)
+        .build();
     label.add_css_class("babawus-row-label");
     let spinner = Spinner::builder().spinning(true).build();
     let eject_symbol = icons::image(&icons::eject(), EJECT_SIZE);

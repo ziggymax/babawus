@@ -385,3 +385,123 @@ fn the_empty_page_says_what_to_do() {
         (Text::StickCantBeUsed, Some(Text::StickCantBeUsedAdvice))
     );
 }
+
+#[test]
+fn a_listed_medium_is_not_listed_again_as_a_stick_that_cant_be_used() {
+    assert_eq!(unprepared(&stick_snapshot(true)), []);
+    assert_eq!(unprepared(&Snapshot::default()), []);
+}
+
+#[test]
+fn a_stick_that_isnt_opened_is_listed_by_its_name() {
+    let sticks = unprepared(&stick_snapshot(false));
+
+    assert_eq!(sticks.len(), 1);
+    assert_eq!(sticks[0].label(en()), "BACKUP-A");
+    let row = unprepared_row(&sticks[0], en());
+    assert_eq!(row.label, "BACKUP-A");
+    assert_eq!(row.tooltip, "The stick isn't opened");
+    assert!(!row.babawus);
+    assert!(!row.checking);
+    let details = unprepared_details(&sticks[0], en(), false);
+    assert_eq!(details.label, "BACKUP-A");
+    assert_eq!(details.mark, Some(Mark::Unusable));
+    assert_eq!(details.status, "The stick isn't opened");
+    assert_eq!(
+        details.about,
+        "Kingston DataTraveler 3.0 · 15.5 GB · BACKUP-A (exFAT), not mounted"
+    );
+    assert_eq!(
+        details.explanation.as_deref(),
+        Some("Pull it out and plug it back in. #1")
+    );
+    assert_eq!(details.start_backup, None);
+}
+
+#[test]
+fn a_stick_without_a_file_system_is_listed_by_its_size() {
+    let mut snapshot = stick_snapshot(false);
+    snapshot.volumes.clear();
+    let sticks = unprepared(&snapshot);
+
+    assert_eq!(sticks.len(), 1);
+    assert_eq!(sticks[0].label(en()), "15.5 GB");
+    assert_eq!(unprepared_row(&sticks[0], en()).label, "15.5 GB");
+    let details = unprepared_details(&sticks[0], en(), false);
+    assert_eq!(details.status, "Not a backup medium");
+    assert_eq!(
+        details.about,
+        "Kingston DataTraveler 3.0 · 15.5 GB · No file system"
+    );
+    assert!(
+        details
+            .explanation
+            .is_some_and(|explanation| explanation.contains("Prepare…"))
+    );
+}
+
+#[test]
+fn a_stick_that_cant_be_used_only_offers_prepare_and_only_under_advanced() {
+    let sticks = unprepared(&stick_snapshot(false));
+
+    assert_eq!(actions(&unprepared_details(&sticks[0], en(), false)), []);
+    assert_eq!(
+        actions(&unprepared_details(&sticks[0], en(), true)),
+        [Action::Prepare]
+    );
+}
+
+#[test]
+fn a_stick_that_may_not_be_formatted_is_not_listed() {
+    let mut snapshot = stick_snapshot(false);
+    snapshot.blocks[0].hint_system = true;
+
+    assert_eq!(unprepared(&snapshot), []);
+}
+
+#[test]
+fn prepare_is_only_offered_for_a_medium_whose_drive_may_be_formatted() {
+    let medium = medium("sdb", "BACKUP-A");
+    let checked = ready(None);
+    let shown = |formattable| Shown {
+        medium: &medium,
+        checked: Some(&checked),
+        formattable,
+    };
+
+    let may = details(&shown(true), now(), utc_clock, en(), true);
+    let may_not = details(&shown(false), now(), utc_clock, en(), true);
+
+    assert!(actions(&may).contains(&Action::Prepare));
+    assert!(!actions(&may_not).contains(&Action::Prepare));
+}
+
+#[test]
+fn a_stick_that_cant_be_used_stays_selected_and_is_selected_when_alone() {
+    let sticks = unprepared(&stick_snapshot(false));
+    let drive = sticks[0].drive.object_path.clone();
+    let media = [(medium("sdc", "BACKUP-B"), None)];
+
+    assert_eq!(selected_row(&[], &sticks, None), Some(drive.clone()));
+    assert_eq!(selected_row(&media, &sticks, None), None);
+    assert_eq!(
+        selected_row(&media, &sticks, Some(&drive)),
+        Some(drive.clone())
+    );
+    let two = [sticks[0].clone(), sticks[0].clone()];
+    assert_eq!(selected_row(&[], &two, None), None);
+}
+
+#[test]
+fn a_medium_is_selected_as_before_beside_a_stick_that_cant_be_used() {
+    let sticks = unprepared(&stick_snapshot(false));
+    let media = [(medium("sdc", "BACKUP-B"), Some(ready(None)))];
+    let path = media[0].0.volume.object_path.clone();
+
+    assert_eq!(selected_row(&media, &sticks, None), Some(path.clone()));
+    assert_eq!(
+        selected_row(&media, &sticks, Some("/gone")),
+        Some(path.clone())
+    );
+    assert_eq!(selected_row(&media, &[], Some(&path)), Some(path));
+}
