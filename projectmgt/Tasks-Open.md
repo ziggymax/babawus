@@ -20,10 +20,13 @@ Sections run from what comes next to what may never happen: the version being wo
 
 ## Now
 
-Babawus 1.2.0 is released (T-146), for Linux Mint, Ubuntu and Fedora. Next is release 1.2.1, which fixes 1.2.0's two known issues and the "Prepare a stick" page (see "Release 1.2.1" in [ReleasePlanning.md](ReleasePlanning.md); issue 182). It is released as "A release, step by step" in [TestSetup.md](../TestSetup.md) says.
+Babawus 1.2.0 is released (T-146), for Linux Mint, Ubuntu and Fedora. Next is release 1.2.1, which fixes 1.2.0's two known issues and the "Prepare a stick" page, and, before its version is raised, three things the user found on 2026-11-28 (T-161 to T-163; issues 187 to 189) (see "Release 1.2.1" in [ReleasePlanning.md](ReleasePlanning.md); issue 182). It is released as "A release, step by step" in [TestSetup.md](../TestSetup.md) says.
 
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
+| T-161 | In the user guide, say that on some desktops, such as KDE Plasma on Kubuntu, Babawus only shows up in the menu after logging out and in again | Todo | Issue 187 |
+| T-162 | Begin Help with a short notice, in every language, on the numbers after the messages, such as "#14": what they are, why they are there, and how to search Help for the number of a message one has seen | Todo | Issue 188 |
+| T-163 | In the log window, make the highlighted run, and the shading of every other run, readable on a dark desktop theme as well as on a light one; checked on all three guests with a dark and a light theme | Todo | Issue 189 |
 | T-152 | Raise the version to 1.2.1, with its entry in the metainfo's `<releases>` for the planned day; the update step of ReleaseChecklist.md then raises the version from `1.2.1` to `1.2.2` | Todo | Issue 182 |
 | T-153 | Run the smoke test on every guest, and the whole release checklist on Linux Mint 22.3, on the 1.2.1 packages GitHub built for T-152's commit, recorded in an issue "Release 1.2.1 checklist on Linux Mint 22.3" | Todo | Issue 182 |
 | T-154 | Run the whole release checklist on Ubuntu 26.04, on the same packages, recorded in an issue "Release 1.2.1 checklist on Ubuntu 26.04" | Todo | Issue 182 |
