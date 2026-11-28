@@ -4,7 +4,7 @@ This guide holds the practical details behind the [README](README.md): how to st
 
 ## Starting Babawus
 
-Babawus is called "Backup" in the desktop's menus, with the green elephant as its icon. Search for "Backup", or for "Babawus". Right after installing, the desktop may need a few seconds before its search finds it.
+Babawus is called "Backup" in the desktop's menus, with the green elephant as its icon. Search for "Backup", or for "Babawus". Right after installing, the desktop may need a few seconds before its search finds it. On some desktops, such as KDE Plasma on Kubuntu, Babawus only shows up in the menu once you have logged out and in again.
 
 - **Linux Mint (Cinnamon).** Open the menu in the lower left and search for "Backup". To put it on the desktop, so that starting it is one double-click, right-click "Backup" in the menu and choose "Add to desktop". "Add to panel" puts it in the panel at the bottom instead.
 - **Ubuntu and Fedora (GNOME).** GNOME shows no icons on the desktop. Press the Super key (the one with the Windows logo), or click the small rounded button in the upper left corner, and type "Backup". To keep it at hand, right-click "Backup" there and choose "Pin to Dock" on Ubuntu, or "Pin to Dash" on Fedora: it then stays in the row of programs, and one click starts it.

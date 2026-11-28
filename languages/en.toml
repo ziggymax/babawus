@@ -370,12 +370,15 @@ HelpNext = "Next match (Enter)"
 HelpPrevious = "Previous match (Shift+Enter)"
 
 # The built-in Help, shown in a window of its own (issues 151, 154 and 158). A line starting with
-# "# " is a heading, a line starting with "- " is a bullet, and blank lines separate paragraphs. A
+# "# " is a heading, a line starting with "- " is a bullet, a line starting with "> " is a notice,
+# shown in italics, and blank lines separate paragraphs. A
 # line with only "#" and a number, such as "#14", begins the entry for that numbered message, and
 # Babawus writes the message after the number itself: every number needs an entry. Another text
 # is put in with its name in braces, such as {ChangeSetup}. Quotation marks are written as plain
 # "", and shown as the marks in quotes above.
 Help = """
+> Error messages are tagged with a number, such as #14, to help you look up the messages here. Simply type the error number (including the #), in the search field at the top of this window, and Help shows what it means and what to do.
+
 # What Babawus does
 
 Babawus copies your important files and folders to a USB stick, so that you still have them if your computer breaks, is lost or is stolen, or if you delete or spoil a file by mistake.

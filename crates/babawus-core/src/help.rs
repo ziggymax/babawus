@@ -2,8 +2,9 @@
 //! (issues 151, 154 and 158).
 //!
 //! The Help is one text in each language file. A line starting with "# " is a heading, a line
-//! starting with "- " is a bullet, and a line with only "#" and a number, such as "#14", begins
-//! the entry for that numbered message. Other lines are paragraphs; blank lines only separate
+//! starting with "- " is a bullet, a line starting with "> " is a notice, shown in italics (issue
+//! 188), and a line with only "#" and a number, such as "#14", begins the entry for that numbered
+//! message. Other lines are paragraphs; blank lines only separate
 //! them. [`build`] puts it together when the file is loaded: it writes each entry's message after
 //! its number, as in "#14 The stick is full.", fills in references to other texts, such as
 //! `{ChangeSetup}`, and shows plain quotation marks as the language's own.
@@ -146,6 +147,8 @@ pub enum Block {
     /// The first line of the entry for a numbered message, number included.
     Entry(String),
     Bullet(String),
+    /// A paragraph that stands out, in italics (issue 188).
+    Notice(String),
     Paragraph(String),
 }
 
@@ -161,6 +164,8 @@ pub fn blocks(text: &str) -> Vec<Block> {
                 Block::Entry(line.to_owned())
             } else if let Some(bullet) = line.strip_prefix("- ") {
                 Block::Bullet(bullet.trim().to_owned())
+            } else if let Some(notice) = line.strip_prefix("> ") {
+                Block::Notice(notice.trim().to_owned())
             } else {
                 Block::Paragraph(line.trim().to_owned())
             }
@@ -243,6 +248,20 @@ pub fn first_to_show(haystack: &str, needle: &str, found: &[(usize, usize)]) -> 
 mod tests {
     use super::*;
     use crate::language::testing::{english, german};
+
+    #[test]
+    fn a_line_starting_with_an_angle_is_a_notice() {
+        let text = "> Look up #14 here.\n\n# Backing up\n\nA > B.\n";
+
+        assert_eq!(
+            blocks(text),
+            [
+                Block::Notice("Look up #14 here.".to_owned()),
+                Block::Heading("Backing up".to_owned()),
+                Block::Paragraph("A > B.".to_owned()),
+            ]
+        );
+    }
 
     #[test]
     fn lines_become_headings_entries_bullets_and_paragraphs() {
@@ -423,7 +442,13 @@ Free some space.",
         for language in [english(), german()] {
             let help = Text::Help.get(language);
             assert!(missing_entries(help).is_empty(), "{language:?}");
-            assert!(matches!(blocks(help)[0], Block::Heading(_)), "{language:?}");
+            // The notice on the messages' numbers comes first (issue 188).
+            let blocks = blocks(help);
+            assert!(
+                matches!(&blocks[0], Block::Notice(notice) if notice.contains("#14")),
+                "{language:?}"
+            );
+            assert!(matches!(blocks[1], Block::Heading(_)), "{language:?}");
         }
     }
 
