@@ -36,7 +36,7 @@ Babawus 1.2.0 is released (T-146), for Linux Mint, Ubuntu and Fedora. Next is re
 | ID | Task | Status | Source |
 | --- | --- | --- | --- |
 | T-164 | Decide whether 1.2.1 makes the log window scroll to the highlighted run when its lines aren't all in view, as on Fedora 45 with a log of 33 lines, and if so, make it | Todo | Issue 190 |
-| T-165 | Decide whether 1.2.1 makes Babawus follow GNOME's dark style on Ubuntu 26.04, as it does on Fedora 45, and if so, make it | Todo | Issue 191 |
+| T-165 | Decide whether 1.2.1 makes Babawus open dark on Ubuntu 26.04 when it is started while the dark style is on, as it does on Fedora 45, and if so, make it | Todo | Issue 191 |
 
 ## Waiting
 
