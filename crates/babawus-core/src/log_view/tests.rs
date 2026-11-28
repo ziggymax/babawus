@@ -83,3 +83,63 @@ fn garbled_and_incomplete_lines_are_shown_as_they_are() {
 fn an_empty_log_has_no_lines() {
     assert!(log_lines(b"").is_empty());
 }
+
+#[test]
+fn a_theme_that_writes_in_a_light_colour_is_dark() {
+    assert!(is_dark_theme((1.0, 1.0, 1.0)));
+    assert!(is_dark_theme((0.93, 0.93, 0.93)));
+    assert!(!is_dark_theme((0.0, 0.0, 0.0)));
+    assert!(!is_dark_theme((0.2, 0.2, 0.2)));
+}
+
+/// The contrast between two "#rrggbb" colours, from 1 to 21, as WCAG 2 defines it.
+fn contrast(a: &str, b: &str) -> f32 {
+    let rgb = |colour: &str| {
+        let channel =
+            |at: usize| u8::from_str_radix(&colour[at..at + 2], 16).unwrap() as f32 / 255.0;
+        (channel(1), channel(3), channel(5))
+    };
+    let (a, b) = (luminance(rgb(a)), luminance(rgb(b)));
+    (a.max(b) + 0.05) / (a.min(b) + 0.05)
+}
+
+#[test]
+fn the_values_can_be_read_on_every_background_of_either_theme() {
+    // The values are in the theme's own text colour: near white on a dark theme, near black on
+    // a light one (issue 189). 4.5 is what WCAG asks of normal text.
+    for (dark, text, window) in [(true, "#eeeeee", "#1e1e1e"), (false, "#1e1e1e", "#ffffff")] {
+        let colours = Colours::of(dark);
+        for background in [window, colours.shaded, colours.highlight] {
+            assert!(
+                contrast(text, background) >= 4.5,
+                "dark {dark}, background {background}"
+            );
+        }
+    }
+}
+
+#[test]
+fn the_coloured_words_can_be_read_on_every_background_of_either_theme() {
+    for (dark, window) in [(true, "#1e1e1e"), (false, "#ffffff")] {
+        let colours = Colours::of(dark);
+        let words = [
+            colours.time,
+            colours.run_id,
+            colours.start,
+            colours.error,
+            colours.end_good,
+            colours.end_attention,
+            colours.end_failed,
+            colours.key,
+            colours.text,
+        ];
+        for background in [window, colours.shaded, colours.highlight] {
+            for word in words {
+                assert!(
+                    contrast(word, background) >= 3.0,
+                    "dark {dark}, {word} on {background}"
+                );
+            }
+        }
+    }
+}

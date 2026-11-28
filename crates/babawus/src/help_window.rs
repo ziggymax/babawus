@@ -24,6 +24,7 @@ const HEADING: &str = "heading";
 const ENTRY: &str = "entry";
 const BULLET: &str = "bullet";
 const PARAGRAPH: &str = "paragraph";
+const NOTICE: &str = "notice";
 const MATCH: &str = "match";
 const CURRENT: &str = "current";
 /// Bold, as Pango counts weights.
@@ -192,6 +193,7 @@ impl HelpWindow {
                 Block::Heading(text) => (text.clone(), HEADING),
                 Block::Entry(text) => (text.clone(), ENTRY),
                 Block::Bullet(text) => (format!("•  {text}"), BULLET),
+                Block::Notice(text) => (text.clone(), NOTICE),
                 Block::Paragraph(text) => (text.clone(), PARAGRAPH),
             };
             buffer.insert_with_tags_by_name(&mut end, &text, &[tag]);
@@ -339,6 +341,11 @@ fn add_tags(buffer: &TextBuffer) {
         .name(PARAGRAPH)
         .pixels_above_lines(6)
         .build();
+    let notice = TextTag::builder()
+        .name(NOTICE)
+        .style(gtk4::pango::Style::Italic)
+        .pixels_above_lines(6)
+        .build();
     let found = TextTag::builder()
         .name(MATCH)
         .background("#fce94f")
@@ -349,7 +356,7 @@ fn add_tags(buffer: &TextBuffer) {
         .background("#f57900")
         .foreground("#000000")
         .build();
-    for tag in [heading, entry, bullet, paragraph, found, current] {
+    for tag in [heading, entry, bullet, paragraph, notice, found, current] {
         table.add(&tag);
     }
 }

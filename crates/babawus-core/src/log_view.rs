@@ -34,6 +34,82 @@ pub enum Style {
     Plain,
 }
 
+/// The log window's colours, each as "#rrggbb". The values are drawn in the theme's own text
+/// colour, so the backgrounds have to suit it: there is a set for a light theme and one for a
+/// dark theme (issue 189).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Colours {
+    pub time: &'static str,
+    pub run_id: &'static str,
+    pub start: &'static str,
+    pub error: &'static str,
+    pub end_good: &'static str,
+    pub end_attention: &'static str,
+    pub end_failed: &'static str,
+    pub key: &'static str,
+    pub text: &'static str,
+    pub garbled: &'static str,
+    /// Behind every other run.
+    pub shaded: &'static str,
+    /// Behind the highlighted run.
+    pub highlight: &'static str,
+}
+
+impl Colours {
+    /// The colours for a theme that is dark or light.
+    pub fn of(dark: bool) -> Self {
+        if dark {
+            Self {
+                time: "#9a9996",
+                run_id: "#9a9996",
+                start: "#62a0ea",
+                error: "#f66151",
+                end_good: "#57e389",
+                end_attention: "#ffa348",
+                end_failed: "#f66151",
+                key: "#9a9996",
+                text: "#9a9996",
+                garbled: "#77767b",
+                shaded: "#3d3d45",
+                highlight: "#4d3d00",
+            }
+        } else {
+            Self {
+                time: "#5e5c64",
+                run_id: "#77767b",
+                start: "#1c71d8",
+                error: "#c01c28",
+                end_good: "#1f8a57",
+                end_attention: "#b5690b",
+                end_failed: "#c01c28",
+                key: "#77767b",
+                text: "#77767b",
+                garbled: "#9a9996",
+                shaded: "#f0f0f0",
+                highlight: "#fff1a8",
+            }
+        }
+    }
+}
+
+/// Whether a theme is dark, told by its text colour, whose red, green and blue run from 0 to 1:
+/// a dark theme writes in a light colour.
+pub fn is_dark_theme(text: (f32, f32, f32)) -> bool {
+    luminance(text) > 0.5
+}
+
+/// How light a colour is, from 0 for black to 1 for white, as WCAG 2 defines it.
+fn luminance((red, green, blue): (f32, f32, f32)) -> f32 {
+    let linear = |channel: f32| {
+        if channel <= 0.04045 {
+            channel / 12.92
+        } else {
+            ((channel + 0.055) / 1.055).powf(2.4)
+        }
+    };
+    0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
+}
+
 /// One line of the log.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LogLine {

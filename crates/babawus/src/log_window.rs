@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use babawus_core::fs::RealFs;
 use babawus_core::language::Language;
-use babawus_core::log_view::{LogLine, Style, read_log_lines};
+use babawus_core::log_view::{Colours, LogLine, Style, is_dark_theme, read_log_lines};
 use babawus_core::medium::LOG_FILE;
 use babawus_core::text::Text;
 use babawus_core::verdict_screen::VerdictMark;
@@ -55,6 +55,9 @@ pub struct LogWindow {
     reading_soon: Cell<bool>,
     /// Scroll to the highlighted run once the log has been read, instead of keeping the place.
     scroll_to_run: Cell<bool>,
+    /// The styles have the colours for a dark theme. Changing them lays the log out again, so it
+    /// is only done when the theme turns from light to dark or back.
+    dark: Cell<bool>,
     /// Kept so that changes keep being reported while the window is open.
     _monitor: Option<gio::FileMonitor>,
 }
@@ -109,6 +112,7 @@ impl LogWindow {
             lines: RefCell::new(Vec::new()),
             reading_soon: Cell::new(false),
             scroll_to_run: Cell::new(true),
+            dark: Cell::new(false),
             _monitor: monitor.clone(),
         });
         if let Some(monitor) = monitor {
@@ -128,9 +132,47 @@ impl LogWindow {
                 }
             });
         }
+        // The colours suit the theme, which the view knows once it is in the window, and checks
+        // again when it is shown, and when the theme changes while it is open (issue 189).
+        log_window.paint();
+        let weak = Rc::downgrade(&log_window);
+        log_window.window.connect_map(move |_| {
+            if let Some(log_window) = weak.upgrade() {
+                log_window.paint();
+            }
+        });
+        if let Some(settings) = gtk4::Settings::default() {
+            let weak = Rc::downgrade(&log_window);
+            let handler = settings.connect_notify_local(None, move |_, _| {
+                let weak = weak.clone();
+                // The view takes the new theme's colours once the change has been handled.
+                glib::idle_add_local_once(move || {
+                    if let Some(log_window) = weak.upgrade() {
+                        log_window.paint();
+                    }
+                });
+            });
+            let settings = settings.clone();
+            let handler = Cell::new(Some(handler));
+            log_window.window.connect_destroy(move |_| {
+                if let Some(handler) = handler.take() {
+                    settings.disconnect(handler);
+                }
+            });
+        }
         log_window.read();
         log_window.window.present();
         log_window
+    }
+
+    /// Gives the styles the colours that suit the theme: the set for a dark theme if it writes
+    /// in a light colour.
+    fn paint(&self) {
+        let text = self.view.color();
+        let dark = is_dark_theme((text.red(), text.green(), text.blue()));
+        if self.dark.replace(dark) != dark {
+            paint_tags(&self.view.buffer(), Colours::of(dark));
+        }
     }
 
     /// Highlights the run `run_id` instead, scrolls to it, and brings the window to the front.
@@ -291,36 +333,56 @@ fn tag_name(style: Style) -> Option<&'static str> {
     })
 }
 
-/// The styles. The run's backgrounds come last, so that the highlight wins over the shading.
+/// The styles, without their colours, which [`paint_tags`] gives them. The run's backgrounds come
+/// last, so that the highlight wins over the shading.
 fn add_tags(buffer: &TextBuffer) {
     let table = buffer.tag_table();
     let tag = |name: &str| TextTag::builder().name(name);
     let tags = [
         tag(MONOSPACE).family("Monospace").build(),
-        tag("time").foreground("#5e5c64").build(),
-        tag("run-id").foreground("#77767b").build(),
-        tag("start").foreground("#1c71d8").weight(700).build(),
-        tag("error").foreground("#c01c28").weight(700).build(),
-        tag("end-good").foreground("#26a269").weight(700).build(),
-        tag("end-attention")
-            .foreground("#b5690b")
-            .weight(700)
-            .build(),
-        tag("end-failed").foreground("#c01c28").weight(700).build(),
-        tag("key").foreground("#77767b").build(),
+        tag("time").build(),
+        tag("run-id").build(),
+        tag("start").weight(700).build(),
+        tag("error").weight(700).build(),
+        tag("end-good").weight(700).build(),
+        tag("end-attention").weight(700).build(),
+        tag("end-failed").weight(700).build(),
+        tag("key").build(),
         tag("value").build(),
-        tag("text")
-            .foreground("#77767b")
-            .style(gtk4::pango::Style::Italic)
-            .build(),
-        tag("garbled")
-            .foreground("#9a9996")
-            .style(gtk4::pango::Style::Italic)
-            .build(),
-        tag(SHADED).paragraph_background("#f0f0f0").build(),
-        tag(HIGHLIGHT).paragraph_background("#fff1a8").build(),
+        tag("text").style(gtk4::pango::Style::Italic).build(),
+        tag("garbled").style(gtk4::pango::Style::Italic).build(),
+        tag(SHADED).build(),
+        tag(HIGHLIGHT).build(),
     ];
     for tag in &tags {
         table.add(tag);
+    }
+    paint_tags(buffer, Colours::of(false));
+}
+
+/// Gives the styles the `colours`.
+fn paint_tags(buffer: &TextBuffer, colours: Colours) {
+    let table = buffer.tag_table();
+    let foregrounds = [
+        ("time", colours.time),
+        ("run-id", colours.run_id),
+        ("start", colours.start),
+        ("error", colours.error),
+        ("end-good", colours.end_good),
+        ("end-attention", colours.end_attention),
+        ("end-failed", colours.end_failed),
+        ("key", colours.key),
+        ("text", colours.text),
+        ("garbled", colours.garbled),
+    ];
+    for (name, colour) in foregrounds {
+        if let Some(tag) = table.lookup(name) {
+            tag.set_foreground(Some(colour));
+        }
+    }
+    for (name, colour) in [(SHADED, colours.shaded), (HIGHLIGHT, colours.highlight)] {
+        if let Some(tag) = table.lookup(name) {
+            tag.set_paragraph_background(Some(colour));
+        }
     }
 }
