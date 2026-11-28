@@ -2,3 +2,6 @@
 
 # Python caches, such as vms/driver.py compiled when it runs.
 __pycache__/
+
+# General, assorted notes
+/research

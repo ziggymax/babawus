@@ -1,12 +1,12 @@
-//! What the format view shows: the drives that may be formatted, the warning, and how
-//! formatting went. See "Format USB media" and "Formatting a medium" in Requirements.md, and
+//! What the format view shows: the drive it is to format, the warning, and how formatting
+//! went. See "Format USB media" and "Formatting a medium" in Requirements.md, and
 //! issues 78-81. The UI only puts these texts on the screen.
 
 use std::collections::HashSet;
 
 use crate::format::{Refusal, label_is_valid, suggest_label};
 use crate::language::Language;
-use crate::media::{Snapshot, Volume};
+use crate::media::{Drive, Snapshot, Volume};
 use crate::platform::{FormatError, Step};
 use crate::text::{Text, size};
 
@@ -33,33 +33,59 @@ pub fn drive_choices(
         .into_iter()
         .map(|target| {
             let drive = &target.drive;
-            let maker = format!("{} {}", drive.vendor.trim(), drive.model.trim());
-            let size = size(drive.size, language);
-            let name = match maker.trim() {
-                "" => size,
-                maker => format!("{maker} · {size}"),
-            };
             let volumes: Vec<&Volume> = snapshot
                 .volumes
                 .iter()
                 .filter(|volume| volume.drive == drive.object_path)
                 .collect();
-            let contents = if volumes.is_empty() {
-                Text::FormatNoFileSystem.get(language).to_owned()
-            } else {
-                volumes
-                    .iter()
-                    .map(|volume| volume_text(volume, babawus, language))
-                    .collect::<Vec<_>>()
-                    .join("; ")
-            };
             DriveChoice {
                 id: drive.id.clone(),
-                name,
-                contents,
+                name: drive_name(drive, language),
+                contents: contents_text(&volumes, babawus, language),
             }
         })
         .collect()
+}
+
+/// The drive with the udisks2 drive ID `id`, which the format view is to format, if it may be
+/// formatted. The stick is selected on the start screen, not in the format view (issue 183).
+pub fn drive_choice(
+    snapshot: &Snapshot,
+    id: &str,
+    babawus: &HashSet<String>,
+    language: Language,
+) -> Option<DriveChoice> {
+    drive_choices(snapshot, babawus, language)
+        .into_iter()
+        .find(|choice| choice.id == id)
+}
+
+/// Maker, model and size, for example "Kingston DataTraveler 3.0 · 15.5 GB".
+pub(crate) fn drive_name(drive: &Drive, language: Language) -> String {
+    let maker = format!("{} {}", drive.vendor.trim(), drive.model.trim());
+    let size = size(drive.size, language);
+    match maker.trim() {
+        "" => size,
+        maker => format!("{maker} · {size}"),
+    }
+}
+
+/// What is on a drive with the file systems `volumes`, for example "BACKUP-A (exFAT), with
+/// Babawus backups; DATA (NTFS), not mounted", or "No file system".
+pub(crate) fn contents_text(
+    volumes: &[&Volume],
+    babawus: &HashSet<String>,
+    language: Language,
+) -> String {
+    if volumes.is_empty() {
+        Text::FormatNoFileSystem.get(language).to_owned()
+    } else {
+        volumes
+            .iter()
+            .map(|volume| volume_text(volume, babawus, language))
+            .collect::<Vec<_>>()
+            .join("; ")
+    }
 }
 
 /// "BACKUP-A (exFAT), with Babawus backups", or "DATA (NTFS), not mounted".

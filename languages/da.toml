@@ -171,8 +171,8 @@ Either = "{first} eller {last}"
 Loading = "Læser USB-stikket…"
 
 FormatHeading = "Forbered et USB-stik"
-FormatIntro = "Formatering sletter alt på et USB-stik og sætter det op til backup med Babawus. Vælg USB-stikket:"
-FormatNoDrives_39 = "Der er ikke sat noget USB-stik i, som Babawus kan formatere."
+FormatIntro = "Formatering sletter alt på dette USB-stik og sætter det op til backup med Babawus:"
+FormatNoDrives_39 = "Dette USB-stik er ikke længere sat i, eller Babawus kan ikke længere formatere det."
 FormatNoFileSystem = "Intet filsystem"
 FormatNoLabel = "Intet navn"
 FormatWithBackups = "{volume}, med backups fra Babawus"
@@ -522,7 +522,7 @@ Vælg, hvad der skal tages backup af, under "{MenuAdvanced}" med "{ChangeSetup}"
 Hvis det sker igen, så se #6.
 
 #39
-Babawus formaterer kun USB-stik, aldrig computerens egne diske. Sæt det USB-stik i, der skal forberedes.
+USB-stikket er trukket ud, eller noget andet på computeren er begyndt at bruge det. Gå tilbage, sæt USB-stikket i igen, vælg det på listen, og tryk på »{Prepare}« igen.
 
 #40
 Formatering som Ext4 kræver en konto med sudo-rettigheder og adgangskoden til den konto. Vælg exFAT i stedet, eller forbered USB-stikket fra en administrators konto.
