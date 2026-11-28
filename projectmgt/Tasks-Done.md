@@ -167,3 +167,5 @@ Up to T-158, each task has a link to the pull request that finished it. From T-1
 | T-161 | In the user guide, say that on some desktops, such as KDE Plasma on Kubuntu, Babawus only shows up in the menu after logging out and in again |
 | T-162 | Begin Help with a short notice, in every language, on the numbers after the messages, such as "#14": what they are, why they are there, and how to search Help for the number of a message one has seen |
 | T-163 | In the log window, make the highlighted run, and the shading of every other run, readable on a dark desktop theme as well as on a light one; checked on all three guests with a dark and a light theme |
+| T-164 | Make the log window scroll to the highlighted run when its lines aren't all in view, as on Fedora 45 with a log of 33 lines; checked on all three guests |
+| T-165 | Make Babawus open dark on Ubuntu 26.04 when it is started while the dark style is on, as it does on Fedora 45; checked on all three guests |

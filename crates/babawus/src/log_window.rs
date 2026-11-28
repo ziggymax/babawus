@@ -268,33 +268,43 @@ impl LogWindow {
         }
     }
 
-    /// Scrolls to the first line of the chosen run, once the text has been laid out.
+    /// Scrolls to the chosen run, once the text has been laid out, unless all its lines are in
+    /// view already (issue 190).
     fn scroll_to_run(&self) {
         let run_id = self.run_id.borrow().clone();
-        let Some(index) = self
-            .lines
-            .borrow()
-            .iter()
-            .position(|line| line.run_id.as_deref() == Some(run_id.as_str()))
-        else {
-            return;
+        let (first, last) = {
+            let lines = self.lines.borrow();
+            let mut indexes = lines
+                .iter()
+                .enumerate()
+                .filter(|(_, line)| line.run_id.as_deref() == Some(run_id.as_str()))
+                .map(|(index, _)| index);
+            let Some(first) = indexes.next() else {
+                return;
+            };
+            (first, indexes.next_back().unwrap_or(first))
         };
         self.scroll_to_run.set(false);
         let buffer = self.view.buffer();
-        let (start, _) = line_bounds(&buffer, index);
-        let mark = buffer.create_mark(None, &start, true);
+        let start = buffer.create_mark(None, &line_bounds(&buffer, first).0, true);
+        let end = buffer.create_mark(None, &line_bounds(&buffer, last).0, true);
         let view = self.view.clone();
         let scroll = self.scroll.clone();
         // Only once the text has been laid out do its lines have their places.
         glib::timeout_add_local_once(LAID_OUT, move || {
             let buffer = view.buffer();
-            let place = view.iter_location(&buffer.iter_at_mark(&mark));
-            buffer.delete_mark(&mark);
-            let (top, height) = (f64::from(place.y()), f64::from(place.height()));
+            let top = view.iter_location(&buffer.iter_at_mark(&start));
+            let bottom = view.iter_location(&buffer.iter_at_mark(&end));
+            buffer.delete_mark(&start);
+            buffer.delete_mark(&end);
+            let top = f64::from(top.y());
+            let bottom = f64::from(bottom.y() + bottom.height());
             let vertical = scroll.vadjustment();
             let page = vertical.page_size();
-            // The run is scrolled to only if it isn't in view, so that a short log stays put.
-            if top < vertical.value() || top + height > vertical.value() + page {
+            // The run is scrolled to only if it isn't all in view, so that a short log stays
+            // put. Looking at its first line only left a run at the bottom edge with its other
+            // lines out of sight (issue 190).
+            if top < vertical.value() || bottom > vertical.value() + page {
                 let most = (vertical.upper() - page).max(0.0);
                 vertical.set_value((top - RUN_POSITION * page).clamp(0.0, most));
             }

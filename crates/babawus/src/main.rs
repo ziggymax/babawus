@@ -93,6 +93,7 @@ fn activate(app: &Application, lock: &Rc<RefCell<Option<ComputerLock>>>) {
         window.present();
         return;
     }
+    follow_dark_style_at_start();
     let username = glib::user_name();
     let username = username.to_string_lossy();
     let lock_file = platform::computer_lock_file();
@@ -233,4 +234,26 @@ fn message_window(
         .resizable(false)
         .child(&content)
         .build()
+}
+
+/// Makes the desktop's dark style apply from the start. GTK 4.22, on Ubuntu 26.04, knows at
+/// start that the style is dark, but draws its theme light until the style changes; GTK 4.24,
+/// on Fedora 45, draws it dark at once (issue 191). Setting a value of Babawus's own, and then
+/// handing the setting back to the desktop, is such a change, and leaves Babawus following the
+/// desktop's style as before. GTK before 4.20 has no such setting, and nothing is done.
+fn follow_dark_style_at_start() {
+    const SCHEME: &str = "gtk-interface-color-scheme";
+    let Some(settings) = gtk4::Settings::default() else {
+        return;
+    };
+    let Some(spec) = settings.find_property(SCHEME) else {
+        return;
+    };
+    let default = spec.default_value();
+    let number = |value: &glib::Value| glib::EnumValue::from_value(value).map(|(_, v)| v.value());
+    if number(&settings.property_value(SCHEME)) == number(default) {
+        return;
+    }
+    settings.set_property_from_value(SCHEME, default);
+    settings.reset_property(SCHEME);
 }
