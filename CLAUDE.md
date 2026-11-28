@@ -40,7 +40,7 @@ If the user asks for a change while another is uncommitted, ask whether it goes 
 - **A change the user can see, or one that touches the desktop, is checked on all three**, each with the package built for it, installed as a user would. No guest stands in for another. Say in the summary which guests were checked.
 - **Before calling something a bug**, rule out the driver: take a screenshot a second or more after an action, since guests draw late, and move the pointer away before a click, since a tooltip left open takes the click.
 - **Formatting a real stick**, or changing one in any other way that can't be undone, needs a fresh yes from the user each time.
-- The user types passwords in the guests, and does what needs hands.
+- Claude never types a password into a guest, test passwords included. Scripts in `vms/` type the test passwords from `vms/accounts.toml`, and the user runs those, or starts the unattended run that does (issue 192). The user does what needs hands.
 
 ## Reviews
 
