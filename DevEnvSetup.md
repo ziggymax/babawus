@@ -122,6 +122,27 @@ All were installed and updated on 2026-11-25. All have 4 CPUs, 4 GB of memory an
 virt-manager --connect qemu:///session --show-domain-console babawus-<name>
 ```
 
+### How the guests work
+
+This is what the driver does underneath, so that a guest can be reasoned about, and mended by hand, without reading `vms/driver.py` (T-166).
+
+**Where things are.** Each guest is a libvirt domain, `babawus-<name>`, in the user session (`qemu:///session`), so it runs as the user, with no more rights than any other program of theirs. Its disk, `~/.local/share/libvirt/images/babawus-<name>.qcow2`, holds the installed system and its snapshots; the installers' ISOs and the stick images are in the same folder. `vms/<name>.xml` describes the guest, and `vms/driver.py define <name>` gives it to libvirt.
+
+**The `clean` snapshot.** A snapshot is internal: it lives inside the guest's own qcow2 file, and holds both the disk and the memory of the running guest. `clean` was taken with the desktop logged in as `tester` and nothing open, so going back to it returns straight to that desktop, without a boot or a login. It holds the updated system, SSH, the settings above, and no Babawus. `vms/driver.py list` shows each guest's snapshots, and `virsh -c qemu:///session snapshot-info babawus-<name> clean` shows when one was taken. A guest has BIOS rather than UEFI firmware because libvirt can't take an internal snapshot of a guest with UEFI.
+
+**Resetting a guest.** `vms/driver.py revert <name> clean` throws away everything done since the snapshot: an installed package, files, settings, a stick that was plugged in. The guest runs on at once from the snapshot's moment, and the driver forwards SSH to it again, since QEMU forgets the forward. Two things come back from the snapshot as they were then:
+
+- **The clock** stands at the time the snapshot was taken, until the guest sets it. `apt` refuses package lists that seem to come from the future, so set it first: `vms/driver.py run <name> sudo date -s @$(date +%s)`. The smoke test does this after every revert.
+- **A stick that was plugged in** is gone, because the snapshot had none. Plug it in again after a revert.
+
+`vms/driver.py snapshot <name> clean` replaces `clean` with the guest as it is now, which is how a guest is saved after it has been updated. It takes about five minutes, since the guest's 4 GB of memory is written into the disk file, and the guest stands still meanwhile.
+
+**Emulated sticks.** A stick image is a raw file on the host, the stick's bytes and nothing more. `vms/driver.py stick <file> 2G` makes an empty one, sparse, so that it only takes room on the host as it fills; a bare file name means a file in the images folder. `vms/driver.py plug <name> <file>` hot-plugs it into the guest's USB 3 controller as a removable USB disk, so the guest sees a USB stick arrive exactly as when one is put in a port: udisks2 reports it as a removable USB drive, the desktop mounts it (at `/media/tester/<label>` on Linux Mint, `/run/media/tester/<label>` on Ubuntu 26.04 and Fedora), and Babawus lists it. There are three slots, `--slot a`, `b` and `c` (`a` if none is given), each a libvirt device named `ua-stick-<slot>`, so that up to three sticks can be in at once, and each can be pulled out by its slot. `vms/driver.py unplug <name> --slot a` pulls it out without ejecting it first, as a user pulling it out of the port would. A slot that is in use can't take another stick until it is unplugged or the guest is reverted.
+
+An image keeps what the guest wrote to it, so the same image gives the same stick next time. Copy one before a test that changes it, so that the original stays as it was: `cp --sparse=always <image> <copy>`. Don't plug the same image into two guests at once, and don't mount it on the host while a guest has it: both sides would write to it at once, and the file system on it would be damaged.
+
+**Real sticks.** For hardware steps, such as speed or pulling out a stick during a backup, a real stick is passed through from the host. `vms/driver.py sticks` lists the USB sticks on the host by serial number, `vms/driver.py pass <name> <serial>` hands that stick's USB device to the guest, and `vms/driver.py unpass <name>` gives it back. While the guest has it, the host doesn't see it. Only one real stick, and one guest, at a time. It needs the udev rule below, since QEMU runs as the user and must open the stick's USB device.
+
 ### Making a guest
 
 All three guests were made this way (T-126, T-127, T-124). Each guest gets the next SSH and VNC ports in its file in `vms/`; ports 2603, 2604, 5963 and 5964 belonged to the Ubuntu 24.04 and Debian 13 guests, which T-133 removed.
